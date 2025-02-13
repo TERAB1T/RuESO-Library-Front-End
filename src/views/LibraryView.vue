@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import BookCategories from '@/components/BookCategories.vue';
 import BookList from '@/components/BookList.vue';
+import { useHead } from '@unhead/vue';
+
+useHead({
+	title: `Библиотека ESO | RuESO`,
+	meta: [
+		{ name: 'description', content: 'Библиотека книг из The Elder Scrolls Online' }
+	]
+});
 </script>
 
 <template>

@@ -1,10 +1,12 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createMemoryHistory, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import LibraryView from '@/views/LibraryView.vue'
 import BookView from '@/views/BookView.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: import.meta.env.SSR
+      ? createMemoryHistory()
+      : createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
@@ -31,4 +33,4 @@ const router = createRouter({
   ],
 })
 
-export default router
+export default router;

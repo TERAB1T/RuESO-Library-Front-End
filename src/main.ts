@@ -1,12 +1,18 @@
-import "bootstrap"
-import './assets/main.scss'
+import "bootstrap";
+import './assets/main.scss';
 
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
+import { createSSRApp } from 'vue';
+import App from './App.vue';
+import router from "./router";
+import { createHead } from '@unhead/vue';
 
-const app = createApp(App)
+export function createApp() {
+	const app = createSSRApp(App);
 
-app.use(router)
+	const head = createHead();
+	app.use(head);
 
-app.mount('#app')
+	app.use(router);
+
+	return { app, router };
+}

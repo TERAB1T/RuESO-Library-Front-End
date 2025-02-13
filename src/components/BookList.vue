@@ -2,6 +2,7 @@
 import { RouterLink, useRoute } from 'vue-router';
 import { reactive, onMounted, watch } from 'vue';
 import axios from 'axios';
+import { prepareURL } from '@/utils';
 
 interface Book {
     id: number;
@@ -20,7 +21,7 @@ const fetchBooks = async () => {
     state.isLoading = true;
     try {
         const queryParams = state.currentCategoryId !== -1 ? `?catId=${state.currentCategoryId}` : '';
-        const response = await axios.get(`/api/books${queryParams}`);
+        const response = await axios.get(prepareURL(`/api/books${queryParams}`));
         state.books = response.data;
     } catch (error) {
         console.error('Error fetching books data:', error);
@@ -38,6 +39,9 @@ watch(
     },
     { immediate: true }
 );
+
+if (import.meta.env.SSR)
+	await fetchBooks();
 
 </script>
 
