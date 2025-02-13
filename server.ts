@@ -73,11 +73,15 @@ export async function createServer(
 				render = (await import("./dist/server/entry-server.js")).render;
 			}
 
-			const [appHtml, preloadLinks] = await render(url, manifest);
+			const [appHtml, preloadLinks, payload] = await render(url, manifest);
 
-			const html = template
+			let html = template
 				.replace(`<!--preload-links-->`, preloadLinks)
 				.replace(`<!--app-html-->`, appHtml);
+
+			Object.entries(payload).forEach(([key, value]) => {
+				html = html.replace(`<!--${key}-->`, value)
+			})
 
 			res.status(200).set({ "Content-Type": "text/html" }).end(html);
 		} catch (e) {

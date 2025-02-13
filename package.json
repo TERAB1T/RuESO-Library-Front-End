@@ -18,6 +18,7 @@
 	},
 	"dependencies": {
 		"@popperjs/core": "^2.11.8",
+		"@unhead/ssr": "^1.11.18",
 		"@unhead/vue": "^1.11.18",
 		"axios": "^1.7.9",
 		"bootstrap": "^5.3.3",

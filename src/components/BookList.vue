@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
-import { reactive, onMounted, watch } from 'vue';
+import { reactive, watch } from 'vue';
 import axios from 'axios';
 import { prepareURL } from '@/utils';
 
