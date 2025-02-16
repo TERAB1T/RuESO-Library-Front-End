@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "bun server",
+		"dev": "vite",
 		"build": "bun run build:client && bun run build:server",
 		"build:noExternal": "bun run build:client && bun run build:server:noExternal",
 		"build:client": "vite build --ssrManifest --outDir dist/client",
@@ -13,8 +13,7 @@
 		"generate": "vite build --ssrManifest --outDir dist/static && bun run build:server && bun prerender",
 		"serve": "BUN_ENV=production bun server",
 		"debug": "bun --inspect-brk server",
-		"type-check": "vue-tsc --build",
-		"server-json": "json-server --watch tmp/data.json --port 5001"
+		"type-check": "vue-tsc --build"
 	},
 	"dependencies": {
 		"@popperjs/core": "^2.11.8",

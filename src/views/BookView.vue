@@ -13,13 +13,14 @@ interface Book {
 	textRu: string,
 	icon: string,
 	catId: number,
-	slug: string
+	slug: string,
+	category: Category
 }
 
 interface Category {
 	id: number,
-	title: string,
-	desc: string,
+	titleEn: string,
+	titleRu: string,
 	icon: string,
 	slug: string
 }
@@ -33,14 +34,9 @@ const state = reactive({
 	isLoading: true,
 });
 
-console.log(prepareURL(`/api/books/${bookId}`));
-
 try {
-	const response = await axios.get(prepareURL(`/api/books/${bookId}`));
+	const response = await axios.get(prepareURL(`/api/library/books/${bookId}`));
 	state.book = response.data;
-
-	const response2 = await axios.get(prepareURL(`/api/categories/${state.book.catId}`));
-	state.category = response2.data;
 
 	useHead({
 		title: `${state.book.titleRu} — ESO | RuESO`,
@@ -68,7 +64,7 @@ try {
 			<div class="col-lg-4 order-1 order-lg-2">
 				<div class="p-3">
 					<div>{{ state.book.titleEn }}</div>
-					<RouterLink :to="`/library/category/${state.category.id}`">{{ state.category.title }}</RouterLink>
+					<RouterLink :to="`/library/category/${state.book.category.id}`">{{ state.book.category.titleRu }}</RouterLink>
 				</div>
 			</div>
 		</div>

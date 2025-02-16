@@ -6,8 +6,8 @@ import { prepareURL } from '@/utils';
 
 interface Category {
 	id: number,
-	title: string,
-	desc: string,
+	titleEn: string,
+	titleRu: string,
 	icon: string,
 	slug: string
 }
@@ -21,7 +21,7 @@ const state = reactive({
 });
 
 watch(
-	() => route.params.categoryId,
+	() => Number(route.params.categoryId),
 	(newCategoryId) => {
 		state.currentCategoryId = newCategoryId ?? -1;
 	},
@@ -29,7 +29,7 @@ watch(
 );
 
 try {
-	const response = await axios.get(prepareURL('/api/categories'));
+	const response = await axios.get(prepareURL('/api/library/categories'));
 	state.categories = response.data;
 } catch (error) {
 	console.error('Error fetching categories data:', error);
@@ -46,7 +46,7 @@ try {
 			'list-group-item': true,
 			'list-group-item-action': true
 		}" :to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}`">
-			{{ category.title }}
+			{{ category.titleRu }}
 		</RouterLink>
 	</div>
 </template>
