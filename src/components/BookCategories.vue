@@ -41,11 +41,9 @@ try {
 
 <template>
 	<div class="list-group list-group-flush">
-		<RouterLink v-for="category in state.categories" :key="category.id" :class="{
-			'active': state.currentCategoryId === category.id,
-			'list-group-item': true,
-			'list-group-item-action': true
-		}" :to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}`">
+		<RouterLink v-for="category in state.categories" :key="category.id" class="list-group-item list-group-item-action"
+			:class="{ 'active': state.currentCategoryId === category.id }"
+			:to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}`">
 			{{ category.titleRu }}
 		</RouterLink>
 	</div>

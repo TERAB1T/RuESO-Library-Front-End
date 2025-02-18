@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { RouterLink, useRoute } from 'vue-router';
-import { reactive, watch } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { reactive, watch, computed } from 'vue';
 import axios from 'axios';
 import { prepareURL } from '@/utils';
+import Pagination from '@/components/Pagination.vue';
 
 interface Book {
 	id: number;
@@ -13,23 +14,25 @@ interface Book {
 }
 
 const route = useRoute();
+const router = useRouter();
 
 const state = reactive({
 	books: [] as Book[],
 	currentCategoryId: route.params.categoryId ?? -1,
 	isLoading: true,
-	page: 1,
-	pageSize: 5,
+	pageSize: 100,
 	totalPages: 1
 });
+
+const currentPage = computed(() => Number(route.query.page) || 1);
 
 const fetchBooks = async () => {
 	state.isLoading = true;
 	try {
-		let url = `/api/library/books?page=${state.page}&page_size=${state.pageSize}`;
+		let url = `/api/library/books?page=${currentPage.value}&page_size=${state.pageSize}`;
 
 		if (state.currentCategoryId > 0)
-			url = `/api/library/categories/${state.currentCategoryId}?page=${state.page}&page_size=${state.pageSize}`;
+			url = `/api/library/categories/${state.currentCategoryId}?page=${currentPage.value}&page_size=${state.pageSize}`;
 
 		const response = await axios.get(prepareURL(url));
 		state.books = response.data.books;
@@ -44,25 +47,21 @@ const fetchBooks = async () => {
 };
 
 watch(
-	() => route.params.categoryId,
-	(newCategoryId) => {
+	() => [route.params.categoryId, route.query.page],
+	([newCategoryId]) => {
 		state.currentCategoryId = newCategoryId ?? -1;
-		state.page = 1;
 		fetchBooks();
+		window.scrollTo({ top: 0, behavior: 'smooth' });
 	},
 	{ immediate: true }
 );
 
-if (import.meta.env.SSR)
-	await fetchBooks();
-
 const changePage = (newPage: number) => {
 	if (newPage > 0 && newPage <= state.totalPages) {
-		state.page = newPage;
-		fetchBooks();
+		router.push({ query: { ...route.query, page: newPage } });
+		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 };
-
 </script>
 
 <template>
@@ -72,17 +71,5 @@ const changePage = (newPage: number) => {
 		</RouterLink>
 	</div>
 
-	<nav v-if="state.totalPages > 1" class="mt-3">
-		<ul class="pagination justify-content-center">
-			<li class="page-item" :class="{ disabled: state.page === 1 }">
-				<button class="page-link" @click="changePage(state.page - 1)">«</button>
-			</li>
-			<li v-for="page in state.totalPages" :key="page" class="page-item" :class="{ active: state.page === page }">
-				<button class="page-link" @click="changePage(page)">{{ page }}</button>
-			</li>
-			<li class="page-item" :class="{ disabled: state.page === state.totalPages }">
-				<button class="page-link" @click="changePage(state.page + 1)">»</button>
-			</li>
-		</ul>
-	</nav>
+	<Pagination :currentPage="currentPage" :totalPages="state.totalPages" @changePage="changePage" />
 </template>
