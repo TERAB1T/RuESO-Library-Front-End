@@ -3,3 +3,7 @@ export const prepareURL = (url: string) => {
 
 	return url;
 }
+
+export const prepareIcon = (icon: string) => {
+	return icon.replace(/\/?esoui\/(.*?)\.dds/gi, 'https://elderscrolls.net/esoui/$1.png');
+}

@@ -2,7 +2,7 @@
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { reactive, watch, computed } from 'vue';
 import axios from 'axios';
-import { prepareURL } from '@/utils';
+import { prepareURL, prepareIcon } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 
 interface Book {
@@ -81,6 +81,7 @@ const changePage = (newPage: number) => {
 
 	<div class="list-group list-group-flush">
 		<RouterLink v-for="book in state.books" :key="book.id" class="list-group-item list-group-item-action" :to="`/library/${book.id}`">
+			<img class="me-2" :src="prepareIcon(book.icon)" :alt="book.titleRu">
 			{{ book.titleRu }}
 		</RouterLink>
 	</div>

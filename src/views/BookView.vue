@@ -3,7 +3,7 @@ import { RouterLink, useRoute } from 'vue-router';
 import { reactive } from 'vue';
 import axios from 'axios';
 import { useHead } from '@unhead/vue';
-import { prepareURL } from '@/utils';
+import { prepareURL, prepareIcon } from '@/utils';
 
 interface Book {
 	id: number,
@@ -58,11 +58,12 @@ try {
 			<div class="col-lg-8 order-2 order-lg-1">
 				<div class="p-3">
 					<h1>{{ state.book.titleRu }}</h1>
-					<div class="book-main" v-html="state.book.textRu.replace(/\n/g, '<br>')"></div>
+					<div class="book-main" v-html="prepareIcon(state.book.textRu.replace(/\n/g, '<br>'))"></div>
 				</div>
 			</div>
 			<div class="col-lg-4 order-1 order-lg-2">
 				<div class="p-3">
+					<div style="text-align: center;"><img :src="prepareIcon(state.book.icon)" :alt="state.book.titleRu"></div>
 					<div>{{ state.book.titleEn }}</div>
 					<RouterLink :to="`/library/category/${state.book.category.id}`">{{ state.book.category.titleRu }}</RouterLink>
 				</div>
