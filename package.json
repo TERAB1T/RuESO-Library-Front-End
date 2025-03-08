@@ -21,6 +21,8 @@
 		"@unhead/vue": "^1.11.18",
 		"axios": "^1.7.9",
 		"bootstrap": "^5.3.3",
+		"datatables.net-bs5": "^2.2.2",
+		"datatables.net-vue3": "^3.0.4",
 		"express": "^4.21.2",
 		"json-server": "^1.0.0-beta.3",
 		"sass": "^1.84.0",

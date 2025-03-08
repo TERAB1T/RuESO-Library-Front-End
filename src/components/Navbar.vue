@@ -2,9 +2,10 @@
 import { RouterLink, useRoute } from 'vue-router';
 import logo from '@/assets/img/logo.png';
 
-const isLibrary = () => {
-    const { path } = useRoute();
-    return path.startsWith("/library");
+const route = useRoute();
+
+const isPathStartWith = (path: string) => {
+    return route.path.startsWith(path);
 };
 </script>
 
@@ -23,7 +24,10 @@ const isLibrary = () => {
                         <RouterLink activeClass="active" class="nav-link py-2 px-0 px-lg-2" to="/" exact>Главная</RouterLink>
                     </li>
                     <li class="nav-item mx-2">
-                        <RouterLink :class="`${isLibrary() ? 'active' : ''} nav-link py-2 px-0 px-lg-2`" to="/library">Библиотека</RouterLink>
+                        <RouterLink :class="`${isPathStartWith('/library') ? 'active' : ''} nav-link py-2 px-0 px-lg-2`" to="/library">Библиотека</RouterLink>
+                    </li>
+                    <li class="nav-item mx-2">
+                        <RouterLink :class="`${isPathStartWith('/glossary') ? 'active' : ''} nav-link py-2 px-0 px-lg-2`" to="/glossary">Глоссарий</RouterLink>
                     </li>
                 </ul>
             </div>

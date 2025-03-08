@@ -57,7 +57,8 @@ watch(
 	([newCategoryId]) => {
 		state.currentCategory.id = newCategoryId ?? -1;
 		fetchBooks();
-		window.scrollTo({ top: 0, behavior: 'smooth' });
+		if (!import.meta.env.SSR)
+			window.scrollTo({ top: 0, behavior: 'smooth' });
 	},
 	{ immediate: true }
 );
@@ -65,7 +66,8 @@ watch(
 const changePage = (newPage: number) => {
 	if (newPage > 0 && newPage <= state.totalPages) {
 		router.push({ query: { ...route.query, page: newPage } });
-		window.scrollTo({ top: 0, behavior: 'smooth' });
+		if (!import.meta.env.SSR)
+			window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 };
 </script>
@@ -79,12 +81,12 @@ const changePage = (newPage: number) => {
 		</div>
 	</template>
 
-	<div class="list-group list-group-flush">
+	<TransitionGroup class="list-group list-group-flush" name="list" tag="div">
 		<RouterLink v-for="book in state.books" :key="book.id" class="list-group-item list-group-item-action" :to="`/library/${book.id}`">
-			<img class="me-2" :src="prepareIcon(book.icon)" :alt="book.titleRu">
+			<img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu">
 			{{ book.titleRu }}
 		</RouterLink>
-	</div>
+	</TransitionGroup>
 
 	<Pagination :currentPage="currentPage" :totalPages="state.totalPages" @changePage="changePage" />
 </template>

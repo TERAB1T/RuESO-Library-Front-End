@@ -3,14 +3,15 @@ import { computed, watch, ref } from 'vue';
 
 const props = defineProps({
 	currentPage: { type: Number, default: 1 },
-	totalPages: { type: Number, default: 1 }
+	totalPages: { type: Number, default: 1 },
+	maxVisiblePages: { type: Number, default: 7 }
 });
 
 defineEmits(['changePage', 'submit']);
 
 const pages = ref<string[]>([]);
 
-const calculatePages = () => {
+const calculatePages = () => { // TODO: Make dynamic
 	if (props.totalPages <= 6) {
 		pages.value = Array.from({ length: props.totalPages }, (_, i) => (i + 1).toString());
 	} else if (props.currentPage <= 4) {
@@ -33,7 +34,7 @@ watch(() => [props.currentPage, props.totalPages], calculatePages, { immediate: 
 				<button class="page-link" @click="$emit('changePage', currentPage - 1)">«</button>
 			</li>
 			<li v-for="page in pages" :key="page" class="page-item" :class="{ active: currentPage === Number(page) }">
-				<button v-if="page !== '...'" class="page-link" @click="$emit('changePage', Number(page))">
+				<button v-if="page !== '...'" :disabled="currentPage === Number(page)" class="page-link" @click="$emit('changePage', Number(page))">
 					{{ page }}
 				</button>
 				<span v-else class="page-link disabled">{{ page }}</span>

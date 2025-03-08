@@ -2,6 +2,7 @@ import { createRouter, createMemoryHistory, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import LibraryView from '@/views/LibraryView.vue'
 import BookView from '@/views/BookView.vue'
+import GlossaryView from '@/views/GlossaryView.vue'
 
 const router = createRouter({
   history: import.meta.env.SSR
@@ -29,7 +30,12 @@ const router = createRouter({
       path: '/library/:bookId',
       name: 'book',
       component: BookView,
-    }
+    },
+    {
+      path: '/glossary',
+      name: 'glossary',
+      component: GlossaryView,
+    },
   ],
 })
 

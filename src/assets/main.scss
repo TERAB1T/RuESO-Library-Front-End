@@ -1,1 +1,186 @@
 @import "~bootstrap/scss/bootstrap";
+@import url('datatables.net-bs5');
+
+html {
+	color: #222;
+	font-size: 1em;
+	line-height: 1.4;
+}
+
+[data-bs-theme=dark] {
+	--bs-body-bg: #171821;
+}
+
+.navbar {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	backdrop-filter: blur(5px);
+	background-color: rgba(43, 48, 53, 0.5) !important;
+	border-bottom: 1px #3f3f3f solid;
+}
+
+table.dataTable span.highlight {
+	background-color: #FFFF88;
+	border-radius: 0.28571429rem;
+}
+
+table.dataTable span.column_highlight {
+	background-color: #ffcc99;
+	border-radius: 0.28571429rem;
+}
+
+[data-bs-theme=dark] table.dataTable span.highlight {
+	background-color: #224563;
+	border-radius: 3px;
+}
+
+[data-bs-theme=dark] table.dataTable span.column_highlight {
+	background-color: #4d4225;
+	border-radius: 3px;
+}
+
+.game-checks {
+	margin-top: 20px;
+	column-gap: 7px;
+	row-gap: 7px;
+	max-width: 600px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+input[type="search"] {
+	background-color: #21222d;
+	color: #f7f7f7;
+	border: 0;
+	transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+#main-input {
+	max-width: 584px;
+	background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNicgaGVpZ2h0PScxNicgdmlld0JveD0nMCAwIDE2IDE2Jz48cGF0aCBmaWxsPScjOWFhMGE2JyBkPSdNMTEuNzQyIDEwLjM0NGE2LjUgNi41IDAgMSAwLTEuMzk3IDEuMzk4aC0uMDAxYy4wMy4wNC4wNjIuMDc4LjA5OC4xMTVsMy44NSAzLjg1YTEgMSAwIDAgMCAxLjQxNS0xLjQxNGwtMy44NS0zLjg1YTEuMDA3IDEuMDA3IDAgMCAwLS4xMTUtLjF6TTEyIDYuNWE1LjUgNS41IDAgMSAxLTExIDAgNS41IDUuNSAwIDAgMSAxMSAweic+PC9wYXRoPjwvc3ZnPg==");
+	background-position: 12px center;
+	background-repeat: no-repeat;
+	padding-left: 40px;
+}
+
+input[type="search"]:focus {
+	background-color: #2b2b36;
+	box-shadow: none;
+}
+
+input[type="search"]:hover {
+	background-color: #2c2d33;
+}
+
+input[type="search"]::placeholder {
+	color: #626269;
+}
+
+#main.flex-center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	margin-top: -77px;
+}
+
+#main.flex-center .main-table-wrap {
+	display: none;
+}
+
+#main.flex-center .search-wrap {
+	max-width: 900px;
+}
+
+table.dataTable th {
+	color: #87888c;
+}
+
+table.dataTable th,
+table.dataTable tr {
+	border-color: #343541;
+}
+
+table.dataTable td {
+	padding: 1rem .5rem;
+}
+
+.badge-tag {
+	padding: 0;
+	font-weight: 400;
+	color: #d5d5d5;
+	font-size: 10px;
+	margin-top: 5px;
+	line-height: 1.2;
+}
+
+.table>:not(caption)>*>* {
+	color: #f7f7f7;
+}
+
+.game-icon {
+	position: sticky;
+	top: 85px;
+}
+
+.type-tag {
+	position: sticky;
+	top: 85px;
+	color: #b7b7b7;
+	font-size: 14px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+}
+
+.book-image {
+	max-width: 100%;
+	background: url('../img/mappaper01.jpg');
+}
+
+.book-image-no-bg {
+	max-width: 100%;
+}
+
+.book-image-center {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.game-checks .btn {
+	border-color: #2b2b36;
+}
+
+.game-checks .btn-check:checked+.btn {
+	border-color: #2b2b36;
+	background: #2b2b36;
+}
+
+#main:not(.flex-center) .game-checks {
+	margin-top: 10px;
+}
+
+#main:not(.flex-center) .game-checks .btn span {
+	display: none;
+}
+
+.list-move,
+/* apply transition to moving elements */
+.list-enter-active,
+.list-leave-active {
+	transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+	opacity: 0;
+	transform: translateX(30px);
+}
+
+/* ensure leaving items are taken out of layout flow so that moving
+   animations can be calculated correctly. */
+.list-leave-active {
+	position: absolute;
+}
