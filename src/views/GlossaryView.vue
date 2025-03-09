@@ -2,15 +2,26 @@
 import { ref, watchEffect, onMounted } from 'vue';
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bs5';
+import { Tooltip } from "bootstrap";
+import { useHead } from '@unhead/vue';
 import { debounceFn } from '@/utils';
+import { highlight, unhighlight } from '@/assets/js/highlight';
 
 DataTable.use(DataTablesCore);
+
+useHead({
+	title: `База текстов TES | RuESO`,
+	meta: [
+		{ name: 'description', content: 'SSR библиотека переводов для The Elder Scrolls' }
+	]
+});
 
 /* VARIABLES & CONSTANTS */
 
 const tableID = '#main-table';
 const dataTable = ref();
 let dt: any;
+let isFirstSearch = true;
 
 const gameCheckboxes = [
 	{ id: 'Morrowind', name: 'TES III: Morrowind (2002)', icon: '/img/icons/morrowind.png' },
@@ -34,8 +45,6 @@ const gameTags = {
 	'Dragonborn': 'Dragonborn',
 	'cc': 'Creation Club',
 };
-
-let isFirstSearch = true;
 
 /* UTILS */
 
@@ -179,7 +188,7 @@ const dtInitFilters = (dt: any): void => {
 
 	thead.appendChild(footerRow);
 
-	dt.columns().every(function () {
+	dt.columns().every(function (this: any) {
 		const column = this;
 
 		const columnSearch = debounceFn(function (currentValue) {
@@ -196,14 +205,55 @@ const dtInitFilters = (dt: any): void => {
 	});
 };
 
-const mainSearch = debounceFn(function () {
+const dtInitHighlight = (dt: any): void => {
+	const body = dt.table().body() as HTMLElement;
+	if (options.searchHighlight) {
+		dt
+			.on('draw.dt.dth column-visibility.dt.dth column-reorder.dt.dth', () => {
+				highlightDt(body, dt);
+			})
+			.on('destroy', function () {
+				dt.off('draw.dt.dth column-visibility.dt.dth column-reorder.dt.dth');
+			});
+
+		if (dt.search()) {
+			highlightDt(body, dt);
+		}
+	}
+};
+
+const highlightDt = (body: HTMLElement, dt: any) => {
+	const prepareToHighlight = (text: string) => text.trim().replace(/[‘’]/, '\'').replace(/[“”„]/, '"').replace(/ /, ' ');
+
+	unhighlight(body);
+
+	if (dt.rows({ filter: 'applied' }).data().length) {
+		dt.columns().every(function (this: any) {
+			const column = this;
+			const columnNodes = column.nodes().toArray();
+
+			columnNodes.forEach((node: HTMLElement) => {
+				unhighlight(node, { className: 'column_highlight' });
+				highlight(node, prepareToHighlight(column.search()), { className: 'column_highlight' });
+			})
+
+		});
+
+		highlight(body, prepareToHighlight(dt.search()));
+	}
+};
+
+const mainSearch = debounceFn((event: Event) => {
 	if (isFirstSearch) {
 		isFirstSearch = false;
 		const mainEl = document.getElementById('main') as HTMLDivElement;
 		mainEl.classList.remove('flex-center');
+
+		const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+		const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl))
 	}
 
-	const mainInput = document.getElementById('main-input') as HTMLInputElement;
+	const mainInput = event.target as HTMLInputElement;
 	let currentValue = mainInput.value;
 
 	if (currentValue.length < 3) currentValue = '';
@@ -212,9 +262,10 @@ const mainSearch = debounceFn(function () {
 
 /* ONMOUNTED */
 
-onMounted(function () {
+onMounted(() => {
 	dt = dataTable.value.dt;
 	dtInitFilters(dt);
+	dtInitHighlight(dt);
 });
 </script>
 
