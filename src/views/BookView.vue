@@ -3,7 +3,7 @@ import { RouterLink, useRoute } from 'vue-router';
 import { reactive } from 'vue';
 import axios from 'axios';
 import { useHead } from '@unhead/vue';
-import { prepareURL, prepareIcon } from '@/utils';
+import { prepareURL, prepareIcon, parsePseudoCode } from '@/utils';
 
 interface Book {
 	id: number,
@@ -58,7 +58,7 @@ try {
 			<div class="col-lg-8 order-2 order-lg-1">
 				<div class="p-3">
 					<h1>{{ state.book.titleRu }}</h1>
-					<div class="book-main" v-html="prepareIcon(state.book.textRu.replace(/\n/g, '<br>'))"></div>
+					<div class="book-main" v-html="parsePseudoCode((state.book.textRu ?? '').replace(/\n/g, '<br>'))"></div>
 				</div>
 			</div>
 			<div class="col-lg-4 order-1 order-lg-2">
