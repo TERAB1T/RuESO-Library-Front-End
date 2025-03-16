@@ -14,6 +14,8 @@ interface Book {
 	icon: string,
 	catId: number,
 	slug: string,
+	created: string,
+	updated: string,
 	category: Category
 }
 
@@ -65,6 +67,8 @@ try {
 				<div class="p-3">
 					<div style="text-align: center;"><img :src="prepareIcon(state.book.icon)" :alt="state.book.titleRu"></div>
 					<div>{{ state.book.titleEn }}</div>
+					<div>Добавлена: {{ state.book.created }}</div>
+					<div>Обновлена: {{ state.book.updated }}</div>
 					<RouterLink :to="`/library/category/${state.book.category.id}`">{{ state.book.category.titleRu }}</RouterLink>
 				</div>
 			</div>

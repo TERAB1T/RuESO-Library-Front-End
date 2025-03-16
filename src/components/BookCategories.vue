@@ -21,7 +21,13 @@ const state = reactive({
 });
 
 const sortedCategories = computed(() => {
-	return [...state.categories].sort((a, b) => (a.id === 1002 ? 1 : b.id === 1002 ? -1 : 0));
+	return [...state.categories].sort((a, b) => {
+		if (a.id === 1002 && b.id !== 2000) return 1;
+		if (b.id === 1002 && a.id !== 2000) return -1;
+		if (a.id === 2000) return 1;
+		if (b.id === 2000) return -1;
+		return 0;
+	});
 });
 
 watch(
