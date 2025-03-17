@@ -9,7 +9,7 @@
  * Otherwise, the function will return the original URL unchanged.
  */
 export const prepareURL = (url: string) => {
-	if (import.meta.env.SSR) return `http://localhost:8000/${url.replace(/^\/api/, '')}`;
+	if (import.meta.env.SSR) return `http://localhost:8000${url.replace(/^\/api/, '')}`;
 
 	return url;
 }
@@ -87,4 +87,21 @@ export const parsePseudoCode = (text: string): string => {
 		.replace(/\[IMG=(.*?):(.*?):(.*?)\]/gi, replaceImage);
 
 	return text;
+}
+
+export const generateMetaDescription = (text: string): string => {
+    let cleanText = text.replace(/\[.*?\]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    if (cleanText.length <= 160) return cleanText;
+
+    let cutText = cleanText.slice(0, 160);
+    let lastDot = cutText.lastIndexOf('.');
+
+    if (lastDot > 100) {
+        cleanText = cutText.slice(0, lastDot + 1);
+    } else {
+        cleanText = cutText.trim() + '…';
+    }
+
+    return cleanText;
 }

@@ -12,11 +12,13 @@
 		"build:server:noExternal": "vite build --config vite.config.noexternal.js --ssr src/entry-server.js --outDir dist/server",
 		"generate": "vite build --ssrManifest --outDir dist/static && bun run build:server && bun prerender",
 		"serve": "BUN_ENV=production bun server",
+		"serve-dev": "bun server",
 		"debug": "bun --inspect-brk server",
 		"type-check": "vue-tsc --build"
 	},
 	"dependencies": {
 		"@popperjs/core": "^2.11.8",
+		"@tanstack/vue-query": "^5.68.0",
 		"@types/bootstrap": "^5.2.10",
 		"@unhead/ssr": "^1.11.18",
 		"@unhead/vue": "^1.11.18",

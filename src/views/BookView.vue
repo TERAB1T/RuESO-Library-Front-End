@@ -1,31 +1,12 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
-import { reactive } from 'vue';
+import { reactive, computed, watchEffect, onServerPrefetch } from 'vue';
 import axios from 'axios';
+import { useQuery } from '@tanstack/vue-query';
+import type { UseQueryReturnType } from '@tanstack/vue-query'
 import { useHead } from '@unhead/vue';
-import { prepareURL, prepareIcon, parsePseudoCode } from '@/utils';
-
-interface Book {
-	id: number,
-	titleEn: string,
-	titleRu: string,
-	textEn: string,
-	textRu: string,
-	icon: string,
-	catId: number,
-	slug: string,
-	created: string,
-	updated: string,
-	category: Category
-}
-
-interface Category {
-	id: number,
-	titleEn: string,
-	titleRu: string,
-	icon: string,
-	slug: string
-}
+import { prepareURL, prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
+import type { Book, Category } from '@/types';
 
 const route = useRoute();
 const bookId = route.params.bookId;
@@ -36,27 +17,62 @@ const state = reactive({
 	isLoading: true,
 });
 
-try {
-	const response = await axios.get(prepareURL(`/api/library/books/${bookId}`));
-	state.book = response.data;
+const { data, suspense } = useQuery({
+	queryKey: ['book', bookId],
+	queryFn: () => axios.get(prepareURL(`/api/library/books/${bookId}`)),
+	select: (response) => response.data,
+	staleTime: 5 * 60 * 1000,
+});
 
-	useHead({
-		title: `${state.book.titleRu} — ESO | RuESO`,
-		meta: [
-			{ name: 'description', content: 'SSR библиотека переводов для The Elder Scrolls' }
-		]
-	});
-} catch (error) {
-	console.error('Error fetching book data:', error);
-} finally {
-	state.isLoading = false;
+state.book = data;
+
+const updateHead = () => {
+	if (state.book && state.book.titleRu) {
+		const metaTitle = `${state.book.titleRu} — ESO | RuESO`;
+		const metaDescription = generateMetaDescription(state.book.textRu);
+		const metaLink = `https://rueso.ru/library/${state.book.id}-${state.book.slug}`;
+
+		// Обновляем мета-теги через useHead
+		useHead({
+			title: metaTitle,
+			meta: [
+				{ name: 'description', content: metaDescription },
+				{ name: 'robots', content: 'index, follow' },
+				{ name: 'og:title', content: metaTitle },
+				{ name: 'og:description', content: metaDescription },
+				{ name: 'og:image', content: prepareIcon(state.book.icon) },
+				{ name: 'og:url', content: metaLink },
+				{ name: 'og:locale', content: 'ru_RU' },
+				{ name: 'og:type', content: 'book' },
+				{ name: 'og:site_name', content: 'RuESO' },
+				{ name: 'twitter:title', content: metaTitle },
+				{ name: 'twitter:description', content: metaDescription },
+				{ name: 'twitter:image', content: prepareIcon(state.book.icon) },
+				{ name: 'twitter:card', content: 'summary' },
+				{ name: 'twitter:creator', content: '@TERAB1T' },
+			],
+			link: [
+				{ rel: 'canonical', content: metaLink }
+			]
+		});
+	}
 }
+
+watchEffect(() => {
+	updateHead();
+});
+
+onServerPrefetch(async () => {
+	await suspense();
+	state.book = data;
+	updateHead();
+});
 </script>
 
 <template>
 
 	<div class="container-xl">
-		<div class="row">
+		<div v-if="state.book" class="row">
 			<div class="col-lg-8 order-2 order-lg-1">
 				<div class="p-3">
 					<h1>{{ state.book.titleRu }}</h1>

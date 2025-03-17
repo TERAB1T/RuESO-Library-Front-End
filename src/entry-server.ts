@@ -5,6 +5,8 @@ import { basename } from 'node:path'
 import { createSSRApp } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 
+import { VueQueryPlugin } from '@tanstack/vue-query';
+
 import { createHead } from 'unhead'
 import { renderSSRHead } from '@unhead/ssr'
 
@@ -15,6 +17,8 @@ import router from './router/index.ts'
 export async function render(url, manifest = null) {
 	const app = createSSRApp(App)
 	app.use(router)
+
+	app.use(VueQueryPlugin);
 
 	const head = createHead();
 	app.use(head);

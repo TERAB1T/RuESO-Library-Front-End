@@ -1,18 +1,36 @@
 <script setup lang="ts">
-import { ref, watchEffect, onMounted } from 'vue';
+import { reactive, ref, watchEffect, onMounted, nextTick } from 'vue';
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bs5';
-import { Tooltip } from "bootstrap";
 import { useHead } from '@unhead/vue';
 import { debounceFn } from '@/utils';
 import { highlight, unhighlight } from '@/assets/js/highlight';
+import { get } from 'http';
 
 DataTable.use(DataTablesCore);
 
+const metaTitle = 'База текстов TES | RuESO';
+const metaDescription = 'Полная база текстов всех игр серии The Elder Scrolls: от Skyrim и ESO до Shadowkey и Castles.';
+const metaLink = `https://rueso.ru/glossary`;
+
 useHead({
-	title: `База текстов TES | RuESO`,
+	title: metaTitle,
 	meta: [
-		{ name: 'description', content: 'SSR библиотека переводов для The Elder Scrolls' }
+		{ name: 'description', content: metaDescription },
+		{ name: 'robots', content: 'index, follow' },
+
+		{ name: 'og:title', content: metaTitle },
+		{ name: 'og:description', content: metaDescription },
+		{ name: 'og:url', content: metaLink },
+		{ name: 'og:locale', content: 'ru_RU' },
+		{ name: 'og:site_name', content: 'RuESO' },
+
+		{ name: 'twitter:title', content: metaTitle },
+		{ name: 'twitter:description', content: metaDescription },
+		{ name: 'twitter:creator', content: '@TERAB1T' },
+	],
+	link: [
+		{ rel: 'canonical', content: metaLink }
 	]
 });
 
@@ -21,7 +39,11 @@ useHead({
 const tableID = '#main-table';
 const dataTable = ref();
 let dt: any;
-let isFirstSearch = true;
+
+const state = reactive({
+	isFirstSearch: true,
+	getIsFirstSearch: (): Boolean => false
+});
 
 const gameCheckboxes = [
 	{ id: 'Morrowind', name: 'TES III: Morrowind (2002)', icon: '/img/icons/morrowind.png' },
@@ -96,17 +118,20 @@ const onPageDraw = () => {
 };
 
 const onCheckboxChanged = () => {
-	if (!isFirstSearch) dt.search(dt.search()).draw();
+	if (!state.isFirstSearch) dt.search(dt.search()).draw();
 }
 
 /* LOCAL STORAGE */
 
 const checkedGames = ref<string[]>([]);
-checkedGames.value = JSON.parse(localStorage.getItem('games') as string) || ['eso'];
 
-watchEffect(() => {
-	localStorage.setItem('games', JSON.stringify(checkedGames.value));
-});
+if (!import.meta.env.SSR) {
+	checkedGames.value = JSON.parse(localStorage.getItem('games') as string) || ['eso'];
+
+	watchEffect(() => {
+		localStorage.setItem('games', JSON.stringify(checkedGames.value));
+	});
+}
 
 /* DATATABLES - OPTIONS */
 
@@ -243,17 +268,18 @@ const highlightDt = (body: HTMLElement, dt: any) => {
 	}
 };
 
-const mainSearch = debounceFn((event: Event) => {
-	if (isFirstSearch) {
-		isFirstSearch = false;
+const mainSearch = debounceFn(async (event: Event) => {
+	const mainInput = event.target as HTMLInputElement;
+
+	if (state.isFirstSearch) {
+		state.isFirstSearch = false;
 		const mainEl = document.getElementById('main') as HTMLDivElement;
 		mainEl.classList.remove('flex-center');
 
-		const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-		const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl))
+		await nextTick();
+		mainInput.focus();
 	}
 
-	const mainInput = event.target as HTMLInputElement;
 	let currentValue = mainInput.value;
 
 	if (currentValue.length < 3) currentValue = '';
@@ -262,18 +288,26 @@ const mainSearch = debounceFn((event: Event) => {
 
 /* ONMOUNTED */
 
-onMounted(() => {
+onMounted(async () => {
 	dt = dataTable.value.dt;
 	dtInitFilters(dt);
 	dtInitHighlight(dt);
+
+	const { Tooltip } = await import("bootstrap");
+	const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+	const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl));
+
+	state.getIsFirstSearch = () => state.isFirstSearch;
 });
 </script>
 
 <template>
 	<div id="main" class="flex-center">
 		<div class="search-wrap">
-			<div class="d-flex justify-content-center">
-				<input type="search" class="form-control form-control-lg" id="main-input" placeholder="Введите искомый текст" autocomplete="off" @input="mainSearch">
+			<div class="d-flex justify-content-center w-100">
+				<Teleport to="#glossary-search-nav" :disabled="state.getIsFirstSearch()">
+					<input type="search" class="form-control form-control-lg" id="main-input" placeholder="Введите текст" autocomplete="off" @input="mainSearch" size="10">
+				</Teleport>
 			</div>
 
 			<div class="game-checks d-flex justify-content-center flex-wrap">

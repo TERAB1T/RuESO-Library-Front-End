@@ -4,6 +4,7 @@ import './assets/main.scss';
 import { createSSRApp } from 'vue';
 import App from './App.vue';
 import router from "./router";
+import { VueQueryPlugin } from '@tanstack/vue-query';
 import { createHead } from '@unhead/vue';
 
 export function createApp() {
@@ -13,6 +14,7 @@ export function createApp() {
 	app.use(head);
 
 	app.use(router);
+	app.use(VueQueryPlugin);
 
 	return { app, router };
 }

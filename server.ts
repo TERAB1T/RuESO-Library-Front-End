@@ -7,7 +7,7 @@ const isTest = process.env.VITEST;
 
 export async function createServer(
 	root = process.cwd(),
-	isProd = process.env.NODE_ENV === "production",
+	isProd = process.env.BUN_ENV === "production",
 	hmrPort
 ) {
 	const __dirname = path.dirname(fileURLToPath(import.meta.url));

@@ -52,6 +52,9 @@ const fetchBooks = async () => {
 	}
 };
 
+if (import.meta.env.SSR)
+	await fetchBooks();
+
 watch(
 	() => [route.params.categoryId, route.query.page],
 	([newCategoryId]) => {
