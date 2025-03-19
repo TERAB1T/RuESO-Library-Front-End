@@ -20,16 +20,32 @@ const router = createRouter({
 			component: LibraryView,
 			children: [
 				{
-					path: 'category/:categoryId',
+					path: 'category/:categoryId(\\d+):slug?',
 					name: 'category',
 					component: LibraryView,
+					beforeEnter: (to, from, next) => {
+						const categoryId = Number(to.params.categoryId);
+						if (isNaN(categoryId)) {
+							next('/404');
+						} else {
+							next();
+						}
+					}
 				}
 			],
 		},
 		{
-			path: '/library/:bookId',
+			path: '/library/:bookId(\\d+):slug?',
 			name: 'book',
 			component: BookView,
+			beforeEnter: (to, from, next) => {
+				const bookId = Number(to.params.bookId);
+				if (isNaN(bookId)) {
+					next('/404');
+				} else {
+					next();
+				}
+			}
 		},
 		{
 			path: '/glossary',
@@ -37,6 +53,6 @@ const router = createRouter({
 			component: GlossaryView,
 		},
 	],
-})
+});
 
 export default router;

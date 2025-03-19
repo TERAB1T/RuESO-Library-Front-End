@@ -5,7 +5,6 @@ import DataTablesCore from 'datatables.net-bs5';
 import { useHead } from '@unhead/vue';
 import { debounceFn } from '@/utils';
 import { highlight, unhighlight } from '@/assets/js/highlight';
-import { get } from 'http';
 
 DataTable.use(DataTablesCore);
 
@@ -30,7 +29,7 @@ useHead({
 		{ name: 'twitter:creator', content: '@TERAB1T' },
 	],
 	link: [
-		{ rel: 'canonical', content: metaLink }
+		{ rel: 'canonical', href: metaLink }
 	]
 });
 
@@ -42,7 +41,7 @@ let dt: any;
 
 const state = reactive({
 	isFirstSearch: true,
-	getIsFirstSearch: (): Boolean => false
+	targetExists: false
 });
 
 const gameCheckboxes = [
@@ -293,11 +292,11 @@ onMounted(async () => {
 	dtInitFilters(dt);
 	dtInitHighlight(dt);
 
+	state.targetExists = !!document.querySelector("#glossary-search-nav");
+
 	const { Tooltip } = await import("bootstrap");
 	const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
 	const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl));
-
-	state.getIsFirstSearch = () => state.isFirstSearch;
 });
 </script>
 
@@ -305,7 +304,7 @@ onMounted(async () => {
 	<div id="main" class="flex-center">
 		<div class="search-wrap">
 			<div class="d-flex justify-content-center w-100">
-				<Teleport to="#glossary-search-nav" :disabled="state.getIsFirstSearch()">
+				<Teleport v-if="state.targetExists" to="#glossary-search-nav" :disabled="state.isFirstSearch">
 					<input type="search" class="form-control form-control-lg" id="main-input" placeholder="Введите текст" autocomplete="off" @input="mainSearch" size="10">
 				</Teleport>
 			</div>

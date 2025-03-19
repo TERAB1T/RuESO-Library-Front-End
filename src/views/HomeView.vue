@@ -8,7 +8,7 @@ useHead({
     	{ name: 'robots', content: 'index, follow' },
 	],
 	link: [
-		{ rel: 'canonical', content: 'https://rueso.ru/' }
+		{ rel: 'canonical', href: 'https://rueso.ru/' }
 	]
 });
 </script>

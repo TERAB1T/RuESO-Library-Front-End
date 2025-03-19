@@ -1,30 +1,19 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
-import { reactive, computed, watchEffect, onServerPrefetch } from 'vue';
-import axios from 'axios';
-import { useQuery } from '@tanstack/vue-query';
-import type { UseQueryReturnType } from '@tanstack/vue-query'
+import { reactive, watchEffect, onServerPrefetch } from 'vue';
 import { useHead } from '@unhead/vue';
-import { prepareURL, prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
-import type { Book, Category } from '@/types';
+import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
+import type { Book } from '@/types';
+import { useFetchBook } from '@/composables/useApi';
 
 const route = useRoute();
-const bookId = route.params.bookId;
+const bookId = Number(route.params.bookId);
 
 const state = reactive({
-	book: {} as Book,
-	category: {} as Category,
-	isLoading: true,
+	book: {} as Book
 });
 
-const { data, suspense } = useQuery({
-	queryKey: ['book', bookId],
-	queryFn: () => axios.get(prepareURL(`/api/library/books/${bookId}`)),
-	select: (response) => response.data,
-	staleTime: 5 * 60 * 1000,
-});
-
-state.book = data;
+const { data: bookData, suspense: bookSuspense, isSuccess: isBookFetched } = useFetchBook(bookId);
 
 const updateHead = () => {
 	if (state.book && state.book.titleRu) {
@@ -32,7 +21,6 @@ const updateHead = () => {
 		const metaDescription = generateMetaDescription(state.book.textRu);
 		const metaLink = `https://rueso.ru/library/${state.book.id}-${state.book.slug}`;
 
-		// Обновляем мета-теги через useHead
 		useHead({
 			title: metaTitle,
 			meta: [
@@ -52,27 +40,32 @@ const updateHead = () => {
 				{ name: 'twitter:creator', content: '@TERAB1T' },
 			],
 			link: [
-				{ rel: 'canonical', content: metaLink }
+				{ rel: 'canonical', href: metaLink },
 			]
 		});
 	}
 }
 
 watchEffect(() => {
-	updateHead();
+	if (bookData.value) {
+		state.book = bookData.value;
+		updateHead();
+	}
 });
 
 onServerPrefetch(async () => {
-	await suspense();
-	state.book = data;
-	updateHead();
+	await bookSuspense();
+	if (bookData.value) {
+		state.book = bookData.value;
+		updateHead();
+	}
 });
 </script>
 
 <template>
 
 	<div class="container-xl">
-		<div v-if="state.book" class="row">
+		<div v-if="isBookFetched" class="row">
 			<div class="col-lg-8 order-2 order-lg-1">
 				<div class="p-3">
 					<h1>{{ state.book.titleRu }}</h1>
@@ -85,7 +78,7 @@ onServerPrefetch(async () => {
 					<div>{{ state.book.titleEn }}</div>
 					<div>Добавлена: {{ state.book.created }}</div>
 					<div>Обновлена: {{ state.book.updated }}</div>
-					<RouterLink :to="`/library/category/${state.book.category.id}`">{{ state.book.category.titleRu }}</RouterLink>
+					<RouterLink :to="`/library/category/${state.book.category?.id}-${state.book.category?.slug}`">{{ state.book.category?.titleRu }}</RouterLink>
 				</div>
 			</div>
 		</div>

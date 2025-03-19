@@ -1,23 +1,16 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
-import { reactive, watch, computed } from 'vue';
+import { reactive, watch, computed, watchEffect, onServerPrefetch } from 'vue';
 import axios from 'axios';
 import { prepareURL } from '@/utils';
-
-interface Category {
-	id: number,
-	titleEn: string,
-	titleRu: string,
-	icon: string,
-	slug: string
-}
+import { useFetchCategories } from '@/composables/useApi';
+import type { Category } from '@/types';
 
 const route = useRoute();
 
 const state = reactive({
 	categories: [] as Category[],
-	currentCategoryId: route.params.categoryId ?? -1,
-	isLoading: true
+	currentCategoryId: Number(route.params.categoryId) ?? -1
 });
 
 const sortedCategories = computed(() => {
@@ -26,7 +19,7 @@ const sortedCategories = computed(() => {
 		if (b.id === 1002 && a.id !== 2000) return -1;
 		if (a.id === 2000) return 1;
 		if (b.id === 2000) return -1;
-		return 0;
+		return a.titleRu.localeCompare(b.titleRu);
 	});
 });
 
@@ -38,20 +31,26 @@ watch(
 	{ immediate: true }
 );
 
-try {
-	const response = await axios.get(prepareURL('/api/library/categories'));
-	state.categories = response.data;
-} catch (error) {
-	console.error('Error fetching categories data:', error);
-} finally {
-	state.isLoading = false;
-}
+const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCategories();
+
+watchEffect(() => {
+	if (categoriesData.value) {
+		state.categories = categoriesData.value;
+	}
+});
+
+onServerPrefetch(async () => {
+	await categoriesSuspense();
+	if (categoriesData.value) {
+		state.categories = categoriesData.value;
+	}
+});
 
 </script>
 
 <template>
 	<div class="list-group list-group-flush">
-		<RouterLink v-for="category in sortedCategories" :key="category.id" class="list-group-item list-group-item-action" :class="{ 'active': state.currentCategoryId === category.id }" :to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}`">
+		<RouterLink v-for="category in sortedCategories" :key="category.id" class="list-group-item list-group-item-action" :class="{ 'active': state.currentCategoryId === category.id }" :to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}-${category.slug}`">
 			{{ category.titleRu }}
 		</RouterLink>
 	</div>

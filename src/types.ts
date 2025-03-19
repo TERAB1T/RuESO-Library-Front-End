@@ -9,13 +9,22 @@ export interface Book {
 	slug: string;
 	created: string;
 	updated: string;
-	category: Category;
+	category?: Category;
 }
 
 export interface Category {
 	id: number;
 	titleEn: string;
 	titleRu: string;
+	descEn: string;
+	descRu: string;
 	icon: string;
 	slug: string;
+	books?: Book[];
+	pagination?: {
+		page: number;
+		pageSize: number;
+		total_books: number;
+		total_pages: number;
+	}
 }

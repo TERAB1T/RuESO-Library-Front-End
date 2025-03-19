@@ -7,7 +7,7 @@ import { renderToString } from 'vue/server-renderer'
 
 import { VueQueryPlugin } from '@tanstack/vue-query';
 
-import { createHead } from 'unhead'
+import { createHead, setHeadInjectionHandler } from '@unhead/vue'
 import { renderSSRHead } from '@unhead/ssr'
 
 // App
@@ -21,7 +21,7 @@ export async function render(url, manifest = null) {
 	app.use(VueQueryPlugin);
 
 	const head = createHead();
-	app.use(head);
+	setHeadInjectionHandler(() => head);
 
 	await router.push(url)
 	await router.isReady()
