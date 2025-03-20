@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch } from 'vue';
-import axios from 'axios';
-import { prepareURL } from '@/utils';
 import { useFetchCategories } from '@/composables/useApi';
 import type { Category } from '@/types';
 

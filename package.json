@@ -24,7 +24,6 @@
 		"@types/express": "^5.0.0",
 		"@unhead/ssr": "^1.11.18",
 		"@unhead/vue": "^1.11.18",
-		"axios": "^1.7.9",
 		"bootstrap": "^5.3.3",
 		"compression": "^1.8.0",
 		"datatables.net-bs5": "^2.2.2",
