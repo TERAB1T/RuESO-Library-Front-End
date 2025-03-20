@@ -1,6 +1,3 @@
-import "bootstrap";
-import './assets/main.scss';
-
 import { createSSRApp } from 'vue';
 import App from './App.vue';
 import router from "./router";
@@ -16,5 +13,5 @@ export function createApp() {
 	app.use(router);
 	app.use(VueQueryPlugin);
 
-	return { app, router };
+	return { app, router, head };
 }
