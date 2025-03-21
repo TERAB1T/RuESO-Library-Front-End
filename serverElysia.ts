@@ -24,14 +24,15 @@ new Elysia()
 			template = templateHtml;
 			render = (await import("./dist/server/entry-server.js")).render;
 
-			const [rendered, payload] = await render(url);
+			const [rendered, payload, vueQueryState] = await render(url);
 
 			Object.entries(payload).forEach(([key, value]) => {
 				template = template.replace(`<!--${key}-->`, String(value));
 			});
 
 			const html = template
-				.replace(`<!--app-html-->`, rendered ?? '');
+				.replace(`<!--app-html-->`, rendered ?? '')
+				.replace(`<!--vue-query-state-->`, `<script>window.__VUE_QUERY_STATE__ = ${JSON.stringify(JSON.stringify(vueQueryState))}</script>`);
 
 			return new Response(html, {
 				headers: {

@@ -47,14 +47,15 @@ export async function createServer(
 			}
 
 			// Render the app and inject into the template
-			const [rendered, payload] = await render(url);
+			const [rendered, payload, vueQueryState] = await render(url);
 
 			Object.entries(payload).forEach(([key, value]) => {
 				template = template.replace(`<!--${key}-->`, String(value));
 			});
 
 			const html = template
-				.replace(`<!--app-html-->`, rendered ?? '');
+				.replace(`<!--app-html-->`, rendered ?? '')
+				.replace(`<!--vue-query-state-->`, `<script>window.__VUE_QUERY_STATE__ = ${JSON.stringify(JSON.stringify(vueQueryState))}</script>`);
 
 			res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
 		} catch (e: any) {
