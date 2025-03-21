@@ -26,32 +26,6 @@ export async function createServer(
 	const app = express();
 
 	let vite: ViteDevServer | undefined;
-	if (!isProd) {
-		// Development mode: Configure Vite server
-		vite = await createViteServer({
-			base,
-			root,
-			logLevel: "info",
-			server: {
-				middlewareMode: true,
-				watch: {
-					usePolling: true,
-					interval: 100,
-				},
-				hmr: {
-					port: hmrPort,
-				},
-			},
-			appType: "custom",
-		});
-		app.use(vite.middlewares);
-	} else {
-		const compression = (await import('compression')).default;
-		const sirv = (await import('sirv')).default;
-
-		app.use(compression());
-		app.use(base, sirv(resolve("dist/client"), { extensions: [] }));
-	}
 
 	// Universal route handler
 	app.use("*all", async (req: Request, res: Response) => {
@@ -59,7 +33,7 @@ export async function createServer(
 			const url = req.originalUrl;
 
 			let template: string;
-			let render: (url: string) => Promise<[string, string, Record<string, string>]>;
+			let render: any;
 
 			if (!isProd) {
 				// Development: Load template and SSR module dynamically
@@ -76,7 +50,7 @@ export async function createServer(
 			const [rendered, payload] = await render(url);
 
 			Object.entries(payload).forEach(([key, value]) => {
-				template = template.replace(`<!--${key}-->`, value);
+				template = template.replace(`<!--${key}-->`, String(value));
 			});
 
 			const html = template
