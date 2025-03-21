@@ -75,9 +75,9 @@ const replaceImage = (src: string, game: string, lang: string): string => {
 	src = src.replace(/\[IMG=&quot;(.*?)&quot;\]/g, (match, p1) => {
 		const [srcUrl, width, height] = p1.split(':');
 		if (game === 'eso') {
-			return `<img src="img/${game}/${srcUrl}" width="${width}" height="${height}" class="book-image-no-bg">`;
+			return `<img src="/public/img/${game}/${srcUrl}" width="${width}" height="${height}" class="book-image-no-bg">`;
 		} else {
-			return `<img src="img/${game}/${lang}/${srcUrl}" class="book-image">`;
+			return `<img src="/public/img/${game}/${lang}/${srcUrl}" class="book-image">`;
 		}
 	});
 	return src;
@@ -85,13 +85,13 @@ const replaceImage = (src: string, game: string, lang: string): string => {
 
 const replaceColor = (src: string): string => src.replace(/\[C=([0-9a-f]{6})\](.*?)\[\/C\]/gis, "<span style=\"color: #$1\">$2</span>");
 
-const prepareText = (data: any, type: string, row: any, meta: object): string => {
+const prepareText = (data: any, type: string, row: any, meta: object, lang: string): string => {
 	if (!data || data === "null") {
 		return '';
 	}
 
 	if (data.includes('[IMG=')) {
-		data = replaceImage(data, row.game, 'ru');
+		data = replaceImage(data, row.game, lang);
 	}
 
 	if (data.includes('[C=')) {
@@ -177,7 +177,7 @@ const options: any = {
 					tag = `<div class="badge-tag">${getTagName(row.tag)}</div>`;
 				}
 
-				return `<div class="game-icon"><img src="img/icons/${data}.png" alt="${data}" width="32px">${tag}</div>`;
+				return `<div class="game-icon"><img src="/public/img/icons/${data}.png" alt="${data}" width="32px">${tag}</div>`;
 			}
 		},
 		{
@@ -194,12 +194,16 @@ const options: any = {
 		{
 			data: 'en',
 			width: '45%',
-			render: prepareText
+			render: function (data: any, type: string, row: any, meta: object) {
+				return prepareText(data, type, row, meta, "en");
+			}
 		},
 		{
 			data: 'ru',
 			width: '45%',
-			render: prepareText
+			render: function (data: any, type: string, row: any, meta: object) {
+				return prepareText(data, type, row, meta, "ru");
+			}
 		}
 	]
 };
@@ -312,7 +316,7 @@ onMounted(async () => {
 			<div class="game-checks d-flex justify-content-center flex-wrap">
 				<template v-for="gameCheckbox in gameCheckboxes" :key="gameCheckbox.id">
 					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()">
-					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="gameCheckbox.icon"> <span>{{ gameCheckbox.id }}</span></label>
+					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
 				</template>
 			</div>
 
