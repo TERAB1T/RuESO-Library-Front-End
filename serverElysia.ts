@@ -17,7 +17,8 @@ new Elysia()
 	}))
 	.all("*", async ({ request, set }) => {
 		try {
-			const url = new URL(request.url).pathname;
+			const urlObj = new URL(request.url);
+			const url = urlObj.pathname + urlObj.search;
 
 			let template: string;
 			let render: any;

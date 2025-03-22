@@ -21,7 +21,7 @@ export const prepareURL = (url: string) => {
  */
 export const prepareIcon = (icon: string) => {
 	if (!icon) return '';
-	return icon.replace(/\/?esoui\/(.*?)\.dds/gi, 'https://elderscrolls.net/esoui/$1.png').toLowerCase();
+	return icon.replace(/\/?esoui\/(.*?)\.dds/gi, '/public/img/eso/esoui/$1.png').toLowerCase();
 }
 
 /**
