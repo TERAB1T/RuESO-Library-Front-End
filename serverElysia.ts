@@ -4,6 +4,9 @@ import { fileURLToPath } from "url";
 import { Elysia } from "elysia";
 import { staticPlugin } from "@elysiajs/static";
 
+const isWindows = process.platform === 'win32';
+const SOCKET_PATH = '/tmp/ssrRueso.sock';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const resolve = (p: string) => path.resolve(__dirname, p);
 const templateHtml = await fs.readFile(resolve("dist/client/index.html"), "utf-8");
@@ -49,6 +52,8 @@ new Elysia()
 			} else console.log(e);
 		}
 	})
-	.listen(port, () => {
-		console.log(`Server running at http://localhost:${port}`);
+	.listen(isWindows ? { port } : { unix: SOCKET_PATH }, () => {
+		console.log(isWindows
+			? `Server running on http://localhost:${port}`
+			: `Server running on Unix socket: ${SOCKET_PATH}`);
 	});

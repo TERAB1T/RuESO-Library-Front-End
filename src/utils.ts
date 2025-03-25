@@ -1,15 +1,23 @@
 /**
- * Prepares a URL for use in a server-side rendered context.
- * @param url The URL to prepare.
- * @returns The prepared URL.
+ * Prepares a URL based on the environment and platform.
  *
- * If the application is running in a server-side rendered context, this
- * function will replace the leading `/api` with `http://localhost:8000/`.
+ * - In a server-side rendering (SSR) environment:
+ *   - If the platform is Windows, it prefixes the URL with `http://localhost:8000`
+ *     and removes the `/api` prefix from the path.
+ *   - Otherwise, it prefixes the URL with `http://localhost` and removes the `/api` prefix.
+ * - In a non-SSR environment, it returns the original URL unchanged.
  *
- * Otherwise, the function will return the original URL unchanged.
+ * @param url The URL to be prepared.
+ * @returns The prepared URL based on the environment and platform.
  */
 export const prepareURL = (url: string) => {
-	if (import.meta.env.SSR) return `http://localhost:8000${url.replace(/^\/api/, '')}`;
+	if (import.meta.env.SSR) {
+		// @ts-ignore
+		const isWindows = process.platform === 'win32';
+
+		if (isWindows) return `http://localhost:8000${url.replace(/^\/api/, '')}`;
+		else return `http://localhost${url.replace(/^\/api/, '')}`;
+	}
 
 	return url;
 }

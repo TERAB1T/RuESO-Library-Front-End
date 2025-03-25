@@ -5,9 +5,20 @@ import type { UseQueryReturnType } from '@tanstack/vue-query'
 import type { ComputedRef } from 'vue';
 
 const fetchApi = async (url: string) => {
+	const fetchParams: Record<string, string> = {};
+
+	if (import.meta.env.SSR) {
+		// @ts-ignore
+		const isWindows = process.platform === 'win32';
+		if (!isWindows) fetchParams['unix'] = '/tmp/apiRueso.sock';
+	}
+
+	console.log(fetchParams);
+
 	console.time(`fetching: ${url}`);
-	const response = await fetch(url);
+	const response = await fetch(url, fetchParams);
 	console.timeEnd(`fetching: ${url}`);
+
 	if (!response.ok) {
 		throw new Error(`Failed to: ${url}`);
 	}
