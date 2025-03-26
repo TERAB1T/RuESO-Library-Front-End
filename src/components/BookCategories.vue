@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch } from 'vue';
-import { useFetchCategories } from '@/composables/useApi';
+import { useFetchCategories, usePrefetchCategory } from '@/composables/useApi';
+import { useQueryClient } from '@tanstack/vue-query';
+import { useDebounceFn } from '@vueuse/core';
+
 import type { Category } from '@/types';
 
 const route = useRoute();
@@ -44,11 +47,22 @@ onServerPrefetch(async () => {
 	}
 });
 
+const queryClient = useQueryClient();
+const preloadCategory = useDebounceFn((categoryId: number) => {
+	usePrefetchCategory(queryClient, categoryId);
+}, 200);
+
 </script>
 
 <template>
 	<div class="list-group list-group-flush">
-		<RouterLink v-for="category in sortedCategories" :key="category.id" class="list-group-item list-group-item-action" :class="{ 'active': state.currentCategoryId === category.id }" :to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}-${category.slug}`">
+		<RouterLink
+			v-for="category in sortedCategories"
+			:key="category.id"
+			class="list-group-item list-group-item-action"
+			:class="{ 'active': state.currentCategoryId === category.id }"
+			:to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}-${category.slug}`"
+			@mouseenter="preloadCategory(category.id)">
 			{{ category.titleRu }}
 		</RouterLink>
 	</div>

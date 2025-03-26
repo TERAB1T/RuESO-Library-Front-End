@@ -13,8 +13,6 @@ const fetchApi = async (url: string) => {
 		if (!isWindows) fetchParams['unix'] = '/tmp/apiRueso.sock';
 	}
 
-	console.log(fetchParams);
-
 	console.time(`fetching: ${url}`);
 	const response = await fetch(url, fetchParams);
 	console.timeEnd(`fetching: ${url}`);
@@ -24,6 +22,8 @@ const fetchApi = async (url: string) => {
 	}
 	return response.json();
 }
+
+// Fetches
 
 export const useFetchBook = (bookId: number): UseQueryReturnType<Book, Error> => {
 	return useQuery({
@@ -50,5 +50,17 @@ export const useFetchCategories = (): UseQueryReturnType<Category[], Error> => {
 		queryKey: ['categories'],
 		queryFn: () => fetchApi(prepareURL('/api/library/categories')),
 		staleTime: Infinity,
+	});
+}
+
+// Prefetches
+
+export const usePrefetchCategory = (queryClient: any, categoryId: number) => {
+	queryClient.prefetchQuery({
+		queryKey: ['books', categoryId, { currentPage: 1, pageSize: 100 }],
+		queryFn: () => {
+			return fetchApi(prepareURL(`/api/library/categories/${categoryId}?page=1&page_size=100`));
+		},
+		staleTime: 5 * 60 * 1000
 	});
 }
