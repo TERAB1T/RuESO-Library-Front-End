@@ -3,7 +3,9 @@ import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch } from 'vue';
 import { prepareIcon } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
-import { useFetchBooks } from '@/composables/useApi';
+import { useFetchBooks, usePrefetchBook } from '@/composables/useApi';
+import { useQueryClient } from '@tanstack/vue-query';
+
 import type { Book } from '@/types';
 
 const route = useRoute();
@@ -64,6 +66,9 @@ const changePage = (newPage: number) => {
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 };
+
+const queryClient = useQueryClient();
+const prefetchBook = (bookId: number) => usePrefetchBook(queryClient, bookId);
 </script>
 
 <template>
@@ -76,7 +81,12 @@ const changePage = (newPage: number) => {
 	</template>
 
 	<TransitionGroup class="list-group list-group-flush" name="list" tag="div">
-		<RouterLink v-for="book in state.books" :key="book.id" class="list-group-item list-group-item-action" :to="`/library/${book.id}-${book.slug}`">
+		<RouterLink
+			v-for="book in state.books"
+			:key="book.id"
+			class="list-group-item list-group-item-action"
+			:to="`/library/${book.id}-${book.slug}`"
+			@mouseenter="prefetchBook(book.id)">
 			<img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu">
 			{{ book.titleRu }}
 		</RouterLink>

@@ -3,7 +3,6 @@ import { RouterLink, useRoute } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch } from 'vue';
 import { useFetchCategories, usePrefetchCategory } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
-import { useDebounceFn } from '@vueuse/core';
 
 import type { Category } from '@/types';
 
@@ -48,10 +47,7 @@ onServerPrefetch(async () => {
 });
 
 const queryClient = useQueryClient();
-const preloadCategory = useDebounceFn((categoryId: number) => {
-	usePrefetchCategory(queryClient, categoryId);
-}, 200);
-
+const prefetchCategory = (categoryId: number) => usePrefetchCategory(queryClient, categoryId);
 </script>
 
 <template>
@@ -62,7 +58,7 @@ const preloadCategory = useDebounceFn((categoryId: number) => {
 			class="list-group-item list-group-item-action"
 			:class="{ 'active': state.currentCategoryId === category.id }"
 			:to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}-${category.slug}`"
-			@mouseenter="preloadCategory(category.id)">
+			@mouseenter="prefetchCategory(category.id)">
 			{{ category.titleRu }}
 		</RouterLink>
 	</div>
