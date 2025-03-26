@@ -14,7 +14,7 @@ html {
 .navbar {
 	position: sticky;
 	top: 0;
-	z-index: 2;
+	z-index: 3;
 	backdrop-filter: blur(5px);
 	background-color: rgba(43, 48, 53, 0.5) !important;
 	border-bottom: 1px #3f3f3f solid;
@@ -124,6 +124,10 @@ table.dataTable tr {
 
 table.dataTable td {
 	padding: 1rem .5rem;
+}
+
+table.dataTable td:nth-child(n+3) {
+	word-break: break-word;
 }
 
 .badge-tag {
