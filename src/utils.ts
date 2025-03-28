@@ -72,10 +72,10 @@ export const parsePseudoCode = (text: string): string => {
 	}
 
 	const replaceAntiquity = (match: string, icon: string, text: string): string =>
-		`<h2><img src="${prepareIcon(icon)}"> ${text}</h2>`;
+		`<h3><img src="${prepareIcon(icon)}" style="margin:10px 0;">  ${text}</h3>`;
 
 	const replaceHireling = (match: string, icon: string, text: string): string =>
-		`<h3><img src="${prepareIcon(icon)}"> ${text}</h3>`;
+		`<h5><img src="${prepareIcon(icon)}" width="40">  ${text}</h5>`;
 
 	const replaceImage = (match: string, image: string, width: string, height: string): string =>
 		`<img src="${prepareIcon(image)}" style="width: ${width}px; height: ${height}px;">`;
@@ -86,7 +86,7 @@ export const parsePseudoCode = (text: string): string => {
 		.replace(/\[P=center\]/gi, '<p style="text-align: center;">')
 		.replace(/\[P=right\]/gi, '<p style="text-align: right;">')
 		.replace(/\[\/P\]/gi, '</p>')
-		.replace(/\[H3\](.*?)\[\/H3\]/gi, '<h3>$1</h3>')
+		.replace(/\[H3\](.*?)\[\/H3\]/gi, '<h5>$1</h5>')
 		.replace(/\[FLAVOR\](.*?)\[\/FLAVOR\]/gi, '<div class="alert alert-dark">$1</div>')
 		.replace(/\[S\](.*?)\[\/S\]/gi, '<s>$1</s>')
 		.replace(/\[C=([0-9a-f]{6})\](.*?)\[\/C\]/gi, replaceColor)

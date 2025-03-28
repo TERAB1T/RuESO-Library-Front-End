@@ -51,15 +51,21 @@ const prefetchCategory = (categoryId: number) => usePrefetchCategory(queryClient
 </script>
 
 <template>
-	<div class="list-group list-group-flush">
-		<RouterLink
-			v-for="category in sortedCategories"
-			:key="category.id"
-			class="list-group-item list-group-item-action"
-			:class="{ 'active': state.currentCategoryId === category.id }"
-			:to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}-${category.slug}`"
-			@mouseenter="prefetchCategory(category.id)">
-			{{ category.titleRu }}
-		</RouterLink>
+	<ul class="nav nav-tabs" id="categoriesTab" role="tablist">
+		<li class="nav-item" role="presentation">
+			<button class="nav-link active" id="book-categories-tab" data-bs-toggle="tab" data-bs-target="#book-categories-pane" type="button" role="tab" aria-controls="book-categories-pane" aria-selected="true">Категории</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" id="book-patches-tab" data-bs-toggle="tab" data-bs-target="#book-patches-pane" type="button" role="tab" aria-controls="book-patches-pane" aria-selected="false">Обновления</button>
+		</li>
+	</ul>
+
+	<div class="tab-content" id="categoriesTabContent">
+		<div class="tab-pane show active list-group list-group-flush" id="book-categories-pane" role="tabpanel" aria-labelledby="book-categories-pane" tabindex="0">
+			<RouterLink v-for="category in sortedCategories" :key="category.id" class="list-group-item list-group-item-action" :class="{ 'active': state.currentCategoryId === category.id }" :to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}-${category.slug}`" @mouseenter="prefetchCategory(category.id)">
+				{{ category.titleRu }}
+			</RouterLink>
+		</div>
+		<div class="tab-pane list-group list-group-flush" id="book-patches-pane" role="tabpanel" aria-labelledby="book-patches-pane" tabindex="0">Скоро здесь можно будет отсортировать книги по патчам, в которых их добавили.</div>
 	</div>
 </template>

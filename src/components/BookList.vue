@@ -94,3 +94,9 @@ const prefetchBook = (bookId: number) => usePrefetchBook(queryClient, bookId);
 
 	<Pagination :currentPage="currentPage" :totalPages="state.totalPages" @changePage="changePage" />
 </template>
+
+<style scoped>
+h2 {
+	margin-bottom: 30px;
+}
+</style>
