@@ -25,7 +25,7 @@ onMounted(async () => {
 	<nav class="navbar navbar-expand-md bg-body-tertiary">
 		<div class="container-xxl bd-gutter flex-wrap flex-lg-nowrap">
 			<RouterLink class="navbar-brand" to="/">
-				<img :src="logo" alt="Bootstrap" height="50">
+				<img :src="logo" alt="RuESO" height="50">
 			</RouterLink>
 
 			<button class="navbar-toggler ms-auto order-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">

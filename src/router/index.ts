@@ -3,6 +3,7 @@ import HomeView from '@/views/HomeView.vue'
 import LibraryView from '@/views/LibraryView.vue'
 import BookView from '@/views/BookView.vue'
 import GlossaryView from '@/views/GlossaryView.vue'
+import NotFoundView from '@/views/NotFoundView.vue'
 
 const router = createRouter({
 	history: import.meta.env.SSR
@@ -52,6 +53,12 @@ const router = createRouter({
 			name: 'glossary',
 			component: GlossaryView,
 		},
+        {
+            path: '/:catchAll(.*)',
+            name: 'not-found',
+            component: NotFoundView,
+			alias: '/404',
+        }
 	],
 	scrollBehavior(to, from, savedPosition) {
 		if (savedPosition) {

@@ -30,6 +30,11 @@ new Elysia()
 
 			const [rendered, payload, vueQueryState] = await render(url);
 
+			const headTags = payload?.headTags ?? '';
+			if (headTags.includes("Страница не найдена")) {
+				set.status = 404;
+			}
+
 			Object.entries(payload).forEach(([key, value]) => {
 				template = template.replace(`<!--${key}-->`, String(value));
 			});
