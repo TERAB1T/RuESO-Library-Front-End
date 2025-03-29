@@ -144,7 +144,7 @@ const options: any = {
 	},
 	order: [],
 	ajax: {
-		url: 'api/glossary/',
+		url: '/api/glossary/',
 		data: (d: any) => {
 			d.games = checkedGames.value.join(',');
 		}
