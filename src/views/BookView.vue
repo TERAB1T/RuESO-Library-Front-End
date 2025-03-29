@@ -44,6 +44,23 @@ const updateHead = () => {
 			],
 			link: [
 				{ rel: 'canonical', href: metaLink },
+			],
+			script: [
+				{
+					type: 'application/ld+json',
+					children: JSON.stringify({
+						"@context": "https://schema.org",
+						"@type": "CreativeWork",
+						"name": state.book.titleRu,
+						"alternateName": state.book.titleEn,
+						"description": metaDescription,
+						"datePublished": state.book.created.date,
+						"dateModified": state.book.updated.date,
+						"image": `https://rueso.ru${prepareIcon(state.book.icon)}`,
+						"inLanguage": "ru",
+						"url": metaLink
+					})
+				}
 			]
 		});
 	}
@@ -134,7 +151,6 @@ onServerPrefetch(async () => {
 </template>
 
 <style scoped>
-
 h1 {
 	margin: 5px 0 20px;
 }
