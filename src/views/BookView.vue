@@ -119,8 +119,9 @@ onServerPrefetch(async () => {
 								Патч <time :datetime="`${state.book.created.date} 00:00`">{{ state.book.created.version }}</time> ({{ state.book.created.nameRu }})
 							</RouterLink>
 						</div>
-						<div class="card-element">
-							<div class="card-subtitle">Обновлена</div>
+						<div v-if="state.book.created.version !== state.book.updated.version" class="card-element">
+							<div v-if="state.book.category?.id === 2000" class="card-subtitle">Удалена</div>
+							<div v-else class="card-subtitle">Обновлена</div>
 							<RouterLink :to="`/library/patch/${state.book.updated.version}-${state.book.updated.slug}`">
 								Патч <time :datetime="`${state.book.updated.date} 00:00`">{{ state.book.updated.version }}</time> ({{ state.book.updated.nameRu }})
 							</RouterLink>

@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch, onMounted } from 'vue';
-import { useFetchCategories, usePrefetchCategory } from '@/composables/useApi';
+import { useFetchCategories, useFetchPatches, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 
-import type { Category } from '@/types';
+import type { Category, Patch } from '@/types';
 
 const route = useRoute();
 
 const state = reactive({
 	categories: [] as Category[],
-	currentCategoryId: Number(route.params.categoryId) ?? -1
+	patches: [] as Patch[],
+	currentCategoryId: Number(route.params.categoryId) ?? -1,
+	currentPatchVersion: route.params.patchVersion ?? '-1'
 });
 
 const sortedCategories = computed(() => {
@@ -31,11 +33,24 @@ watch(
 	{ immediate: true }
 );
 
+watch(
+	() => route.params.patchVersion,
+	(newPatchVersion) => {
+		state.currentPatchVersion = newPatchVersion ?? '-1';
+	},
+	{ immediate: true }
+);
+
 const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCategories();
+const { data: patchesData, suspense: patchesSuspense, isSuccess: isPatchesFetched } = useFetchPatches();
 
 watchEffect(() => {
 	if (categoriesData.value) {
 		state.categories = categoriesData.value;
+	}
+
+	if (patchesData.value) {
+		state.patches = patchesData.value;
 	}
 });
 
@@ -44,10 +59,16 @@ onServerPrefetch(async () => {
 	if (categoriesData.value) {
 		state.categories = categoriesData.value;
 	}
+
+	await patchesSuspense();
+	if (patchesData.value) {
+		state.patches = patchesData.value;
+	}
 });
 
 const queryClient = useQueryClient();
 const prefetchCategory = (categoryId: number) => usePrefetchCategory(queryClient, categoryId);
+const prefetchPatch = (patchVersion: string) => usePrefetchPatch(queryClient, patchVersion);
 
 onMounted(async () => {
     const { Collapse } = await import("bootstrap");
@@ -72,20 +93,24 @@ onMounted(async () => {
 		<div class="p-3">
 			<ul class="nav nav-tabs" id="categoriesTab" role="tablist">
 				<li class="nav-item" role="presentation">
-					<button class="nav-link active" id="book-categories-tab" data-bs-toggle="tab" data-bs-target="#book-categories-pane" type="button" role="tab" aria-controls="book-categories-pane" aria-selected="true">Категории</button>
+					<button class="nav-link" :class="{ 'active': state.currentPatchVersion === '-1' }" id="book-categories-tab" data-bs-toggle="tab" data-bs-target="#book-categories-pane" type="button" role="tab" aria-controls="book-categories-pane" aria-selected="true">Категории</button>
 				</li>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="book-patches-tab" data-bs-toggle="tab" data-bs-target="#book-patches-pane" type="button" role="tab" aria-controls="book-patches-pane" aria-selected="false">Обновления</button>
+					<button class="nav-link" :class="{ 'active': state.currentPatchVersion !== '-1' }" id="book-patches-tab" data-bs-toggle="tab" data-bs-target="#book-patches-pane" type="button" role="tab" aria-controls="book-patches-pane" aria-selected="false">Патчи</button>
 				</li>
 			</ul>
 
 			<div class="tab-content" id="categoriesTabContent">
-				<div class="tab-pane show active list-group list-group-flush" id="book-categories-pane" role="tabpanel" aria-labelledby="book-categories-pane" tabindex="0">
+				<div class="tab-pane list-group list-group-flush" :class="{ 'active': state.currentPatchVersion === '-1' }" id="book-categories-pane" role="tabpanel" aria-labelledby="book-categories-pane" tabindex="0">
 					<RouterLink v-for="category in sortedCategories" :key="category.id" class="list-group-item list-group-item-action" :class="{ 'active': state.currentCategoryId === category.id }" :to="state.currentCategoryId === category.id ? '/library' : `/library/category/${category.id}-${category.slug}`" @mouseenter="prefetchCategory(category.id)">
 						{{ category.titleRu }}
 					</RouterLink>
 				</div>
-				<div class="tab-pane list-group list-group-flush" id="book-patches-pane" role="tabpanel" aria-labelledby="book-patches-pane" tabindex="0">Скоро здесь можно будет отсортировать книги по патчам, в которых их добавили.</div>
+				<div class="tab-pane list-group list-group-flush" :class="{ 'active': state.currentPatchVersion !== '-1' }" id="book-patches-pane" role="tabpanel" aria-labelledby="book-patches-pane" tabindex="0">
+					<RouterLink v-for="patch in state.patches" :key="patch.version" class="list-group-item list-group-item-action" :class="{ 'active': state.currentPatchVersion === patch.version }" :to="state.currentPatchVersion === patch.version ? '/library' : `/library/patch/${patch.version}-${patch.slug}`" @mouseenter="prefetchPatch(patch.version)">
+						{{ patch.version }} ({{ patch.nameRu }})
+					</RouterLink>
+				</div>
 			</div>
 		</div>
 	</div>

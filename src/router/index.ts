@@ -32,6 +32,11 @@ const router = createRouter({
 							next();
 						}
 					}
+				},
+				{
+					path: 'patch/:patchVersion(\\d{1,2}\\.\\d{1,2}):slug?',
+					name: 'patch',
+					component: LibraryView,
 				}
 			],
 		},

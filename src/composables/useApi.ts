@@ -2,7 +2,7 @@ import { useQuery, keepPreviousData } from '@tanstack/vue-query';
 import { prepareURL } from '@/utils';
 import { useDebounceFn } from '@vueuse/core';
 
-import type { Book, Category } from '@/types';
+import type { Book, Category, Patch } from '@/types';
 import type { UseQueryReturnType } from '@tanstack/vue-query'
 import type { ComputedRef } from 'vue';
 
@@ -38,12 +38,13 @@ export const useFetchBook = (bookId: number): UseQueryReturnType<Book, Error> =>
 	});
 }
 
-export const useFetchBooks = (categoryId: ComputedRef<number>, currentPage: ComputedRef<number>, pageSize: number): UseQueryReturnType<Category, Error> => {
+export const useFetchBooks = (categoryId: ComputedRef<number>, patchVersion: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number): UseQueryReturnType<Category, Error> => {
 	return useQuery({
-		queryKey: ['books', categoryId, { currentPage, pageSize }],
+		queryKey: ['books', categoryId, patchVersion, { currentPage, pageSize }],
 		queryFn: () => {
-			if (categoryId.value === -1) return fetchApi(prepareURL(`/api/library/books?page=${currentPage.value}&page_size=${pageSize}`));
-			else return fetchApi(prepareURL(`/api/library/categories/${categoryId.value}?page=${currentPage.value}&page_size=${pageSize}`));
+			if (categoryId.value !== -1) return fetchApi(prepareURL(`/api/library/categories/${categoryId.value}?page=${currentPage.value}&page_size=${pageSize}`));
+			else if (patchVersion.value !== '-1') return fetchApi(prepareURL(`/api/library/patches/${patchVersion.value}?page=${currentPage.value}&page_size=${pageSize}`));
+			else return fetchApi(prepareURL(`/api/library/books?page=${currentPage.value}&page_size=${pageSize}`));
 		},
 		staleTime: DEFAULT_STALE_TIME,
 		placeholderData: keepPreviousData
@@ -54,6 +55,14 @@ export const useFetchCategories = (): UseQueryReturnType<Category[], Error> => {
 	return useQuery({
 		queryKey: ['categories'],
 		queryFn: () => fetchApi(prepareURL('/api/library/categories')),
+		staleTime: Infinity,
+	});
+}
+
+export const useFetchPatches = (): UseQueryReturnType<Patch[], Error> => {
+	return useQuery({
+		queryKey: ['patches'],
+		queryFn: () => fetchApi(prepareURL('/api/library/patches')),
 		staleTime: Infinity,
 	});
 }
@@ -70,8 +79,16 @@ export const usePrefetchBook = useDebounceFn((queryClient: any, bookId: number) 
 
 export const usePrefetchCategory = useDebounceFn((queryClient: any, categoryId: number) => {
 	queryClient.prefetchQuery({
-		queryKey: ['books', categoryId, { currentPage: 1, pageSize: 100 }],
+		queryKey: ['books', categoryId, '-1', { currentPage: 1, pageSize: 100 }],
 		queryFn: () => fetchApi(prepareURL(`/api/library/categories/${categoryId}?page=1&page_size=100`)),
+		staleTime: DEFAULT_STALE_TIME
+	});
+}, DEBOUCE_DELAY);
+
+export const usePrefetchPatch = useDebounceFn((queryClient: any, patchVersion: string) => {
+	queryClient.prefetchQuery({
+		queryKey: ['books', -1, patchVersion, { currentPage: 1, pageSize: 100 }],
+		queryFn: () => fetchApi(prepareURL(`/api/library/patches/${patchVersion}?page=1&page_size=100`)),
 		staleTime: DEFAULT_STALE_TIME
 	});
 }, DEBOUCE_DELAY);
