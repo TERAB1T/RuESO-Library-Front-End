@@ -14,7 +14,6 @@ onMounted(async () => {
 
     document.querySelectorAll('.nav-link').forEach((link) => {
         link.addEventListener('click', () => {
-			console.log("collapsed");
 			if (window.innerWidth <= 768) bsCollapse?.hide();
         });
     });
