@@ -97,19 +97,51 @@ export const parsePseudoCode = (text: string): string => {
 	return text;
 }
 
+/**
+ * Generates a meta description by cleaning and truncating the input text.
+ *
+ * - Strips pseudo-code tags and reduces multiple spaces to a single space.
+ * - If the cleaned text is 160 characters or less, returns it as is.
+ * - If longer than 160 characters, truncates to the last full sentence
+ *   within the first 160 characters if possible, otherwise adds an ellipsis.
+ *
+ * @param text The input text to process.
+ * @returns A string suitable for use as a meta description, with a maximum
+ *          length of 160 characters.
+ */
 export const generateMetaDescription = (text: string): string => {
-    let cleanText = text.replace(/\[.*?\]/g, ' ').replace(/\s+/g, ' ').trim();
+	let cleanText = text.replace(/\[.*?\]/g, ' ').replace(/\s+/g, ' ').trim();
 
-    if (cleanText.length <= 160) return cleanText;
+	if (cleanText.length <= 160) return cleanText;
 
-    let cutText = cleanText.slice(0, 160);
-    let lastDot = cutText.lastIndexOf('.');
+	let cutText = cleanText.slice(0, 160);
+	let lastDot = cutText.lastIndexOf('.');
 
-    if (lastDot > 100) {
-        cleanText = cutText.slice(0, lastDot + 1);
-    } else {
-        cleanText = cutText.trim() + '…';
-    }
+	if (lastDot > 100) {
+		cleanText = cutText.slice(0, lastDot + 1);
+	} else {
+		cleanText = cutText.trim() + '…';
+	}
 
-    return cleanText;
+	return cleanText;
+}
+
+/**
+ * Formats a given date string into a Russian string in the format "выйдет/вышел в <month> <year> года".
+ * @param dateString The date string to format, in the ISO 8601 format.
+ * @returns A string in the format "выйдет/вышел в <month> <year> года", where <month> is the month name in Russian and <year> is the year.
+ */
+export const formatDateToMonthYear = (dateString: string): string => {
+	const months = [
+		"январе", "феврале", "марте", "апреле", "мае", "июне",
+		"июле", "августе", "сентябре", "октябре", "ноябре", "декабре"
+	];
+
+	const date = new Date(dateString);
+	const month = date.getMonth();
+	const year = date.getFullYear();
+
+	const patchStatus = date > new Date() ? "выйдет" : "вышел";
+
+	return `${patchStatus} в ${months[month]} ${year} года`;
 }

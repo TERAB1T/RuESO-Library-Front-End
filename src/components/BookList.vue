@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch } from 'vue';
-import { prepareIcon } from '@/utils';
+import { prepareIcon, formatDateToMonthYear } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchBooks, usePrefetchBook } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -31,8 +31,6 @@ const state = reactive({
 const currentPage = computed(() => Number(route.query.page) || 1);
 const currentCategory = computed(() => Number(route.params.categoryId) || -1);
 const currentPatch = computed(() => route.params.patchVersion || '-1');
-
-const formatDate = (date: string) => new Date(date).toLocaleDateString('ru-RU');
 
 const { data: booksData, suspense: booksSuspense, isSuccess: isBooksFetched } = useFetchBooks(currentCategory, currentPatch, currentPage, state.pageSize);
 
@@ -108,7 +106,7 @@ const prefetchBook = (bookId: number) => usePrefetchBook(queryClient, bookId);
 		<h2 class="mt-3">Патч {{ state.currentPatch.version }} ({{ state.currentPatch.nameRu }})</h2>
 
 		<div class="alert alert-dark" role="alert">
-			Книги, добавленные в игру в обновлении {{ state.currentPatch.version }} ({{ state.currentPatch.nameRu }}), которое вышло {{ formatDate(state.currentPatch.date) }}.
+			Книги, добавленные в игру с патчем {{ state.currentPatch.version }} ({{ state.currentPatch.nameRu }}), который {{ formatDateToMonthYear(state.currentPatch.date) }}.
 		</div>
 	</template>
 
