@@ -7,9 +7,19 @@ export interface Book {
 	icon: string;
 	catId: number;
 	slug: string;
-	created: string;
-	updated: string;
+	created: Patch;
+	updated: Patch;
 	category?: Category;
+}
+
+export interface Patch {
+	id: number;
+	version: string;
+	nameEn: string;
+	nameRu: string;
+	image: string;
+	date: string;
+	slug: string;
 }
 
 export interface Category {

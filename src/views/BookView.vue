@@ -115,13 +115,16 @@ onServerPrefetch(async () => {
 						</div>
 						<div class="card-element">
 							<div class="card-subtitle">Добавлена</div>
-							Патч {{ state.book.created }}
+							<RouterLink :to="`/library/patch/${state.book.created.version}-${state.book.created.slug}`">
+								Патч <time :datetime="`${state.book.created.date} 00:00`">{{ state.book.created.version }}</time> ({{ state.book.created.nameRu }})
+							</RouterLink>
 						</div>
 						<div class="card-element">
 							<div class="card-subtitle">Обновлена</div>
-							Патч {{ state.book.updated }}
+							<RouterLink :to="`/library/patch/${state.book.updated.version}-${state.book.updated.slug}`">
+								Патч <time :datetime="`${state.book.updated.date} 00:00`">{{ state.book.updated.version }}</time> ({{ state.book.updated.nameRu }})
+							</RouterLink>
 						</div>
-
 					</div>
 				</div>
 			</div>
