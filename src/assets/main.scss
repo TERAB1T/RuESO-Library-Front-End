@@ -14,7 +14,7 @@ html {
 .navbar {
 	position: sticky;
 	top: 0;
-	z-index: 3;
+	z-index: 4;
 	backdrop-filter: blur(5px);
 	background-color: rgba(43, 48, 53, 0.5) !important;
 	border-bottom: 1px #3f3f3f solid;
@@ -225,5 +225,24 @@ table.dataTable td:nth-child(n+3) {
 
 	.search-wrap {
 		margin: 0 15px;
+	}
+
+	.navbar-brand img {
+		height:40px;
+	}
+
+	.navbar #glossary-search-nav input {
+		min-height: 20px;
+		height:40px;
+	}
+
+	table.dataTable thead {
+		top: 26px;
+		z-index: 3;
+	}
+
+	.game-icon,
+	.type-tag {
+		top: 125px;
 	}
 }
