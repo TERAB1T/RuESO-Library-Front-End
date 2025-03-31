@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { reactive, watch, computed, watchEffect, onServerPrefetch } from 'vue';
+import { reactive, watch, computed, watchEffect, onServerPrefetch, ref } from 'vue';
 import { prepareIcon, formatDateToMonthYear } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchBooks, usePrefetchBook } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
+import { useDebounceFn } from '@vueuse/core';
 
 import type { Book, Patch } from '@/types';
 
@@ -32,7 +33,9 @@ const currentPage = computed(() => Number(route.query.page) || 1);
 const currentCategory = computed(() => Number(route.params.categoryId) || -1);
 const currentPatch = computed(() => route.params.patchVersion || '-1');
 
-const { data: booksData, suspense: booksSuspense, isSuccess: isBooksFetched } = useFetchBooks(currentCategory, currentPatch, currentPage, state.pageSize);
+const filter = ref('');
+
+const { data: booksData, suspense: booksSuspense, isSuccess: isBooksFetched } = useFetchBooks(currentCategory, currentPatch, currentPage, state.pageSize, filter);
 
 watchEffect(async () => {
 	if (booksData.value) {
@@ -91,6 +94,14 @@ const changePage = (newPage: number) => {
 
 const queryClient = useQueryClient();
 const prefetchBook = (bookId: number) => usePrefetchBook(queryClient, bookId);
+
+const onChangeFilter = useDebounceFn((textFilter: string) => {
+	if (!textFilter || textFilter.length < 3) {
+		filter.value = '';
+	} else {
+		filter.value = encodeURI(textFilter);
+	}
+}, 300);
 </script>
 
 <template>
@@ -110,10 +121,17 @@ const prefetchBook = (bookId: number) => usePrefetchBook(queryClient, bookId);
 		</div>
 	</template>
 
+	<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter($event.target.value)">
+
 	<TransitionGroup class="list-group list-group-flush" name="list" tag="div">
 		<RouterLink v-for="book in state.books" :key="book.id" class="list-group-item list-group-item-action" :to="`/library/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">
-			<img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu">
-			{{ book.titleRu }}
+			<div class="row align-items-center g-3 booklist-row">
+				<div class="col-auto booklist-left"><img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu"></div>
+				<div class="col-auto d-flex flex-column justify-content-center booklist-right">
+					<div class="box">{{ book.titleRu }}</div>
+					<div class="box booklist-desc">{{ book.titleEn }}</div>
+				</div>
+			</div>
 		</RouterLink>
 	</TransitionGroup>
 
@@ -123,5 +141,18 @@ const prefetchBook = (bookId: number) => usePrefetchBook(queryClient, bookId);
 <style scoped>
 h2 {
 	margin-bottom: 30px;
+}
+
+.booklist-right {
+    flex: 1 1 0;
+}
+
+.booklist-left {
+	margin-right: 5px;
+}
+
+.booklist-desc {
+	font-size: 13px;
+    color: #ffffff79;
 }
 </style>

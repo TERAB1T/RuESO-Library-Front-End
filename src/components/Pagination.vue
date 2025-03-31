@@ -30,17 +30,11 @@ watch(() => [props.currentPage, props.totalPages], calculatePages, { immediate: 
 <template>
 	<nav v-if="totalPages > 1" class="mt-3">
 		<ul class="pagination justify-content-center">
-			<li class="page-item" :class="{ disabled: currentPage === 1 }">
-				<button class="page-link" @click="$emit('changePage', currentPage - 1)">«</button>
-			</li>
 			<li v-for="page in pages" :key="page" class="page-item" :class="{ active: currentPage === Number(page) }">
 				<button v-if="page !== '...'" :disabled="currentPage === Number(page)" class="page-link" @click="$emit('changePage', Number(page))">
 					{{ page }}
 				</button>
 				<span v-else class="page-link disabled">{{ page }}</span>
-			</li>
-			<li class="page-item" :class="{ disabled: currentPage === totalPages }">
-				<button class="page-link" @click="$emit('changePage', currentPage + 1)">»</button>
 			</li>
 		</ul>
 	</nav>

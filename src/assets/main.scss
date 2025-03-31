@@ -58,10 +58,18 @@ input[type="search"] {
 
 #main-input {
 	max-width: 584px;
+}
+
+#main-input,
+#library-filter {
 	background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNicgaGVpZ2h0PScxNicgdmlld0JveD0nMCAwIDE2IDE2Jz48cGF0aCBmaWxsPScjOWFhMGE2JyBkPSdNMTEuNzQyIDEwLjM0NGE2LjUgNi41IDAgMSAwLTEuMzk3IDEuMzk4aC0uMDAxYy4wMy4wNC4wNjIuMDc4LjA5OC4xMTVsMy44NSAzLjg1YTEgMSAwIDAgMCAxLjQxNS0xLjQxNGwtMy44NS0zLjg1YTEuMDA3IDEuMDA3IDAgMCAwLS4xMTUtLjF6TTEyIDYuNWE1LjUgNS41IDAgMSAxLTExIDAgNS41IDUuNSAwIDAgMSAxMSAweic+PC9wYXRoPjwvc3ZnPg==");
 	background-position: 12px center;
 	background-repeat: no-repeat;
 	padding-left: 40px;
+}
+
+#library-filter {
+	margin-bottom: 20px;
 }
 
 input[type="search"]:focus {
@@ -244,5 +252,13 @@ table.dataTable td:nth-child(n+3) {
 	.game-icon,
 	.type-tag {
 		top: 125px;
+	}
+
+	.p-3 {
+		padding: 1rem 0 !important;
+	}
+
+	.main-table-wrap {
+		margin: 0 -15px;
 	}
 }
