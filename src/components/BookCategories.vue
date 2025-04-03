@@ -71,16 +71,17 @@ const prefetchCategory = (categoryId: number) => usePrefetchCategory(queryClient
 const prefetchPatch = (patchVersion: string) => usePrefetchPatch(queryClient, patchVersion);
 
 onMounted(async () => {
-    const { Collapse } = await import("bootstrap");
+	const { Collapse } = await import("bootstrap");
 
-    const collapseElement = document.querySelector('#collapse-categories');
-    const bsCollapse = collapseElement ? new Collapse(collapseElement, { toggle: false }) : null;
+	const collapseElement = document.querySelector('#collapse-categories');
+	const bsCollapse = collapseElement ? new Collapse(collapseElement, { toggle: false }) : null;
 
-    document.querySelectorAll('#collapse-categories .list-group-item').forEach((link) => {
-        link.addEventListener('click', () => {
-			if (window.innerWidth <= 768) bsCollapse?.hide();
-        });
-    });
+	document.querySelector('#collapse-categories')?.addEventListener('click', (event) => {
+		const link = (event.target as Element).closest('.list-group-item');
+		if (!link) return;
+
+		if (window.innerWidth <= 768) bsCollapse?.hide();
+	});
 });
 </script>
 
