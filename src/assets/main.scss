@@ -11,6 +11,14 @@ html {
 	--bs-body-bg: #171821;
 }
 
+a {
+    text-decoration: none;
+}
+
+a.col:hover .card {
+	border-color:rgba(var(--bs-link-color-rgb), 0.3);
+}
+
 .navbar {
 	position: sticky;
 	top: 0;
@@ -219,6 +227,18 @@ table.dataTable td:nth-child(n+3) {
 
 .row {
 	--bs-gutter-x: 0;
+}
+
+.g-2 {
+	--bs-gutter-x: 0.5rem;
+}
+
+.g-3 {
+	--bs-gutter-x: 1.0rem;
+}
+
+.g-4 {
+	--bs-gutter-x: 1.5rem;
 }
 
 #glossary-search-nav input {
