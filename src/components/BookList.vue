@@ -7,13 +7,14 @@ import { useFetchBooks, usePrefetchBook } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useDebounceFn } from '@vueuse/core';
 
-import type { Book, Patch } from '@/types';
+import type { Book, Category } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
 
 const state = reactive({
 	books: [] as Book[],
+	categories: [] as Category[],
 	currentCategory: {
 		id: Number(route.params.categoryId) ?? -1,
 		titleRu: '',
@@ -25,7 +26,7 @@ const state = reactive({
 		date: ''
 	},
 	isLoading: true,
-	pageSize: 100,
+	pageSize: 50,
 	totalPages: 1
 });
 
@@ -40,6 +41,7 @@ const { data: booksData, suspense: booksSuspense, isSuccess: isBooksFetched } = 
 watchEffect(async () => {
 	if (booksData.value) {
 		state.books = booksData.value.books ?? [];
+		state.categories = booksData.value.categories ?? [];
 		state.totalPages = booksData.value.pagination?.total_pages ?? 1;
 
 		state.currentCategory.titleRu = booksData.value.titleRu ?? '';
@@ -54,6 +56,7 @@ onServerPrefetch(async () => {
 	await booksSuspense();
 	if (booksData.value) {
 		state.books = booksData.value.books ?? [];
+		state.categories = booksData.value.categories ?? [];
 		state.totalPages = booksData.value.pagination?.total_pages ?? 1;
 
 		state.currentCategory.titleRu = booksData.value.titleRu ?? '';
@@ -123,7 +126,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 
 	<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter($event.target.value)">
 
-	<TransitionGroup class="list-group list-group-flush" name="list" tag="div">
+	<TransitionGroup v-if="!state.categories.length" class="list-group list-group-flush" name="list" tag="div">
 		<RouterLink v-for="book in state.books" :key="book.id" class="list-group-item list-group-item-action" :to="`/library/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">
 			<div class="row align-items-center g-3 booklist-row">
 				<div class="col-auto booklist-left"><img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu"></div>
@@ -135,6 +138,25 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 		</RouterLink>
 	</TransitionGroup>
 
+	<template v-else>
+		<template v-for="category in state.categories" :key="category.id">
+			<h4>{{ category.titleRu }}</h4>
+			<TransitionGroup class="list-group list-group-flush" name="list" tag="div">
+				<template v-for="book in state.books" :key="book.id">
+					<RouterLink v-if="book.catId === category.id" class="list-group-item list-group-item-action" :to="`/library/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">
+						<div class="row align-items-center g-3 booklist-row">
+							<div class="col-auto booklist-left"><img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu"></div>
+							<div class="col-auto d-flex flex-column justify-content-center booklist-right">
+								<div class="box">{{ book.titleRu }}</div>
+								<div class="box booklist-desc">{{ book.titleEn }}</div>
+							</div>
+						</div>
+					</RouterLink>
+				</template>
+			</TransitionGroup>
+		</template>
+	</template>
+
 	<Pagination :currentPage="currentPage" :totalPages="state.totalPages" @changePage="changePage" />
 </template>
 
@@ -143,8 +165,14 @@ h2 {
 	margin-bottom: 30px;
 }
 
+h4 {
+	margin-top: 20px;
+	border-bottom: #ffffff79 1px solid;
+	padding-bottom:10px;
+}
+
 .booklist-right {
-    flex: 1 1 0;
+	flex: 1 1 0;
 }
 
 .booklist-left {
@@ -153,6 +181,6 @@ h2 {
 
 .booklist-desc {
 	font-size: 13px;
-    color: #ffffff79;
+	color: #ffffff79;
 }
 </style>
