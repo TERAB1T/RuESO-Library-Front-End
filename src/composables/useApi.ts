@@ -30,10 +30,10 @@ const fetchApi = async (url: string) => {
 
 // Fetches
 
-export const useFetchBook = (bookId: number): UseQueryReturnType<Book, Error> => {
+export const useFetchBook = (bookId: ComputedRef<number>): UseQueryReturnType<Book, Error> => {
 	return useQuery({
 		queryKey: ['book', bookId],
-		queryFn: () => fetchApi(prepareURL(`/api/library/books/${bookId}`)),
+		queryFn: () => fetchApi(prepareURL(`/api/library/books/${bookId.value}`)),
 		staleTime: DEFAULT_STALE_TIME,
 	});
 }

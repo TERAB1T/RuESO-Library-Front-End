@@ -9,6 +9,7 @@ export interface Book {
 	slug: string;
 	created: Patch;
 	updated: Patch;
+	group?: Book[];
 	category?: Category;
 }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { reactive, watchEffect, onServerPrefetch, ref } from 'vue';
+import { reactive, watchEffect, computed, onServerPrefetch, ref } from 'vue';
 import { useHead } from '@unhead/vue';
 import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
 import type { Book } from '@/types';
@@ -9,14 +9,16 @@ import NotFoundView from '@/views/NotFoundView.vue';
 
 const route = useRoute();
 const router = useRouter();
-const bookId = Number(route.params.bookId);
+const currentBookId = computed(() => Number(route.params.bookId) || 1);
 const isNotFound = ref(false);
 
 const state = reactive({
-	book: {} as Book
+	book: {} as Book,
+	prevBook: {} as Book,
+	nextBook: {} as Book,
 });
 
-const { data: bookData, suspense: bookSuspense, isSuccess: isBookFetched } = useFetchBook(bookId);
+const { data: bookData, suspense: bookSuspense, isSuccess: isBookFetched } = useFetchBook(currentBookId);
 
 const updateHead = () => {
 	if (state.book && state.book.titleRu) {
@@ -66,9 +68,23 @@ const updateHead = () => {
 	}
 }
 
+const prevNextBook = computed(() => {
+	const group = state.book.group ?? [];
+	const currentId = currentBookId.value;
+
+	const index = group.findIndex(book => book.id === currentId);
+
+	return {
+		prev: index > 0 ? group[index - 1] : {},
+		next: index !== -1 && index < group.length - 1 ? group[index + 1] : {}
+	};
+});
+
 watchEffect(() => {
 	if (bookData.value) {
 		state.book = bookData.value;
+		state.prevBook = prevNextBook.value.prev;
+		state.nextBook = prevNextBook.value.next;
 
 		if (!state.book.titleRu) isNotFound.value = true;
 
@@ -80,6 +96,8 @@ onServerPrefetch(async () => {
 	await bookSuspense();
 	if (bookData.value) {
 		state.book = bookData.value;
+		state.prevBook = prevNextBook.value.prev;
+		state.nextBook = prevNextBook.value.next;
 
 		if (!state.book.titleRu || state.book.titleRu === undefined) isNotFound.value = true;
 
@@ -92,7 +110,7 @@ onServerPrefetch(async () => {
 	<div class="container-xl">
 		<NotFoundView v-if="isNotFound" />
 
-		<div v-else-if="isBookFetched" class="row">
+		<div v-else-if="Object.keys(state.book).length > 0" class="row">
 			<div class="col-lg-8 order-2 order-lg-1">
 
 				<ul class="nav nav-tabs" id="bookTab" role="tablist" style="margin-top: 30px;">
@@ -115,9 +133,18 @@ onServerPrefetch(async () => {
 						<div class="book-main" v-html="parsePseudoCode((state.book.textEn ?? '').replace(/\n/g, '<br>'))"></div>
 					</div>
 				</div>
+
+				<div class="d-flex flex-column flex-md-row px-md-3 mb-4 prev-next-container">
+					<RouterLink v-if="Object.keys(state.prevBook).length > 0" :to="`/library/${state.prevBook.id}-${state.prevBook.slug}`" type="button" class="btn btn-outline-light mb-2 mb-md-0 me-md-auto prev-button">
+						{{ '← ' + state.prevBook.titleRu }}
+					</RouterLink>
+					<RouterLink v-if="Object.keys(state.nextBook).length > 0" :to="`/library/${state.nextBook.id}-${state.nextBook.slug}`" type="button" class="btn btn-outline-light ms-auto next-button">
+						{{ state.nextBook.titleRu + ' →' }}
+					</RouterLink>
+				</div>
 			</div>
-			<div class="col-lg-4 order-1 order-lg-2">
-				<div class="p-3" style="margin-top: 20px;">
+			<div class="col-lg-4 order-2 order-lg-2">
+				<div class="p-3 card-wrapper">
 					<div class="card">
 						<div class="card-element">
 							<img :src="prepareIcon(state.book.icon)" :alt="state.book.titleRu">
@@ -145,6 +172,17 @@ onServerPrefetch(async () => {
 						</div>
 					</div>
 				</div>
+
+				<div v-if="state.book.group && state.book.group.length" class="p-3">
+					<div class="card card-book-group">
+						<div class="list-group list-group-flush">
+							<h5 class="list-group-item h5-list-group-item">Связанные книги</h5>
+							<RouterLink v-for="book in state.book.group" :key="book.id" :to="`/library/${book.id}-${book.slug}`" class="list-group-item list-group-item-action" :class="{ 'active': currentBookId === book.id }">
+								{{ book.titleRu }}
+							</RouterLink>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -155,10 +193,19 @@ h1 {
 	margin: 5px 0 20px;
 }
 
+.card-wrapper {
+	margin-top: 20px;
+}
+
 .card {
 	padding: 5px 0 0;
 	text-align: center;
 	margin: 0 30px;
+}
+
+.card-book-group {
+	padding: 5px 0 5px;
+	text-align: left;
 }
 
 .card-element {
@@ -179,5 +226,26 @@ h1 {
 	font-size: 14px;
 	line-height: 1.5;
 	color: #ffffff;
+}
+
+.h5-list-group-item {
+	margin-bottom: 0;
+	text-align: center;
+}
+
+@media (max-width: 991.98px) {
+	.card-wrapper {
+		margin-top: 0;
+	}
+
+	.card {
+		margin: 0;
+	}
+}
+
+@media (max-width: 767.98px) {
+	.next-button {
+		width: 100%;
+	}
 }
 </style>
