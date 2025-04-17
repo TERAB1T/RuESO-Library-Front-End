@@ -188,7 +188,7 @@ const options: any = {
 					data = "Н/Д";
 				}
 
-				return `<div class="type-tag">${data}</div>`;
+				return `<div class="type-tag"><span>${data}</span></div>`;
 			}
 		},
 		{
