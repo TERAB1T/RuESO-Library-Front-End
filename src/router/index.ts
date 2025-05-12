@@ -16,7 +16,7 @@ const router = createRouter({
 			component: HomeView,
 		},
 		{
-			path: '/library',
+			path: '/library/eso',
 			name: 'library',
 			component: LibraryView,
 			children: [
@@ -41,7 +41,7 @@ const router = createRouter({
 			],
 		},
 		{
-			path: '/library/:bookId(\\d+):slug?',
+			path: '/library/eso/:bookId(\\d+):slug?',
 			name: 'book',
 			component: BookView,
 			beforeEnter: (to, from, next) => {

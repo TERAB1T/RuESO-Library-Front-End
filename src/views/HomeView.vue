@@ -26,7 +26,7 @@ useHead({
 					</div>
 				</div>
 			</a>
-			<RouterLink to="/library" class="col">
+			<RouterLink to="/library/eso" class="col">
 				<div class="card h-100">
 					<img src="/public/img/main-card-library.jpg" class="card-img-top" alt="Библиотека ESO">
 					<div class="card-body">

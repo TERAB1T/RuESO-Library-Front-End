@@ -127,7 +127,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 	<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter($event.target.value)">
 
 	<TransitionGroup v-if="!state.categories.length" class="list-group list-group-flush" name="list" tag="div">
-		<RouterLink v-for="book in state.books" :key="book.id" class="list-group-item list-group-item-action" :to="`/library/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">
+		<RouterLink v-for="book in state.books" :key="book.id" class="list-group-item list-group-item-action" :to="`/library/eso/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">
 			<div class="row align-items-center g-3 booklist-row">
 				<div class="col-auto booklist-left"><img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu"></div>
 				<div class="col-auto d-flex flex-column justify-content-center booklist-right">
@@ -143,7 +143,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 			<h4>{{ category.titleRu }}</h4>
 			<TransitionGroup class="list-group list-group-flush" name="list" tag="div">
 				<template v-for="book in state.books" :key="book.id">
-					<RouterLink v-if="book.catId === category.id" class="list-group-item list-group-item-action" :to="`/library/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">
+					<RouterLink v-if="book.catId === category.id" class="list-group-item list-group-item-action" :to="`/library/eso/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">
 						<div class="row align-items-center g-3 booklist-row">
 							<div class="col-auto booklist-left"><img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu"></div>
 							<div class="col-auto d-flex flex-column justify-content-center booklist-right">

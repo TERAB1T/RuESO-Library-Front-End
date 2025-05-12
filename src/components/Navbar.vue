@@ -37,7 +37,7 @@ onMounted(async () => {
 						<RouterLink activeClass="active" class="nav-link py-2 px-2" to="/" exact>Главная</RouterLink>
 					</li>
 					<li class="nav-item mx-2">
-						<RouterLink :class="`${isPathStartWith('/library') ? 'active' : ''} nav-link py-2 px-2`" to="/library">Библиотека ESO</RouterLink>
+						<RouterLink :class="`${isPathStartWith('/library') ? 'active' : ''} nav-link py-2 px-2`" to="/library/eso">Библиотека ESO</RouterLink>
 					</li>
 					<li class="nav-item mx-2">
 						<RouterLink :class="`${isPathStartWith('/glossary') ? 'active' : ''} nav-link py-2 px-2`" to="/glossary">База текстов TES</RouterLink>

@@ -24,7 +24,7 @@ const updateHead = () => {
 	if (state.book && state.book.titleRu) {
 		const metaTitle = `${state.book.titleRu} — ESO | RuESO`;
 		const metaDescription = generateMetaDescription(state.book.textRu);
-		const metaLink = `https://rueso.ru/library/${state.book.id}-${state.book.slug}`;
+		const metaLink = `https://rueso.ru/library/eso/${state.book.id}-${state.book.slug}`;
 
 		useHead({
 			title: metaTitle,
@@ -135,10 +135,10 @@ onServerPrefetch(async () => {
 				</div>
 
 				<div class="d-flex flex-column flex-md-row px-md-3 mb-4 prev-next-container">
-					<RouterLink v-if="Object.keys(state.prevBook).length > 0" :to="`/library/${state.prevBook.id}-${state.prevBook.slug}`" type="button" class="btn btn-outline-light mb-2 mb-md-0 me-md-auto prev-button">
+					<RouterLink v-if="Object.keys(state.prevBook).length > 0" :to="`/library/eso/${state.prevBook.id}-${state.prevBook.slug}`" type="button" class="btn btn-outline-light mb-2 mb-md-0 me-md-auto prev-button">
 						{{ '← ' + state.prevBook.titleRu }}
 					</RouterLink>
-					<RouterLink v-if="Object.keys(state.nextBook).length > 0" :to="`/library/${state.nextBook.id}-${state.nextBook.slug}`" type="button" class="btn btn-outline-light ms-auto next-button">
+					<RouterLink v-if="Object.keys(state.nextBook).length > 0" :to="`/library/eso/${state.nextBook.id}-${state.nextBook.slug}`" type="button" class="btn btn-outline-light ms-auto next-button">
 						{{ state.nextBook.titleRu + ' →' }}
 					</RouterLink>
 				</div>
@@ -151,7 +151,7 @@ onServerPrefetch(async () => {
 						</div>
 						<div class="card-element">
 							<div class="card-subtitle">Категория</div>
-							<RouterLink :to="`/library/category/${state.book.category?.id}-${state.book.category?.slug}`">{{ state.book.category?.titleRu }}</RouterLink>
+							<RouterLink :to="`/library/eso/category/${state.book.category?.id}-${state.book.category?.slug}`">{{ state.book.category?.titleRu }}</RouterLink>
 						</div>
 						<div class="card-element">
 							<div class="card-subtitle">Оригинальное название</div>
@@ -159,14 +159,14 @@ onServerPrefetch(async () => {
 						</div>
 						<div class="card-element">
 							<div class="card-subtitle">Добавлена</div>
-							<RouterLink :to="`/library/patch/${state.book.created.version}-${state.book.created.slug}`">
+							<RouterLink :to="`/library/eso/patch/${state.book.created.version}-${state.book.created.slug}`">
 								Патч <time :datetime="`${state.book.created.date} 00:00`">{{ state.book.created.version }}</time> ({{ state.book.created.nameRu }})
 							</RouterLink>
 						</div>
 						<div v-if="state.book.created.version !== state.book.updated.version" class="card-element">
 							<div v-if="state.book.category?.id === 2000" class="card-subtitle">Удалена</div>
 							<div v-else class="card-subtitle">Обновлена</div>
-							<RouterLink :to="`/library/patch/${state.book.updated.version}-${state.book.updated.slug}`">
+							<RouterLink :to="`/library/eso/patch/${state.book.updated.version}-${state.book.updated.slug}`">
 								Патч <time :datetime="`${state.book.updated.date} 00:00`">{{ state.book.updated.version }}</time> ({{ state.book.updated.nameRu }})
 							</RouterLink>
 						</div>
@@ -177,7 +177,7 @@ onServerPrefetch(async () => {
 					<div class="card card-book-group">
 						<div class="list-group list-group-flush">
 							<h5 class="list-group-item h5-list-group-item">Связанные книги</h5>
-							<RouterLink v-for="book in state.book.group" :key="book.id" :to="`/library/${book.id}-${book.slug}`" class="list-group-item list-group-item-action" :class="{ 'active': currentBookId === book.id }">
+							<RouterLink v-for="book in state.book.group" :key="book.id" :to="`/library/eso/${book.id}-${book.slug}`" class="list-group-item list-group-item-action" :class="{ 'active': currentBookId === book.id }">
 								{{ book.titleRu }}
 							</RouterLink>
 						</div>
