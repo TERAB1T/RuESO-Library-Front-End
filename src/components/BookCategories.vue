@@ -3,6 +3,8 @@ import { RouterLink, useRoute } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch, onMounted } from 'vue';
 import { useFetchCategories, useFetchPatches, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faDownload } from '@fortawesome/free-solid-svg-icons';
 
 import type { Category, Patch } from '@/types';
 
@@ -92,6 +94,10 @@ onMounted(async () => {
 
 	<div id="collapse-categories" class="collapse d-lg-block">
 		<div class="p-3">
+			<a href="/files/eso-library.fb2" role="button" class="btn btn-primary d-flex align-items-center justify-content-center download-button">
+				<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" /> Скачать все книги (.fb2)
+			</a>
+
 			<ul class="nav nav-tabs" id="categoriesTab" role="tablist">
 				<li class="nav-item" role="presentation">
 					<button class="nav-link" :class="{ 'active': state.currentPatchVersion === '-1' }" id="book-categories-tab" data-bs-toggle="tab" data-bs-target="#book-categories-pane" type="button" role="tab" aria-controls="book-categories-pane" aria-selected="true">Категории</button>
@@ -116,3 +122,14 @@ onMounted(async () => {
 		</div>
 	</div>
 </template>
+
+<style scoped>
+.download-button {
+	width: 100%;
+	height: 48px;
+	margin-bottom: 20px;
+}
+.fa-dwnld-icon {
+	margin-right: 10px;
+}
+</style>

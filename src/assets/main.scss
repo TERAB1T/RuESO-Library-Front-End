@@ -246,6 +246,10 @@ table.dataTable td:nth-child(n+3) {
 	border-radius: var(--bs-border-radius-lg);
 }
 
+.list-group-item {
+	color: var(--bs-list-group-color);
+}
+
 @media (max-width: 767.98px) {
 	#glossary-search-nav input {
 		margin-right: 17px;
