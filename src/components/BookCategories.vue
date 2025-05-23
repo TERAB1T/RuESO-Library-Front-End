@@ -130,6 +130,7 @@ onMounted(async () => {
 	margin-bottom: 20px;
 }
 .fa-dwnld-icon {
+	height: 1em;
 	margin-right: 10px;
 }
 </style>
