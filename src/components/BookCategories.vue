@@ -94,9 +94,17 @@ onMounted(async () => {
 
 	<div id="collapse-categories" class="collapse d-lg-block">
 		<div class="p-3">
-			<a href="/files/eso-library.fb2" role="button" class="btn btn-primary d-flex align-items-center justify-content-center download-button">
-				<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" /> Скачать все книги (.fb2)
-			</a>
+			<div class="d-flex justify-content-between gap-3 flex-nowrap">
+				<a href="/files/eso-library.fb2" role="button" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center download-button">
+					<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" />
+					.FB2
+				</a>
+
+				<a href="/files/eso-library.epub" role="button" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center download-button">
+					<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" />
+					.EPUB
+				</a>
+			</div>
 
 			<ul class="nav nav-tabs" id="categoriesTab" role="tablist">
 				<li class="nav-item" role="presentation">
@@ -125,10 +133,10 @@ onMounted(async () => {
 
 <style scoped>
 .download-button {
-	width: 100%;
 	height: 48px;
 	margin-bottom: 20px;
 }
+
 .fa-dwnld-icon {
 	height: 1em;
 	margin-right: 10px;
