@@ -3,6 +3,7 @@ import HomeView from '@/views/HomeView.vue'
 import LibraryView from '@/views/LibraryView.vue'
 import BookView from '@/views/BookView.vue'
 import GlossaryView from '@/views/GlossaryView.vue'
+import BooksExportView from '@/views/BooksExportView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 
 const router = createRouter({
@@ -57,6 +58,11 @@ const router = createRouter({
 			path: '/glossary',
 			name: 'glossary',
 			component: GlossaryView,
+		},
+		{
+			path: '/books-export',
+			name: 'books-export',
+			component: BooksExportView,
 		},
         {
             path: '/:catchAll(.*)',
