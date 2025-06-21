@@ -50,9 +50,9 @@ table.dataTable span.column_highlight {
 
 .game-checks {
 	margin-top: 20px;
-	column-gap: 7px;
-	row-gap: 7px;
-	max-width: 600px;
+	column-gap: 8px;
+	row-gap: 4px;
+	max-width: 700px;
 	margin-left: auto;
 	margin-right: auto;
 }
@@ -206,6 +206,10 @@ table.dataTable td:nth-child(n+3) {
 	display: none;
 }
 
+#main:not(.flex-center) .game-checks-divider {
+	width: 0 !important;
+}
+
 .list-move,
 /* apply transition to moving elements */
 .list-enter-active,
@@ -290,5 +294,9 @@ table.dataTable td:nth-child(n+3) {
 @media (max-width: 575.98px) {
 	table.dataTable td:nth-child(n+3) {
 		word-break: normal;
+	}
+
+	#main:not(.flex-center) .game-checks-divider {
+		width: 100% !important;
 	}
 }
