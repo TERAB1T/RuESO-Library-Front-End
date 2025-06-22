@@ -210,6 +210,10 @@ table.dataTable td:nth-child(n+3) {
 	width: 0 !important;
 }
 
+#main:not(.flex-center) .game-checks label.disabled {
+	display: none;
+}
+
 .list-move,
 /* apply transition to moving elements */
 .list-enter-active,
@@ -303,5 +307,9 @@ table.dataTable td:nth-child(n+3) {
 
 	#main:not(.flex-center) .game-checks-divider {
 		width: 100% !important;
+	}
+
+	.game-checks {
+		column-gap: 6px;
 	}
 }
