@@ -309,7 +309,12 @@ table.dataTable td:nth-child(n+3) {
 		width: 100% !important;
 	}
 
-	.game-checks {
+	#main:not(.flex-center) .game-checks label.btn {
+		padding-left: 7px;
+		padding-right: 6px;
+	}
+
+	#main:not(.flex-center) .game-checks {
 		column-gap: 6px;
 	}
 }
