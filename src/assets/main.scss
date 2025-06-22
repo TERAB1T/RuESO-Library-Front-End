@@ -52,7 +52,7 @@ table.dataTable span.column_highlight {
 	margin-top: 20px;
 	column-gap: 8px;
 	row-gap: 4px;
-	max-width: 700px;
+	max-width: 800px;
 	margin-left: auto;
 	margin-right: auto;
 }
@@ -65,7 +65,7 @@ input[type="search"] {
 }
 
 #main-input {
-	max-width: 584px;
+	max-width: 760px;
 }
 
 #main-input,
@@ -252,6 +252,11 @@ table.dataTable td:nth-child(n+3) {
 
 .list-group-item {
 	color: var(--bs-list-group-color);
+}
+
+.game-checks label.disabled {
+	opacity: 0.5;
+	filter: grayscale(1);
 }
 
 @media (max-width: 767.98px) {

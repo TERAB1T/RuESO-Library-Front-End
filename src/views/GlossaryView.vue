@@ -45,12 +45,15 @@ const state = reactive({
 });
 
 const gameCheckboxes = [
+	{ id: 'Arena', name: 'TES: Arena (1994)', icon: '/img/icons/arena.png' },
+	{ id: 'Daggerfall', name: 'TES II: Daggerfall (1996)', icon: '/img/icons/daggerfall.png' },
 	{ id: 'Morrowind', name: 'TES III: Morrowind (2002)', icon: '/img/icons/morrowind.png' },
 	{ id: 'Oblivion', name: 'TES IV: Oblivion (2006)', icon: '/img/icons/oblivion.png' },
 	{ id: 'Skyrim', name: 'TES V: Skyrim (2011)', icon: '/img/icons/skyrim.png' },
 	{ id: 'ESO', name: 'TES Online (2014)', icon: '/img/icons/eso.png' },
 	{ id: 'Battlespire', name: 'AESL: Battlespire (1997)', icon: '/img/icons/battlespire.png' },
 	{ id: 'Redguard', name: 'TESA: Redguard (1998)', icon: '/img/icons/redguard.png' },
+	{ id: 'Travels', name: 'TES Travels: Stormhold (2003), Dawnstar (2003), Shadowkey (2004), Oblivion (2006)', icon: '/img/icons/travels.png' },
 	{ id: 'Legends', name: 'TES: Legends (2017)', icon: '/img/icons/legends.png' },
 	{ id: 'Blades', name: 'TES: Blades (2019)', icon: '/img/icons/blades.png' },
 	{ id: 'Castles', name: 'TES: Castles (2023)', icon: '/img/icons/castles.png' },
@@ -315,14 +318,14 @@ onMounted(async () => {
 			</div>
 
 			<div class="game-checks d-flex justify-content-center flex-wrap">
-				<template v-for="gameCheckbox in gameCheckboxes.slice(0, 4)" :key="gameCheckbox.id">
+				<template v-for="gameCheckbox in gameCheckboxes.slice(0, 6)" :key="gameCheckbox.id">
 					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()">
-					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
+					<label class="btn btn-outline-secondary" :class="{'disabled': ['Arena', 'Daggerfall'].includes(gameCheckbox.id)}" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
 				</template>
 				<div class="w-100 game-checks-divider"></div>
-				<template v-for="gameCheckbox in gameCheckboxes.slice(4)" :key="gameCheckbox.id">
+				<template v-for="gameCheckbox in gameCheckboxes.slice(6)" :key="gameCheckbox.id">
 					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()">
-					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
+					<label class="btn btn-outline-secondary" :class="{'disabled': gameCheckbox.id === 'Travels'}" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
 				</template>
 			</div>
 
