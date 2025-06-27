@@ -324,7 +324,7 @@ onMounted(async () => {
 			<div class="game-checks d-flex justify-content-center flex-wrap">
 				<template v-for="gameCheckbox in gameCheckboxes.slice(0, 6)" :key="gameCheckbox.id">
 					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()">
-					<label class="btn btn-outline-secondary" :class="{'disabled': ['Daggerfall'].includes(gameCheckbox.id)}" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
+					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
 				</template>
 				<div class="w-100 game-checks-divider"></div>
 				<template v-for="gameCheckbox in gameCheckboxes.slice(6)" :key="gameCheckbox.id">
