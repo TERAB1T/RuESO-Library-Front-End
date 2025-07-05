@@ -6,6 +6,8 @@ import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
 import type { Book } from '@/types';
 import { useFetchBook } from '@/composables/useApi';
 import NotFoundView from '@/views/NotFoundView.vue';
+import { usePrefetchBook, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
+import { useQueryClient } from '@tanstack/vue-query';
 
 const route = useRoute();
 const router = useRouter();
@@ -104,6 +106,11 @@ onServerPrefetch(async () => {
 		updateHead();
 	}
 });
+
+const queryClient = useQueryClient();
+const prefetchBook = (bookId: number) => usePrefetchBook(queryClient, bookId);
+const prefetchCategory = (categoryId: number | undefined) => usePrefetchCategory(queryClient, categoryId);
+const prefetchPatch = (patchVersion: string | undefined) => usePrefetchPatch(queryClient, patchVersion);
 </script>
 
 <template>
@@ -135,10 +142,10 @@ onServerPrefetch(async () => {
 				</div>
 
 				<div class="d-flex flex-column flex-md-row px-md-3 mb-4 prev-next-container">
-					<RouterLink v-if="Object.keys(state.prevBook).length > 0" :to="`/library/eso/${state.prevBook.id}-${state.prevBook.slug}`" type="button" class="btn btn-outline-light mb-2 mb-md-0 me-md-auto prev-button">
+					<RouterLink v-if="Object.keys(state.prevBook).length > 0" :to="`/library/eso/${state.prevBook.id}-${state.prevBook.slug}`" type="button" class="btn btn-outline-light mb-2 mb-md-0 me-md-auto prev-button" @mouseenter="prefetchBook(state.prevBook.id)">
 						{{ '← ' + state.prevBook.titleRu }}
 					</RouterLink>
-					<RouterLink v-if="Object.keys(state.nextBook).length > 0" :to="`/library/eso/${state.nextBook.id}-${state.nextBook.slug}`" type="button" class="btn btn-outline-light ms-auto next-button">
+					<RouterLink v-if="Object.keys(state.nextBook).length > 0" :to="`/library/eso/${state.nextBook.id}-${state.nextBook.slug}`" type="button" class="btn btn-outline-light ms-auto next-button" @mouseenter="prefetchBook(state.nextBook.id)">
 						{{ state.nextBook.titleRu + ' →' }}
 					</RouterLink>
 				</div>
@@ -151,7 +158,9 @@ onServerPrefetch(async () => {
 						</div>
 						<div class="card-element">
 							<div class="card-subtitle">Категория</div>
-							<RouterLink :to="`/library/eso/category/${state.book.category?.id}-${state.book.category?.slug}`">{{ state.book.category?.titleRu }}</RouterLink>
+							<RouterLink :to="`/library/eso/category/${state.book.category?.id}-${state.book.category?.slug}`" @mouseenter="prefetchCategory(state.book.category?.id)">
+								{{ state.book.category?.titleRu }}
+							</RouterLink>
 						</div>
 						<div class="card-element">
 							<div class="card-subtitle">Оригинальное название</div>
@@ -159,14 +168,14 @@ onServerPrefetch(async () => {
 						</div>
 						<div class="card-element">
 							<div class="card-subtitle">Добавлена</div>
-							<RouterLink :to="`/library/eso/patch/${state.book.created.version}-${state.book.created.slug}`">
+							<RouterLink :to="`/library/eso/patch/${state.book.created.version}-${state.book.created.slug}`" @mouseenter="prefetchPatch(state.book.created.version)">
 								Патч <time :datetime="`${state.book.created.date} 00:00`">{{ state.book.created.version }}</time> ({{ state.book.created.nameRu }})
 							</RouterLink>
 						</div>
 						<div v-if="state.book.created.version !== state.book.updated.version" class="card-element">
 							<div v-if="state.book.category?.id === 2000" class="card-subtitle">Удалена</div>
 							<div v-else class="card-subtitle">Обновлена</div>
-							<RouterLink :to="`/library/eso/patch/${state.book.updated.version}-${state.book.updated.slug}`">
+							<RouterLink :to="`/library/eso/patch/${state.book.updated.version}-${state.book.updated.slug}`" @mouseenter="prefetchPatch(state.book.updated.version)">
 								Патч <time :datetime="`${state.book.updated.date} 00:00`">{{ state.book.updated.version }}</time> ({{ state.book.updated.nameRu }})
 							</RouterLink>
 						</div>
@@ -177,7 +186,7 @@ onServerPrefetch(async () => {
 					<div class="card card-book-group">
 						<div class="list-group list-group-flush">
 							<h5 class="list-group-item h5-list-group-item">Связанные книги</h5>
-							<RouterLink v-for="book in state.book.group" :key="book.id" :to="`/library/eso/${book.id}-${book.slug}`" class="list-group-item list-group-item-action" :class="{ 'active': currentBookId === book.id }">
+							<RouterLink v-for="book in state.book.group" :key="book.id" :to="`/library/eso/${book.id}-${book.slug}`" class="list-group-item list-group-item-action" :class="{ 'active': currentBookId === book.id }" @mouseenter="prefetchBook(book.id)">
 								{{ book.titleRu }}
 							</RouterLink>
 						</div>
