@@ -79,16 +79,16 @@ export const usePrefetchBook = useDebounceFn((queryClient: any, bookId: number) 
 
 export const usePrefetchCategory = useDebounceFn((queryClient: any, categoryId: number) => {
 	queryClient.prefetchQuery({
-		queryKey: ['books', categoryId, '-1', { currentPage: 1, pageSize: 100, filter: '' }],
-		queryFn: () => fetchApi(prepareURL(`/api/library/categories/${categoryId}?page=1&page_size=100`)),
+		queryKey: ['books', categoryId, '-1', { currentPage: 1, pageSize: 50, filter: '' }],
+		queryFn: () => fetchApi(prepareURL(`/api/library/categories/${categoryId}?page=1&page_size=50`)),
 		staleTime: DEFAULT_STALE_TIME
 	});
 }, DEBOUCE_DELAY);
 
 export const usePrefetchPatch = useDebounceFn((queryClient: any, patchVersion: string) => {
 	queryClient.prefetchQuery({
-		queryKey: ['books', -1, patchVersion, { currentPage: 1, pageSize: 100, filter: '' }],
-		queryFn: () => fetchApi(prepareURL(`/api/library/patches/${patchVersion}?page=1&page_size=100`)),
+		queryKey: ['books', -1, patchVersion, { currentPage: 1, pageSize: 50, filter: '' }],
+		queryFn: () => fetchApi(prepareURL(`/api/library/patches/${patchVersion}?page=1&page_size=50`)),
 		staleTime: DEFAULT_STALE_TIME
 	});
 }, DEBOUCE_DELAY);
