@@ -18,9 +18,9 @@ const fetchApi = async (url: string) => {
 		if (!isWindows) fetchParams['unix'] = '/tmp/apiRueso.sock';
 	}
 
-	console.time(`fetching: ${url}`);
+	// console.time(`fetching: ${url}`);
 	const response = await fetch(url, fetchParams);
-	console.timeEnd(`fetching: ${url}`);
+	// console.timeEnd(`fetching: ${url}`);
 
 	if (!response.ok) {
 		throw new Error(`Failed to: ${url}`);
