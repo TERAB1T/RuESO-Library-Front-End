@@ -4,9 +4,8 @@ import { reactive, watchEffect, computed, onServerPrefetch, ref } from 'vue';
 import { useHead } from '@unhead/vue';
 import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
 import type { Book } from '@/types';
-import { useFetchBook } from '@/composables/useApi';
+import { useFetchBook, useFetchCategories, useFetchPatches, usePrefetchBook, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
 import NotFoundView from '@/views/NotFoundView.vue';
-import { usePrefetchBook, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 
 const route = useRoute();
@@ -21,6 +20,9 @@ const state = reactive({
 });
 
 const { data: bookData, suspense: bookSuspense, isSuccess: isBookFetched } = useFetchBook(currentBookId);
+
+const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCategories();
+const { data: patchesData, suspense: patchesSuspense, isSuccess: isPatchesFetched } = useFetchPatches();
 
 const updateHead = () => {
 	if (state.book && state.book.titleRu) {

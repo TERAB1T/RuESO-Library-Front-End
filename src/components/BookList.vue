@@ -127,7 +127,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 </script>
 
 <template>
-	<template v-if="state.currentCategory.id > 0">
+	<template v-if="state.currentCategory.id > 0 && categoryInfo?.titleRu">
 		<h2 class="mt-3">{{ categoryInfo?.titleRu }}</h2>
 
 		<div class="alert alert-dark" role="alert">
@@ -135,7 +135,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 		</div>
 	</template>
 
-	<template v-else-if="state.currentPatch.version !== '-1'">
+	<template v-else-if="state.currentPatch.version !== '-1' && patchInfo?.nameRu">
 		<h2 class="mt-3">Патч {{ state.currentPatch.version }} ({{ patchInfo?.nameRu }})</h2>
 
 		<div class="alert alert-dark" role="alert">
