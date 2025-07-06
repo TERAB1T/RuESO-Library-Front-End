@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import BookCategories from '@/components/BookCategories.vue';
 import BookList from '@/components/BookList.vue';
 import { useHead } from '@unhead/vue';
+import { prepareIcon } from '@/utils';
 import { useFetchCategories, useFetchPatches } from '@/composables/useApi';
 import { formatDateToMonthYear } from '@/utils';
 
@@ -22,6 +23,7 @@ const updateHead = () => {
 	let metaTitle = `Библиотека ESO | RuESO`;
 	let metaDescription = 'Библиотека книг из The Elder Scrolls Online';
 	let metaLink = 'https://rueso.ru/library/eso/';
+	let metaIcon = `https://rueso.ru/public/img/main-card-library.jpg`;
 
 	if (state.currentCategoryId !== -1) {
 		const category = state.categories.find(cat => cat.id === state.currentCategoryId);
@@ -29,6 +31,7 @@ const updateHead = () => {
 			metaTitle = `${category.titleRu} — ESO | RuESO`;
 			metaDescription = category.descRu;
 			metaLink = `${metaLink}category/${category.id}-${category.slug}`;
+			metaIcon = `https://rueso.ru${prepareIcon(category.icon)}`;
 		}
 	}
 
@@ -45,13 +48,17 @@ const updateHead = () => {
 		title: metaTitle,
 		meta: [
 			{ name: 'description', content: metaDescription },
+
 			{ name: 'og:title', content: metaTitle },
 			{ name: 'og:description', content: metaDescription },
+			{ name: 'og:image', content: metaIcon },
 			{ name: 'og:url', content: metaLink },
 			{ name: 'og:locale', content: 'ru_RU' },
 			{ name: 'og:site_name', content: 'RuESO' },
+
 			{ name: 'twitter:title', content: metaTitle },
 			{ name: 'twitter:description', content: metaDescription },
+			{ name: 'twitter:image', content: metaIcon },
 			{ name: 'twitter:card', content: 'summary' },
 			{ name: 'twitter:creator', content: '@TERAB1T' },
 		],

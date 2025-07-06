@@ -2,14 +2,32 @@
 import { useHead } from '@unhead/vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
+let metaTitle = 'RuESO | Всё о серии The Elder Scrolls';
+let metaDescription = 'Библиотека книг ESO, модификация RuESO, база текстов всех игр The Elder Scrolls и не только.';
+let metaLink = 'https://rueso.ru/';
+let metaIcon = 'https://rueso.ru/public/img/main-card-rueso.jpg';
+
 useHead({
-	title: `RuESO`,
+	title: metaTitle,
 	meta: [
-		{ name: 'description', content: 'Всё о серии The Elder Scrolls.' },
+		{ name: 'description', content: metaDescription },
 		{ name: 'robots', content: 'index, follow' },
+
+		{ name: 'og:title', content: metaTitle },
+		{ name: 'og:description', content: metaDescription },
+		{ name: 'og:image', content: metaIcon },
+		{ name: 'og:url', content: metaLink },
+		{ name: 'og:locale', content: 'ru_RU' },
+		{ name: 'og:site_name', content: 'RuESO' },
+
+		{ name: 'twitter:title', content: metaTitle },
+		{ name: 'twitter:description', content: metaDescription },
+		{ name: 'twitter:image', content: metaIcon },
+		{ name: 'twitter:card', content: 'summary' },
+		{ name: 'twitter:creator', content: '@TERAB1T' },
 	],
 	link: [
-		{ rel: 'canonical', href: 'https://rueso.ru/' }
+		{ rel: 'canonical', href: metaLink }
 	]
 });
 </script>

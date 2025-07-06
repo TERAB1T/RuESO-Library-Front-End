@@ -29,22 +29,25 @@ const updateHead = () => {
 		const metaTitle = `${state.book.titleRu} — ESO | RuESO`;
 		const metaDescription = generateMetaDescription(state.book.textRu);
 		const metaLink = `https://rueso.ru/library/eso/${state.book.id}-${state.book.slug}`;
+		const metaIcon = `https://rueso.ru${prepareIcon(state.book.icon)}`;
 
 		useHead({
 			title: metaTitle,
 			meta: [
 				{ name: 'description', content: metaDescription },
 				{ name: 'robots', content: 'index, follow' },
+
 				{ name: 'og:title', content: metaTitle },
 				{ name: 'og:description', content: metaDescription },
-				{ name: 'og:image', content: prepareIcon(state.book.icon) },
+				{ name: 'og:image', content: metaIcon },
 				{ name: 'og:url', content: metaLink },
 				{ name: 'og:locale', content: 'ru_RU' },
 				{ name: 'og:type', content: 'book' },
 				{ name: 'og:site_name', content: 'RuESO' },
+
 				{ name: 'twitter:title', content: metaTitle },
 				{ name: 'twitter:description', content: metaDescription },
-				{ name: 'twitter:image', content: prepareIcon(state.book.icon) },
+				{ name: 'twitter:image', content: metaIcon },
 				{ name: 'twitter:card', content: 'summary' },
 				{ name: 'twitter:creator', content: '@TERAB1T' },
 			],
@@ -62,7 +65,7 @@ const updateHead = () => {
 						"description": metaDescription,
 						"datePublished": state.book.created.date,
 						"dateModified": state.book.updated.date,
-						"image": `https://rueso.ru${prepareIcon(state.book.icon)}`,
+						"image": metaIcon,
 						"inLanguage": "ru",
 						"url": metaLink
 					})

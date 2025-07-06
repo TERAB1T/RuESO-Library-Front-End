@@ -11,6 +11,7 @@ DataTable.use(DataTablesCore);
 const metaTitle = 'База текстов TES | RuESO';
 const metaDescription = 'Полная база текстов всех игр серии The Elder Scrolls: от Skyrim и ESO до Shadowkey и Castles.';
 const metaLink = `https://rueso.ru/glossary`;
+const metaIcon = `https://rueso.ru/public/img/main-card-glossary.jpg`;
 
 useHead({
 	title: metaTitle,
@@ -20,12 +21,15 @@ useHead({
 
 		{ name: 'og:title', content: metaTitle },
 		{ name: 'og:description', content: metaDescription },
+		{ name: 'og:image', content: metaIcon },
 		{ name: 'og:url', content: metaLink },
 		{ name: 'og:locale', content: 'ru_RU' },
 		{ name: 'og:site_name', content: 'RuESO' },
 
 		{ name: 'twitter:title', content: metaTitle },
 		{ name: 'twitter:description', content: metaDescription },
+		{ name: 'twitter:image', content: metaIcon },
+		{ name: 'twitter:card', content: 'summary' },
 		{ name: 'twitter:creator', content: '@TERAB1T' },
 	],
 	link: [
