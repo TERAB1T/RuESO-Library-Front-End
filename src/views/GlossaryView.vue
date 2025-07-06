@@ -315,8 +315,8 @@ onMounted(async () => {
 <template>
 	<div id="main" class="flex-center">
 		<div class="search-wrap">
-			<div class="d-flex justify-content-center w-100">
-				<Teleport v-if="state.targetExists" to="#glossary-search-nav" :disabled="state.isFirstSearch">
+			<div class="d-flex justify-content-center w-100" :class="{ 'search-fixed-height': state.isFirstSearch }">
+				<Teleport defer v-if="state.targetExists" to="#glossary-search-nav" :disabled="state.isFirstSearch">
 					<input type="search" class="form-control form-control-lg" id="main-input" placeholder="Введите текст" autocomplete="off" @input="mainSearch" size="5">
 				</Teleport>
 			</div>
@@ -356,3 +356,9 @@ onMounted(async () => {
 		</div>
 	</div>
 </template>
+
+<style scoped>
+.search-fixed-height {
+	height: 48px;
+}
+</style>
