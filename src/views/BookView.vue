@@ -26,7 +26,7 @@ const { data: patchesData, suspense: patchesSuspense, isSuccess: isPatchesFetche
 
 const updateHead = () => {
 	if (state.book && state.book.titleRu) {
-		const metaTitle = `${state.book.titleRu} — ESO | RuESO`;
+		const metaTitle = `${state.book.titleRu} | Библиотека ESO`;
 		const metaDescription = generateMetaDescription(state.book.textRu);
 		const metaLink = `https://rueso.ru/library/eso/${state.book.id}-${state.book.slug}`;
 		const metaIcon = `https://rueso.ru${prepareIcon(state.book.icon)}`;

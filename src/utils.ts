@@ -23,6 +23,14 @@ export const prepareURL = (url: string) => {
 }
 
 /**
+ * Capitalizes the first letter of the given string.
+ * @param str The string to capitalize the first letter of.
+ * @returns The string with the first letter capitalized, or an empty string if the input string is empty or null.
+ */
+export const capitalizeFirstLetter = (str: string) =>
+  str ? str[0].toUpperCase() + str.slice(1) : '';
+
+/**
  * Replaces the ESO UI icon URL with a PNG image URL.
  * @param icon The URL of the icon to convert.
  * @returns The converted URL of the icon in PNG format.
@@ -127,9 +135,9 @@ export const generateMetaDescription = (text: string): string => {
 }
 
 /**
- * Formats a given date string into a Russian string in the format "выйдет/вышел в <month> <year> года".
+ * Formats a given date string into a Russian string in the format "выйдет/вышел в [month] [year] года".
  * @param dateString The date string to format, in the ISO 8601 format.
- * @returns A string in the format "выйдет/вышел в <month> <year> года", where <month> is the month name in Russian and <year> is the year.
+ * @returns A string in the format "выйдет/вышел в [month] [year] года", where [month] is the month name in Russian and [year] is the year.
  */
 export const formatDateToMonthYear = (dateString: string): string => {
 	const months = [

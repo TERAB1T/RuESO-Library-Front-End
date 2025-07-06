@@ -6,7 +6,7 @@ import BookList from '@/components/BookList.vue';
 import { useHead } from '@unhead/vue';
 import { prepareIcon } from '@/utils';
 import { useFetchCategories, useFetchPatches } from '@/composables/useApi';
-import { formatDateToMonthYear } from '@/utils';
+import { formatDateToMonthYear, capitalizeFirstLetter } from '@/utils';
 
 import type { Category, Patch } from '@/types';
 
@@ -28,7 +28,7 @@ const updateHead = () => {
 	if (state.currentCategoryId !== -1) {
 		const category = state.categories.find(cat => cat.id === state.currentCategoryId);
 		if (category) {
-			metaTitle = `${category.titleRu} — ESO | RuESO`;
+			metaTitle = `${category.titleRu} | Библиотека ESO`;
 			metaDescription = category.descRu;
 			metaLink = `${metaLink}category/${category.id}-${category.slug}`;
 			metaIcon = `https://rueso.ru${prepareIcon(category.icon)}`;
@@ -38,7 +38,7 @@ const updateHead = () => {
 	if (state.currentPatchVersion !== '-1') {
 		const patch = state.patches.find(p => p.version === state.currentPatchVersion);
 		if (patch) {
-			metaTitle = `Патч ${patch.version} (${patch.nameRu}) — ESO | RuESO`;
+			metaTitle = `${capitalizeFirstLetter(patch.nameRu)} | Библиотека ESO`;
 			metaDescription = `Книги, добавленные в игру с патчем ${patch.version}, который ${formatDateToMonthYear(patch.date)}.`;
 			metaLink = `${metaLink}patch/${patch.version}-${patch.slug}`;
 		}
