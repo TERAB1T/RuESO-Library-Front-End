@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
-import { reactive, watch, computed, watchEffect, onServerPrefetch, onMounted } from 'vue';
-import { useFetchCategories, useFetchPatches, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
+import { reactive, watch, computed, onMounted } from 'vue';
+import { usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 
-import type { Category, Patch } from '@/types';
-
 const route = useRoute();
 
+const props = defineProps<{
+	categories: any[]
+	patches: any[]
+}>();
+
 const state = reactive({
-	categories: [] as Category[],
-	patches: [] as Patch[],
 	currentCategoryId: Number(route.params.categoryId) ?? -1,
 	currentPatchVersion: route.params.patchVersion ?? '-1'
 });
 
 const sortedCategories = computed(() => {
-	return [...state.categories].sort((a, b) => {
+	return [...(props.categories || [])].sort((a, b) => {
 		if (a.id === 1002 && b.id !== 2000) return 1;
 		if (b.id === 1002 && a.id !== 2000) return -1;
 		if (a.id === 2000) return 1;
@@ -42,31 +43,6 @@ watch(
 	},
 	{ immediate: true }
 );
-
-const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCategories();
-const { data: patchesData, suspense: patchesSuspense, isSuccess: isPatchesFetched } = useFetchPatches();
-
-watchEffect(() => {
-	if (categoriesData.value) {
-		state.categories = categoriesData.value;
-	}
-
-	if (patchesData.value) {
-		state.patches = patchesData.value;
-	}
-});
-
-onServerPrefetch(async () => {
-	await categoriesSuspense();
-	if (categoriesData.value) {
-		state.categories = categoriesData.value;
-	}
-
-	await patchesSuspense();
-	if (patchesData.value) {
-		state.patches = patchesData.value;
-	}
-});
 
 const queryClient = useQueryClient();
 const prefetchCategory = (categoryId: number) => usePrefetchCategory(queryClient, categoryId);
@@ -122,7 +98,7 @@ onMounted(async () => {
 					</RouterLink>
 				</div>
 				<div class="tab-pane list-group list-group-flush" :class="{ 'active': state.currentPatchVersion !== '-1' }" id="book-patches-pane" role="tabpanel" aria-labelledby="book-patches-pane" tabindex="0">
-					<RouterLink v-for="patch in state.patches" :key="patch.version" class="list-group-item list-group-item-action" :class="{ 'active': state.currentPatchVersion === patch.version }" :to="state.currentPatchVersion === patch.version ? '/library/eso' : `/library/eso/patch/${patch.version}-${patch.slug}`" @mouseenter="prefetchPatch(patch.version)">
+					<RouterLink v-for="patch in props.patches" :key="patch.version" class="list-group-item list-group-item-action" :class="{ 'active': state.currentPatchVersion === patch.version }" :to="state.currentPatchVersion === patch.version ? '/library/eso' : `/library/eso/patch/${patch.version}-${patch.slug}`" @mouseenter="prefetchPatch(patch.version)">
 						{{ patch.version }} ({{ patch.nameRu }})
 					</RouterLink>
 				</div>

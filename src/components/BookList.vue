@@ -7,10 +7,29 @@ import { useFetchBooks, usePrefetchBook } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useDebounceFn } from '@vueuse/core';
 
-import type { Book, Category } from '@/types';
+import type { Book, Category, Patch } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
+
+const props = defineProps<{
+	categories: any[]
+	patches: any[]
+}>();
+
+const getCategoryById = (id: number): Category | undefined =>
+	props.categories.find(category => category.id === id);
+
+const categoryInfo = computed(() =>
+	getCategoryById(state.currentCategory.id)
+);
+
+const getPatchByVersion = (version: string): Patch | undefined =>
+	props.patches.find(patch => patch.version === version);
+
+const patchInfo = computed(() =>
+	getPatchByVersion(state.currentPatch.version)
+);
 
 const state = reactive({
 	books: [] as Book[],
@@ -109,18 +128,18 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 
 <template>
 	<template v-if="state.currentCategory.id > 0">
-		<h2 class="mt-3">{{ state.currentCategory.titleRu }}</h2>
+		<h2 class="mt-3">{{ categoryInfo?.titleRu }}</h2>
 
 		<div class="alert alert-dark" role="alert">
-			{{ state.currentCategory.descRu }}
+			{{ categoryInfo?.descRu }}
 		</div>
 	</template>
 
 	<template v-else-if="state.currentPatch.version !== '-1'">
-		<h2 class="mt-3">Патч {{ state.currentPatch.version }} ({{ state.currentPatch.nameRu }})</h2>
+		<h2 class="mt-3">Патч {{ state.currentPatch.version }} ({{ patchInfo?.nameRu }})</h2>
 
 		<div class="alert alert-dark" role="alert">
-			Книги, добавленные в игру с патчем {{ state.currentPatch.version }} ({{ state.currentPatch.nameRu }}), который {{ formatDateToMonthYear(state.currentPatch.date) }}.
+			Книги, добавленные в игру с патчем {{ state.currentPatch.version }}, который {{ formatDateToMonthYear(patchInfo?.date) }}.
 		</div>
 	</template>
 
