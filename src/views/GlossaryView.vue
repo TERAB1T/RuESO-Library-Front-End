@@ -187,6 +187,10 @@ const options: any = {
 
 				if (row.tag && getTagName(row.tag)) {
 					tag = `<div class="badge-tag">${getTagName(row.tag)}</div>`;
+
+					if (row.tag === 'Oblivion') data = 'oblivion';
+					else if (row.tag === 'Stormhold') data = 'stormhold';
+					else if (row.tag === 'Dawnstar') data = 'dawnstar';
 				}
 
 				return `<div class="game-icon"><img src="/public/img/icons/${data}.png" alt="${data}" width="32px">${tag}</div>`;
