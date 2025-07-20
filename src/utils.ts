@@ -80,10 +80,10 @@ export const parsePseudoCode = (text: string): string => {
 	}
 
 	const replaceAntiquity = (match: string, icon: string, text: string): string =>
-		`<h3><img src="${prepareIcon(icon)}" style="margin:10px 0;">  ${text}</h3>`;
+		`<h3><img src="${prepareIcon(icon)}" style="margin:10px 0;" alt="${text}">  ${text}</h3>`;
 
 	const replaceHireling = (match: string, icon: string, text: string): string =>
-		`<h5><img src="${prepareIcon(icon)}" width="40">  ${text}</h5>`;
+		`<h5><img src="${prepareIcon(icon)}" width="40" alt="${text}">  ${text}</h5>`;
 
 	const replaceImage = (match: string, image: string, width: string, height: string): string =>
 		`<img src="${prepareIcon(image)}" style="width: ${width}px; height: ${height}px;">`;
