@@ -153,3 +153,13 @@ export const formatDateToMonthYear = (dateString: string): string => {
 
 	return `${patchStatus} в ${months[month]} ${year} года`;
 }
+
+/**
+ * Converts a given date string from "DD.MM.YYYY" format to "YYYY-MM-DD 00:00" format.
+ * @param input The date string to convert.
+ * @returns A string in the format "YYYY-MM-DD 00:00", where [YYYY] is the year, [MM] is the month, and [DD] is the day.
+ */
+export const formatDateTime = (input: string): string => {
+  const [dd, mm, yyyy] = input.split(".");
+  return `${yyyy}-${mm}-${dd} 00:00`;
+}

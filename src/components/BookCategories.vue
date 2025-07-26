@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
-import { reactive, watch, computed, onMounted } from 'vue';
-import { usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
+import { reactive, watch, computed, onMounted, watchEffect, onServerPrefetch } from 'vue';
+import { useFetchLibraryUpdated, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
+import { formatDateTime } from '@/utils';
 
 const route = useRoute();
 
@@ -15,8 +16,11 @@ const props = defineProps<{
 
 const state = reactive({
 	currentCategoryId: Number(route.params.categoryId) ?? -1,
-	currentPatchVersion: route.params.patchVersion ?? '-1'
+	currentPatchVersion: route.params.patchVersion ?? '-1',
+	lastUpdated: ""
 });
+
+const { data: libraryUpdatedData, suspense: libraryUpdatedSuspense, isSuccess: isLibraryUpdatedFetched } = useFetchLibraryUpdated();
 
 const sortedCategories = computed(() => {
 	return [...(props.categories || [])].sort((a, b) => {
@@ -47,6 +51,19 @@ watch(
 const queryClient = useQueryClient();
 const prefetchCategory = (categoryId: number) => usePrefetchCategory(queryClient, categoryId);
 const prefetchPatch = (patchVersion: string) => usePrefetchPatch(queryClient, patchVersion);
+
+watchEffect(() => {
+	if (libraryUpdatedData.value) {
+		state.lastUpdated = libraryUpdatedData.value.lastModified;
+	}
+});
+
+onServerPrefetch(async () => {
+	await libraryUpdatedSuspense();
+	if (libraryUpdatedData.value) {
+		state.lastUpdated = libraryUpdatedData.value.lastModified;
+	}
+});
 
 onMounted(async () => {
 	const { Collapse } = await import("bootstrap");
@@ -103,6 +120,8 @@ onMounted(async () => {
 					</RouterLink>
 				</div>
 			</div>
+
+			<div class="w-100 library-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time></div>
 		</div>
 	</div>
 </template>

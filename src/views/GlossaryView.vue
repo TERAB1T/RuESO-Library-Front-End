@@ -3,7 +3,7 @@ import { reactive, ref, watchEffect, onMounted, nextTick, onServerPrefetch } fro
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bs5';
 import { useHead } from '@unhead/vue';
-import { debounceFn } from '@/utils';
+import { debounceFn, formatDateTime } from '@/utils';
 import { highlight, unhighlight } from '@/assets/js/highlight';
 import { useFetchGlossaryUpdated } from '@/composables/useApi';
 
@@ -119,10 +119,11 @@ const prepareText = (data: any, type: string, row: any, meta: object, lang: stri
 	return data;
 }
 
-const formatDate = (input: string): string => {
-  const [dd, mm, yyyy] = input.split(".");
-  return `${yyyy}-${mm}-${dd} 00:00`;
-}
+const enableTooltips = async () => {
+	const { Tooltip } = await import("bootstrap");
+	const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+	const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl));
+};
 
 /* EVENTS */
 
@@ -319,22 +320,6 @@ const mainSearch = debounceFn(async (event: Event) => {
 
 /* ONMOUNTED */
 
-const enableTooltips = async () => {
-	const { Tooltip } = await import("bootstrap");
-	const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-	const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl));
-};
-
-onMounted(async () => {
-	dt = dataTable.value.dt;
-	dtInitFilters(dt);
-	dtInitHighlight(dt);
-
-	state.targetExists = !!document.querySelector("#glossary-search-nav");
-
-	enableTooltips();
-});
-
 watchEffect(() => {
 	if (glossaryUpdatedData.value) {
 		state.lastUpdated = glossaryUpdatedData.value.lastModified;
@@ -346,6 +331,16 @@ onServerPrefetch(async () => {
 	if (glossaryUpdatedData.value) {
 		state.lastUpdated = glossaryUpdatedData.value.lastModified;
 	}
+});
+
+onMounted(async () => {
+	dt = dataTable.value.dt;
+	dtInitFilters(dt);
+	dtInitHighlight(dt);
+
+	state.targetExists = !!document.querySelector("#glossary-search-nav");
+
+	enableTooltips();
 });
 </script>
 
@@ -368,7 +363,7 @@ onServerPrefetch(async () => {
 					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()">
 					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
 				</template>
-				<div class="w-100 game-checks-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDate(state.lastUpdated)">{{ state.lastUpdated }}</time></div>
+				<div class="w-100 game-checks-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time></div>
 			</div>
 
 			<div class="main-table-wrap">
