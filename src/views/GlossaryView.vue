@@ -110,6 +110,8 @@ const prepareText = (data: any, type: string, row: any, meta: object, lang: stri
 		data = replaceColor(data);
 	}
 
+	data = data.replace(/\[FONT=(.*?)\](.*?)\[\/FONT\]/gi, '<span class="font-$1" data-bs-toggle="tooltip" data-bs-title="$2">$2</span>');
+
 	return data;
 }
 
@@ -126,6 +128,7 @@ const onPageDraw = () => {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 
 	shouldScroll = false;
+	enableTooltips();
 };
 
 const onCheckboxChanged = () => {
@@ -307,6 +310,12 @@ const mainSearch = debounceFn(async (event: Event) => {
 
 /* ONMOUNTED */
 
+const enableTooltips = async () => {
+	const { Tooltip } = await import("bootstrap");
+	const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+	const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl));
+};
+
 onMounted(async () => {
 	dt = dataTable.value.dt;
 	dtInitFilters(dt);
@@ -314,9 +323,7 @@ onMounted(async () => {
 
 	state.targetExists = !!document.querySelector("#glossary-search-nav");
 
-	const { Tooltip } = await import("bootstrap");
-	const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-	const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl));
+	enableTooltips();
 });
 </script>
 

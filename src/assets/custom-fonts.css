@@ -1,0 +1,19 @@
+@font-face {
+    font-family: 'daedric';
+    src: url('/public/fonts/daedric.woff2') format('woff2'),
+         url('/public/fonts/daedric.woff') format('woff'),
+         url('/public/fonts/daedric.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+.font-daedric {
+	font-family: 'daedric', sans-serif;
+	text-transform: uppercase;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-decoration-thickness: 0.01em;
+	text-underline-offset: 0.3em;
+	font-size: 1.1rem;
+}
