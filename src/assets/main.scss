@@ -58,6 +58,14 @@ table.dataTable span.column_highlight {
 	margin-right: auto;
 }
 
+.game-checks-updated {
+	color: #6c757d;
+	margin-top:10px;
+	text-align: center;
+	font-style: italic;
+	font-size: 0.9rem;
+}
+
 input[type="search"] {
 	background-color: #21222d;
 	color: #f7f7f7;
@@ -209,6 +217,10 @@ table.dataTable td:nth-child(n+3) {
 
 #main:not(.flex-center) .game-checks-divider {
 	width: 0 !important;
+}
+
+#main:not(.flex-center) .game-checks-updated {
+	display: none;
 }
 
 #main:not(.flex-center) .game-checks label.disabled {

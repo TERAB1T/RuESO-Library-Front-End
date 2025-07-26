@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { reactive, ref, watchEffect, onMounted, nextTick } from 'vue';
+import { reactive, ref, watchEffect, onMounted, nextTick, onServerPrefetch } from 'vue';
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bs5';
 import { useHead } from '@unhead/vue';
 import { debounceFn } from '@/utils';
 import { highlight, unhighlight } from '@/assets/js/highlight';
+import { useFetchGlossaryUpdated } from '@/composables/useApi';
 
 DataTable.use(DataTablesCore);
 
@@ -45,8 +46,11 @@ let dt: any;
 
 const state = reactive({
 	isFirstSearch: true,
-	targetExists: false
+	targetExists: false,
+	lastUpdated: "",
 });
+
+const { data: glossaryUpdatedData, suspense: glossaryUpdatedSuspense, isSuccess: isGlossaryUpdatedFetched } = useFetchGlossaryUpdated();
 
 const gameCheckboxes = [
 	{ id: 'Arena', name: 'TES: Arena (1994)', icon: '/img/icons/arena.png' },
@@ -325,6 +329,19 @@ onMounted(async () => {
 
 	enableTooltips();
 });
+
+watchEffect(() => {
+	if (glossaryUpdatedData.value) {
+		state.lastUpdated = glossaryUpdatedData.value.lastModified;
+	}
+});
+
+onServerPrefetch(async () => {
+	await glossaryUpdatedSuspense();
+	if (glossaryUpdatedData.value) {
+		state.lastUpdated = glossaryUpdatedData.value.lastModified;
+	}
+});
 </script>
 
 <template>
@@ -346,6 +363,7 @@ onMounted(async () => {
 					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()">
 					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
 				</template>
+				<div v-if="state.lastUpdated" class="w-100 game-checks-updated">Последнее обновление: {{ state.lastUpdated }}</div>
 			</div>
 
 			<div class="main-table-wrap">

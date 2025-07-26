@@ -2,7 +2,7 @@ import { useQuery, keepPreviousData } from '@tanstack/vue-query';
 import { prepareURL } from '@/utils';
 import { useDebounceFn } from '@vueuse/core';
 
-import type { Book, Category, Patch } from '@/types';
+import type { Book, Category, Patch, LastModified } from '@/types';
 import type { UseQueryReturnType } from '@tanstack/vue-query'
 import type { ComputedRef, Ref } from 'vue';
 
@@ -63,6 +63,22 @@ export const useFetchPatches = (): UseQueryReturnType<Patch[], Error> => {
 	return useQuery({
 		queryKey: ['patches'],
 		queryFn: () => fetchApi(prepareURL('/api/library/patches')),
+		staleTime: Infinity,
+	});
+}
+
+export const useFetchLibraryUpdated = (): UseQueryReturnType<LastModified, Error> => {
+	return useQuery({
+		queryKey: ['library', 'updated'],
+		queryFn: () => fetchApi(prepareURL('/api/library/updated')),
+		staleTime: Infinity,
+	});
+}
+
+export const useFetchGlossaryUpdated = (): UseQueryReturnType<LastModified, Error> => {
+	return useQuery({
+		queryKey: ['glossary', 'updated'],
+		queryFn: () => fetchApi(prepareURL('/api/glossary/updated')),
 		staleTime: Infinity,
 	});
 }

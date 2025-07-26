@@ -39,3 +39,7 @@ export interface Category {
 		total_pages: number;
 	}
 }
+
+export interface LastModified {
+	lastModified: string;
+}
