@@ -119,6 +119,11 @@ const prepareText = (data: any, type: string, row: any, meta: object, lang: stri
 	return data;
 }
 
+const formatDate = (input: string): string => {
+  const [dd, mm, yyyy] = input.split(".");
+  return `${yyyy}-${mm}-${dd} 00:00`;
+}
+
 /* EVENTS */
 
 let shouldScroll = false;
@@ -200,7 +205,7 @@ const options: any = {
 					else if (row.tag === 'Dawnstar') data = 'dawnstar';
 				}
 
-				return `<div class="game-icon"><img src="/public/img/icons/${data}.png" alt="${data}" width="32px">${tag}</div>`;
+				return `<div class="game-icon"><img src="/public/img/icons/${data}.png" alt="${data}" width="32px" height="32px">${tag}</div>`;
 			}
 		},
 		{
@@ -363,7 +368,7 @@ onServerPrefetch(async () => {
 					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()">
 					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
 				</template>
-				<div v-if="state.lastUpdated" class="w-100 game-checks-updated">Последнее обновление: {{ state.lastUpdated }}</div>
+				<div class="w-100 game-checks-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDate(state.lastUpdated)">{{ state.lastUpdated }}</time></div>
 			</div>
 
 			<div class="main-table-wrap">
