@@ -8,11 +8,108 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'dragon';
+    src: url('/public/fonts/dragon.woff2') format('woff2'),
+         url('/public/fonts/dragon.woff') format('woff'),
+         url('/public/fonts/dragon.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'dwemer';
+    src: url('/public/fonts/dwemer.woff2') format('woff2'),
+         url('/public/fonts/dwemer.woff') format('woff'),
+         url('/public/fonts/dwemer.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'falmer';
+    src: url('/public/fonts/falmer.woff2') format('woff2'),
+         url('/public/fonts/falmer.woff') format('woff'),
+         url('/public/fonts/falmer.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'magescript';
+    src: url('/public/fonts/magescript.woff2') format('woff2'),
+         url('/public/fonts/magescript.woff') format('woff'),
+         url('/public/fonts/magescript.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'skyrimunreadable';
+    src: url('/public/fonts/skyrimunreadable.woff2') format('woff2'),
+         url('/public/fonts/skyrimunreadable.woff') format('woff'),
+         url('/public/fonts/skyrimunreadable.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 .font-daedric {
 	font-family: 'daedric', sans-serif;
 	text-transform: uppercase;
 	text-decoration: underline;
 	text-decoration-style: dotted;
+	text-decoration-thickness: 0.01em;
+	text-underline-offset: 0.3em;
+	font-size: 1.1rem;
+}
+
+.font-dragon {
+	font-family: 'dragon', sans-serif;
+	text-transform: uppercase;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-decoration-thickness: 0.01em;
+	text-underline-offset: 0.3em;
+	font-size: 1.1rem;
+}
+
+.font-dwemer {
+	font-family: 'dwemer', sans-serif;
+	text-transform: uppercase;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-decoration-thickness: 0.01em;
+	text-underline-offset: 0.3em;
+	font-size: 1.0rem;
+}
+
+.font-falmer {
+	font-family: 'falmer', sans-serif;
+	text-transform: uppercase;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-decoration-thickness: 0.01em;
+	text-underline-offset: 0.3em;
+	font-size: 1.0rem;
+}
+
+.font-magescript {
+	font-family: 'magescript', sans-serif;
+	text-transform: uppercase;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-decoration-thickness: 0.01em;
+	text-underline-offset: 0.3em;
+	font-size: 1.1rem;
+}
+
+.font-unreadable {
+	font-family: 'skyrimunreadable', sans-serif;
 	text-decoration-thickness: 0.01em;
 	text-underline-offset: 0.3em;
 	font-size: 1.1rem;
