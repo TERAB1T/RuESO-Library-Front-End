@@ -121,8 +121,10 @@ const prepareText = (data: any, type: string, row: any, meta: object, lang: stri
 
 const enableTooltips = async () => {
 	const { Tooltip } = await import("bootstrap");
-	const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-	const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl));
+    const container = document.body;
+    new Tooltip(container, {
+        selector: '[data-bs-toggle="tooltip"]'
+    });
 };
 
 /* EVENTS */
@@ -138,7 +140,6 @@ const onPageDraw = () => {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 
 	shouldScroll = false;
-	enableTooltips();
 };
 
 const onCheckboxChanged = () => {
