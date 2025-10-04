@@ -31,7 +31,7 @@ onMounted(async () => {
 				<span class="navbar-toggler-icon"></span>
 			</button>
 
-			<div class="collapse navbar-collapse flex-grow-1 order-2 order-md-1" id="navbarSupportedContent">
+			<div class="collapse navbar-collapse order-2 order-md-1" id="navbarSupportedContent" style="flex-grow: initial;">
 				<ul class="navbar-nav me-auto mb-0 mx-3">
 					<li class="nav-item mx-2">
 						<RouterLink activeClass="active" class="nav-link py-2 px-2" to="/" exact>Главная</RouterLink>
@@ -45,7 +45,7 @@ onMounted(async () => {
 				</ul>
 			</div>
 
-			<div id="glossary-search-nav" class="d-flex flex-grow-1 justify-content-end order-md-2"></div>
+			<div id="glossary-search-nav" class="d-flex flex-grow-1 justify-content-end order-md-2" style="flex: 1;"></div>
 		</div>
 	</nav>
 </template>
