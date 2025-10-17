@@ -7,12 +7,18 @@ import { debounceFn, formatDateTime } from '@/utils';
 import { highlight, unhighlight } from '@/assets/js/highlight';
 import { useFetchGlossaryUpdated } from '@/composables/useApi';
 
+import type { GlossaryConfig } from '@/types';
+
 DataTable.use(DataTablesCore);
 
-const metaTitle = 'База текстов TES | RuESO';
-const metaDescription = 'Полная база текстов всех игр серии The Elder Scrolls: от Skyrim и ESO до Shadowkey и Castles.';
-const metaLink = `https://rueso.ru/glossary`;
-const metaIcon = `https://rueso.ru/public/img/main-card-glossary.jpg`;
+const props = defineProps<{
+	config: GlossaryConfig;
+}>();
+
+const metaTitle = props.config.title;
+const metaDescription = props.config.description;
+const metaLink = props.config.url;
+const metaIcon = props.config.image;
 
 useHead({
 	title: metaTitle,
@@ -52,40 +58,9 @@ const state = reactive({
 
 const { data: glossaryUpdatedData, suspense: glossaryUpdatedSuspense, isSuccess: isGlossaryUpdatedFetched } = useFetchGlossaryUpdated();
 
-const gameCheckboxes = [
-	{ id: 'Arena', name: 'TES: Arena (1994)', icon: '/img/icons/arena.png' },
-	{ id: 'Daggerfall', name: 'TES II: Daggerfall (1996)', icon: '/img/icons/daggerfall.png' },
-	{ id: 'Morrowind', name: 'TES III: Morrowind (2002)', icon: '/img/icons/morrowind.png' },
-	{ id: 'Oblivion', name: 'TES IV: Oblivion (2006)', icon: '/img/icons/oblivion.png' },
-	{ id: 'Skyrim', name: 'TES V: Skyrim (2011)', icon: '/img/icons/skyrim.png' },
-	{ id: 'ESO', name: 'TES Online (2014)', icon: '/img/icons/eso.png' },
-	{ id: 'Battlespire', name: 'AESL: Battlespire (1997)', icon: '/img/icons/battlespire.png' },
-	{ id: 'Redguard', name: 'TESA: Redguard (1998)', icon: '/img/icons/redguard.png' },
-	{ id: 'Travels', name: 'TES Travels: Stormhold (2003), Dawnstar (2003), Shadowkey (2004), Oblivion (2006)', icon: '/img/icons/travels.png' },
-	{ id: 'Legends', name: 'TES: Legends (2017)', icon: '/img/icons/legends.png' },
-	{ id: 'Blades', name: 'TES: Blades (2019)', icon: '/img/icons/blades.png' },
-	{ id: 'Castles', name: 'TES: Castles (2023)', icon: '/img/icons/castles.png' },
-]
-
-const gameTags = {
-	'Tribunal': 'Tribunal',
-	'Bloodmoon': 'Bloodmoon',
-	'Plugin': 'Официальный плагин',
-	'KotN': 'Knights of the Nine',
-	'SI': 'Shivering Isles',
-	'Dawnguard': 'Dawnguard',
-	'Hearthfire': 'Hearthfire',
-	'Dragonborn': 'Dragonborn',
-	'cc': 'Creation Club',
-	'Stormhold': 'Stormhold',
-	'Dawnstar': 'Dawnstar',
-	'Shadowkey': 'Shadowkey',
-	'Oblivion': 'Oblivion Mobile',
-};
-
 /* UTILS */
 
-const getTagName = (tag: keyof typeof gameTags): string | undefined => gameTags[tag];
+const getTagName = (tag: string): string | undefined => props.config.gameTags?.[tag];
 
 const replaceImage = (src: string, game: string, lang: string): string => {
 	src = src.replace(/\[IMG=&quot;(.*?)&quot;\]/g, (match, p1) => {
@@ -121,10 +96,10 @@ const prepareText = (data: any, type: string, row: any, meta: object, lang: stri
 
 const enableTooltips = async () => {
 	const { Tooltip } = await import("bootstrap");
-    const container = document.body;
-    new Tooltip(container, {
-        selector: '[data-bs-toggle="tooltip"]'
-    });
+	const container = document.body;
+	new Tooltip(container, {
+		selector: '[data-bs-toggle="tooltip"]'
+	});
 };
 
 /* EVENTS */
@@ -151,10 +126,10 @@ const onCheckboxChanged = () => {
 const checkedGames = ref<string[]>([]);
 
 if (!import.meta.env.SSR) {
-	checkedGames.value = JSON.parse(localStorage.getItem('games') as string) || ['eso'];
+	checkedGames.value = JSON.parse(localStorage.getItem(props.config.localStorageKey) as string) || props.config.defaultGames;
 
 	watchEffect(() => {
-		localStorage.setItem('games', JSON.stringify(checkedGames.value));
+		localStorage.setItem(props.config.localStorageKey, JSON.stringify(checkedGames.value));
 	});
 }
 
@@ -170,7 +145,7 @@ const options: any = {
 	},
 	order: [],
 	ajax: {
-		url: '/api/glossary/',
+		url: props.config.apiEndpoint,
 		data: (d: any) => {
 			d.games = checkedGames.value.join(',');
 		}
@@ -281,7 +256,7 @@ const dtInitHighlight = (dt: any): void => {
 };
 
 const highlightDt = (body: HTMLElement, dt: any) => {
-	const prepareToHighlight = (text: string) => text.trim().replace(/[‘’]/, '\'').replace(/[“”„]/, '"').replace(/ /, ' ');
+	const prepareToHighlight = (text: string) => text.trim().replace(/['']/, '\'').replace(/[""„]/, '"').replace(/ /, ' ');
 
 	unhighlight(body);
 
@@ -355,13 +330,9 @@ onMounted(async () => {
 			</div>
 
 			<div class="game-checks d-flex justify-content-center flex-wrap">
-				<template v-for="gameCheckbox in gameCheckboxes.slice(0, 6)" :key="gameCheckbox.id">
-					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()">
-					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
-				</template>
-				<div class="w-100 game-checks-divider"></div>
-				<template v-for="gameCheckbox in gameCheckboxes.slice(6)" :key="gameCheckbox.id">
-					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()">
+				<template v-for="(gameCheckbox, index) in config.gameCheckboxes" :key="gameCheckbox.id">
+					<div v-if="index === config.dividerIndex" class="w-100 game-checks-divider"></div>
+					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()" :disabled="gameCheckbox.disabled">
 					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
 				</template>
 				<div class="w-100 game-checks-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time></div>

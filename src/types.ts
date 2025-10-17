@@ -43,3 +43,27 @@ export interface Category {
 export interface LastModified {
 	lastModified: string;
 }
+
+export interface GlossaryGameCheckbox {
+	id: string;
+	name: string;
+	icon: string;
+	disabled?: boolean;
+}
+
+export interface GlossaryGameTag {
+	[key: string]: string;
+}
+
+export interface GlossaryConfig {
+	title: string;
+	description: string;
+	url: string;
+	image: string;
+	apiEndpoint: string;
+	localStorageKey: string;
+	defaultGames: string[];
+	gameCheckboxes: GlossaryGameCheckbox[];
+	gameTags?: GlossaryGameTag;
+	dividerIndex: number;
+}

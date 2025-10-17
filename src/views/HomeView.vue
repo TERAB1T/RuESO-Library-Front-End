@@ -2,7 +2,7 @@
 import { useHead } from '@unhead/vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 
-let metaTitle = 'RuESO | Всё о серии The Elder Scrolls';
+let metaTitle = 'RuESO | Всё о серии The Elder Scrolls и Fallout';
 let metaDescription = 'Библиотека книг ESO, модификация RuESO, база текстов всех игр The Elder Scrolls и не только.';
 let metaLink = 'https://rueso.ru/';
 let metaIcon = 'https://rueso.ru/public/img/main-card-rueso.jpg';
@@ -71,7 +71,7 @@ useHead({
 					</div>
 				</div>
 			</a>
-			<RouterLink to="/glossary" class="col">
+			<RouterLink to="/glossary-tes" class="col">
 				<div class="card h-100">
 					<img src="/public/img/main-card-glossary.jpg" class="card-img-top" alt="База текстов TES">
 					<div class="card-body">

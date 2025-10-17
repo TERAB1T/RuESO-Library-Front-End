@@ -40,7 +40,7 @@ onMounted(async () => {
 						<RouterLink :class="`${isPathStartWith('/library') ? 'active' : ''} nav-link py-2 px-2`" to="/library/eso">Библиотека ESO</RouterLink>
 					</li>
 					<li class="nav-item mx-2">
-						<RouterLink :class="`${isPathStartWith('/glossary') ? 'active' : ''} nav-link py-2 px-2`" to="/glossary">База текстов TES</RouterLink>
+						<RouterLink :class="`${isPathStartWith('/glossary') ? 'active' : ''} nav-link py-2 px-2`" to="/glossary-tes">База текстов TES</RouterLink>
 					</li>
 				</ul>
 			</div>

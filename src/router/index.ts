@@ -2,7 +2,8 @@ import { createRouter, createMemoryHistory, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import LibraryView from '@/views/LibraryView.vue'
 import BookView from '@/views/BookView.vue'
-import GlossaryView from '@/views/GlossaryView.vue'
+import GlossaryTESView from '@/views/GlossaryTESView.vue'
+import GlossaryFalloutView from '@/views/GlossaryFalloutView.vue'
 import BooksExportView from '@/views/BooksExportView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 
@@ -55,9 +56,14 @@ const router = createRouter({
 			}
 		},
 		{
-			path: '/glossary',
-			name: 'glossary',
-			component: GlossaryView,
+			path: '/glossary-tes',
+			name: 'glossary-tes',
+			component: GlossaryTESView,
+		},
+		{
+			path: '/glossary-fallout',
+			name: 'glossary-fallout',
+			component: GlossaryFalloutView,
 		},
 		{
 			path: '/books-export',
