@@ -20,7 +20,7 @@ const falloutConfig: GlossaryConfig = {
 		{ id: 'Fallout 3', name: 'Fallout 3 (2008)', icon: '/img/icons/fallout3.png', disabled: true },
 		{ id: 'New Vegas', name: 'Fallout: New Vegas (2010)', icon: '/img/icons/falloutnv.png', disabled: true },
 		{ id: 'Fallout 4', name: 'Fallout 4 (2015)', icon: '/img/icons/fallout4.png', disabled: true },
-		{ id: 'Shelter', name: 'Fallout Shelter (2015)', icon: '/img/icons/fallout-shelter.png', disabled: true },
+		{ id: 'Shelter', name: 'Fallout Shelter (2015)', icon: '/img/icons/fallout-shelter.png' },
 		{ id: 'Fallout 76', name: 'Fallout 76 (2018)', icon: '/img/icons/fallout76.png' },
 	],
 	gameTags: {
