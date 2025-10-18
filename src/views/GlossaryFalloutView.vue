@@ -18,7 +18,7 @@ const falloutConfig: GlossaryConfig = {
 		{ id: 'Tactics', name: 'Fallout Tactics (2001)', icon: '/img/icons/tactics.png', disabled: true },
 		// { id: 'Brotherhood of Steel', name: 'Fallout: Brotherhood of Steel (2004)', icon: '/img/icons/fallout-bos.png', disabled: true },
 		{ id: 'Fallout 3', name: 'Fallout 3 (2008)', icon: '/img/icons/fallout3.png', disabled: true },
-		{ id: 'New Vegas', name: 'Fallout: New Vegas (2010)', icon: '/img/icons/newvegas.png', disabled: true },
+		{ id: 'New Vegas', name: 'Fallout: New Vegas (2010)', icon: '/img/icons/newvegas.png' },
 		{ id: 'Fallout 4', name: 'Fallout 4 (2015)', icon: '/img/icons/fallout4.png', disabled: true },
 		{ id: 'Shelter', name: 'Fallout Shelter (2015)', icon: '/img/icons/shelter.png' },
 		{ id: 'Fallout 76', name: 'Fallout 76 (2018)', icon: '/img/icons/fallout76.png' },
