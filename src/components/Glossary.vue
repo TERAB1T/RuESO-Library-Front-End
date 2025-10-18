@@ -180,7 +180,6 @@ const options: any = {
 					if (row.tag === 'Oblivion') data = 'oblivion';
 					else if (row.tag === 'Stormhold') data = 'stormhold';
 					else if (row.tag === 'Dawnstar') data = 'dawnstar';
-					else if (row.tag === 'Shelter') data = 'fallout-shelter';
 				}
 
 				return `<div class="game-icon"><img src="/public/img/icons/${data}.png" alt="${data}" width="32px" height="32px">${tag}</div>`;
