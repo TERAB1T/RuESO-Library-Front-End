@@ -7,7 +7,7 @@ const tesConfig: GlossaryConfig = {
 	type: 'tes',
 	title: 'База текстов TES | RuESO',
 	description: 'Полная база текстов всех игр серии The Elder Scrolls: от Skyrim и ESO до Shadowkey и Castles.',
-	url: 'https://rueso.ru/glossary',
+	url: 'https://rueso.ru/glossary-tes',
 	image: 'https://rueso.ru/public/img/main-card-glossary.jpg',
 	apiEndpoint: '/api/glossary/tes/',
 	localStorageKey: 'glossary-tes-games',

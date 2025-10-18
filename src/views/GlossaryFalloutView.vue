@@ -7,7 +7,7 @@ const falloutConfig: GlossaryConfig = {
 	type: 'fallout',
 	title: 'База текстов Fallout | RuESO',
 	description: 'Полная база текстов всех игр серии Fallout: от Fallout 1 и Tactics до Shelter и Fallout 76.',
-	url: 'https://rueso.ru/fallout-glossary',
+	url: 'https://rueso.ru/glossary-fallout',
 	image: 'https://rueso.ru/public/img/main-card-fallout.jpg',
 	apiEndpoint: '/api/glossary/fallout/',
 	localStorageKey: 'glossary-fallout-games',
