@@ -7,16 +7,27 @@ const route = useRoute();
 const isPathStartWith = (path: string) => route.path.startsWith(path);
 
 onMounted(async () => {
-    const { Collapse } = await import("bootstrap");
+	const { Collapse } = await import("bootstrap");
+	const { Dropdown } = await import("bootstrap");
 
-    const collapseElement = document.querySelector('.navbar-collapse');
-    const bsCollapse = collapseElement ? new Collapse(collapseElement, { toggle: false }) : null;
+	const collapseElement = document.querySelector('.navbar-collapse');
+	const bsCollapse = collapseElement ? new Collapse(collapseElement, { toggle: false }) : null;
 
-    document.querySelectorAll('.nav-link').forEach((link) => {
-        link.addEventListener('click', () => {
+	document.querySelectorAll('.nav-link:not(.dropdown-toggle)').forEach((link) => {
+		link.addEventListener('click', () => {
 			if (window.innerWidth <= 768) bsCollapse?.hide();
-        });
-    });
+		});
+	});
+
+	document.querySelectorAll('.dropdown-menu .nav-link').forEach((link) => {
+		link.addEventListener('click', () => {
+			const parentToggle = link.closest('.dropdown')?.querySelector('.dropdown-toggle');
+			if (parentToggle) {
+				const bsDropdown = Dropdown.getInstance(parentToggle);
+				bsDropdown?.hide();
+			}
+		});
+	});
 });
 </script>
 
@@ -39,8 +50,19 @@ onMounted(async () => {
 					<li class="nav-item mx-2">
 						<RouterLink :class="`${isPathStartWith('/library') ? 'active' : ''} nav-link py-2 px-2`" to="/library/eso">Библиотека ESO</RouterLink>
 					</li>
-					<li class="nav-item mx-2">
-						<RouterLink :class="`${isPathStartWith('/glossary') ? 'active' : ''} nav-link py-2 px-2`" to="/glossary-tes">База текстов TES</RouterLink>
+					<li class="nav-item mx-2 dropdown">
+
+						<a :class="`${isPathStartWith('/glossary') ? 'active' : ''} nav-link py-2 px-2 dropdown-toggle`" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							Базы текстов
+						</a>
+						<ul class="dropdown-menu mx-2">
+							<li>
+								<RouterLink :class="`${isPathStartWith('/glossary-tes') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/glossary-tes">The Elder Scrolls</RouterLink>
+							</li>
+							<li>
+								<RouterLink :class="`${isPathStartWith('/glossary-fallout') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/glossary-fallout">Fallout</RouterLink>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</div>
