@@ -75,10 +75,10 @@ export const useFetchLibraryUpdated = (): UseQueryReturnType<LastModified, Error
 	});
 }
 
-export const useFetchGlossaryUpdated = (): UseQueryReturnType<LastModified, Error> => {
+export const useFetchGlossaryUpdated = (type: string): UseQueryReturnType<LastModified, Error> => {
 	return useQuery({
-		queryKey: ['glossary', 'updated'],
-		queryFn: () => fetchApi(prepareURL('/api/glossary/updated')),
+		queryKey: ['glossary', 'updated', type],
+		queryFn: () => fetchApi(prepareURL(`/api/glossary/${type}/updated`)),
 		staleTime: Infinity,
 	});
 }

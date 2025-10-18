@@ -56,6 +56,7 @@ export interface GlossaryGameTag {
 }
 
 export interface GlossaryConfig {
+	type: string;
 	title: string;
 	description: string;
 	url: string;

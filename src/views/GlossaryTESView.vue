@@ -4,11 +4,12 @@ import Glossary from '@/components/Glossary.vue';
 import type { GlossaryConfig } from '@/types';
 
 const tesConfig: GlossaryConfig = {
+	type: 'tes',
 	title: 'База текстов TES | RuESO',
 	description: 'Полная база текстов всех игр серии The Elder Scrolls: от Skyrim и ESO до Shadowkey и Castles.',
 	url: 'https://rueso.ru/glossary',
 	image: 'https://rueso.ru/public/img/main-card-glossary.jpg',
-	apiEndpoint: '/api/glossary/',
+	apiEndpoint: '/api/glossary/tes/',
 	localStorageKey: 'glossary-tes-games',
 	defaultGames: ['eso'],
 	gameCheckboxes: [

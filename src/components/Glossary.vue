@@ -56,7 +56,7 @@ const state = reactive({
 	lastUpdated: "",
 });
 
-const { data: glossaryUpdatedData, suspense: glossaryUpdatedSuspense, isSuccess: isGlossaryUpdatedFetched } = useFetchGlossaryUpdated();
+const { data: glossaryUpdatedData, suspense: glossaryUpdatedSuspense, isSuccess: isGlossaryUpdatedFetched } = useFetchGlossaryUpdated(props.config.type);
 
 /* UTILS */
 
