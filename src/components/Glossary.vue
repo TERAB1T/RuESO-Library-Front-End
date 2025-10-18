@@ -60,7 +60,7 @@ const { data: glossaryUpdatedData, suspense: glossaryUpdatedSuspense, isSuccess:
 
 /* UTILS */
 
-const getTagName = (tag: string): string | undefined => props.config.gameTags?.[tag];
+const getTagName = (tag: string): string | undefined => props.config.gameTags?.[tag] ?? tag;
 
 const replaceImage = (src: string, game: string, lang: string): string => {
 	src = src.replace(/\[IMG=&quot;(.*?)&quot;\]/g, (match, p1) => {
