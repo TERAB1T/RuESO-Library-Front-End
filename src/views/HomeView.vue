@@ -80,6 +80,15 @@ useHead({
 					</div>
 				</div>
 			</RouterLink>
+			<RouterLink to="/glossary-fallout" class="col">
+				<div class="card h-100">
+					<img src="/public/img/main-card-fallout.jpg" class="card-img-top" alt="База текстов Fallout">
+					<div class="card-body">
+						<h5 class="card-title">База текстов Fallout</h5>
+						<p class="card-text">Полная база текстов всех игр серии Fallout: от Fallout 1 и Tactics до Shelter и Fallout 76.</p>
+					</div>
+				</div>
+			</RouterLink>
 		</div>
 	</main>
 </template>
