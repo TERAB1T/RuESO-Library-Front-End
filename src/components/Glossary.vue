@@ -89,7 +89,7 @@ const prepareText = (data: any, type: string, row: any, meta: object, lang: stri
 		data = replaceColor(data);
 	}
 
-	data = data.replace(/\[PRE\](.*?)\[\/PRE\]/gis, '<pre>$1</pre>');
+	data = data.replace(/\[TERM\](.*?)\[\/TERM\]/gis, '<pre>$1</pre>');
 
 	data = data.replace(/\[FONT=(.*?)\](.*?)\[\/FONT\]/gi, '<span class="font-$1" data-bs-toggle="tooltip" data-bs-title="$2">$2</span>');
 
