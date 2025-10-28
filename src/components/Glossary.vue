@@ -260,8 +260,6 @@ const dtInitHighlight = (dt: any): void => {
 const highlightDt = (body: HTMLElement, dt: any) => {
 	const prepareToHighlight = (text: string) => text.trim().replace(/['']/, '\'').replace(/[""„]/, '"').replace(/ /, ' ');
 
-	unhighlight(body);
-
 	if (dt.rows({ filter: 'applied' }).data().length) {
 		dt.columns().every(function (this: any) {
 			const column = this;
