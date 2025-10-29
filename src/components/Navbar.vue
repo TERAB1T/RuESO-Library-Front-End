@@ -47,20 +47,29 @@ onMounted(async () => {
 					<li class="nav-item mx-2">
 						<RouterLink activeClass="active" class="nav-link py-2 px-2" to="/" exact>Главная</RouterLink>
 					</li>
-					<li class="nav-item mx-2">
-						<RouterLink :class="`${isPathStartWith('/library') ? 'active' : ''} nav-link py-2 px-2`" to="/library/eso">Библиотека ESO</RouterLink>
-					</li>
 					<li class="nav-item mx-2 dropdown">
-
-						<a :class="`${isPathStartWith('/glossary') ? 'active' : ''} nav-link py-2 px-2 dropdown-toggle`" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-							Базы текстов
+						<a :class="`${isPathStartWith('/glossary-tes') || isPathStartWith('/library') ? 'active' : ''} nav-link py-2 px-2 dropdown-toggle`" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							The Elder Scrolls
 						</a>
 						<ul class="dropdown-menu mx-2">
 							<li>
-								<RouterLink :class="`${isPathStartWith('/glossary-tes') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/glossary-tes">The Elder Scrolls</RouterLink>
+								<RouterLink :class="`${isPathStartWith('/library') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/library/eso">Библиотека ESO</RouterLink>
 							</li>
 							<li>
-								<RouterLink :class="`${isPathStartWith('/glossary-fallout') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/glossary-fallout">Fallout</RouterLink>
+								<RouterLink :class="`${isPathStartWith('/glossary-tes') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/glossary-tes">База текстов TES</RouterLink>
+							</li>
+						</ul>
+					</li>
+					<li class="nav-item mx-2 dropdown">
+						<a :class="`${isPathStartWith('/glossary-fallout') || isPathStartWith('/f76-atomic-shop')  ? 'active' : ''} nav-link py-2 px-2 dropdown-toggle`" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+							Fallout
+						</a>
+						<ul class="dropdown-menu mx-2">
+							<li>
+								<RouterLink :class="`${isPathStartWith('/glossary-fallout') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/glossary-fallout">База текстов Fallout</RouterLink>
+							</li>
+							<li>
+								<RouterLink :class="`${isPathStartWith('/glossary-fallout') || isPathStartWith('/f76-atomic-shop') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/f76-atomic-shop">Атомная лавка Fallout 76</RouterLink>
 							</li>
 						</ul>
 					</li>

@@ -5,6 +5,7 @@ import BookView from '@/views/BookView.vue'
 import GlossaryTESView from '@/views/GlossaryTESView.vue'
 import GlossaryFalloutView from '@/views/GlossaryFalloutView.vue'
 import BooksExportView from '@/views/BooksExportView.vue'
+import F76AtomicShopView from '@/views/F76AtomicShopView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 
 const router = createRouter({
@@ -64,6 +65,11 @@ const router = createRouter({
 			path: '/glossary-fallout',
 			name: 'glossary-fallout',
 			component: GlossaryFalloutView,
+		},
+		{
+			path: '/f76-atomic-shop',
+			name: 'f76-atomic-shop',
+			component: F76AtomicShopView,
 		},
 		{
 			path: '/books-export',
