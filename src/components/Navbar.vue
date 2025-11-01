@@ -69,7 +69,7 @@ onMounted(async () => {
 								<RouterLink :class="`${isPathStartWith('/glossary-fallout') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/glossary-fallout">База текстов Fallout</RouterLink>
 							</li>
 							<li>
-								<RouterLink :class="`${isPathStartWith('/glossary-fallout') || isPathStartWith('/f76-atomic-shop') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/f76-atomic-shop">Атомная лавка Fallout 76</RouterLink>
+								<RouterLink :class="`${isPathStartWith('/f76-atomic-shop') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/f76-atomic-shop">Атомная лавка Fallout 76</RouterLink>
 							</li>
 						</ul>
 					</li>

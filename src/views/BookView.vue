@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { reactive, watchEffect, computed, onServerPrefetch, watch, ref } from 'vue';
+import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref } from 'vue';
 import { useHead } from '@unhead/vue';
 import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
 import type { Book } from '@/types';
 import { useFetchBook, useFetchCategories, useFetchPatches, usePrefetchBook, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
-import { useWindowSize, useDebounceFn } from '@vueuse/core';
-import { Tab } from 'bootstrap';
+import { useWindowSize } from '@vueuse/core';
 
 const route = useRoute();
 const router = useRouter();
@@ -97,6 +96,9 @@ watchEffect(() => {
 
 onServerPrefetch(async () => {
 	await bookSuspense();
+	if (book.value.titleRu) {
+		updateMetaTags(book.value);
+	}
 });
 
 const queryClient = useQueryClient();
@@ -104,33 +106,45 @@ const prefetchBook = (bookId: number) => usePrefetchBook(queryClient, bookId);
 const prefetchCategory = (categoryId: number | undefined) => usePrefetchCategory(queryClient, categoryId);
 const prefetchPatch = (patchVersion: string | undefined) => usePrefetchPatch(queryClient, patchVersion);
 
-// TODO: Tabs
 const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
-watch(isMobile, (newValue) => {
-	if (!newValue) {
-		const infoTab = document.querySelector('#info-tab');
-		if (infoTab?.classList.contains('active')) {
-			const firstTab = document.querySelector('#russian-tab');
-			if (firstTab) {
-				const tab = new Tab(firstTab as HTMLElement);
-				tab.show();
+onMounted(async () => {
+	const { Tab } = await import("bootstrap");
+
+	watch(isMobile, (newValue) => {
+		if (!newValue) {
+			const infoTab = document.querySelector('#info-tab');
+			if (infoTab?.classList.contains('active')) {
+				const firstTab = document.querySelector('#russian-tab');
+				if (firstTab) {
+					const tab = new Tab(firstTab as HTMLElement);
+					tab.show();
+				}
 			}
 		}
-	}
+	});
 });
+
+const parsedTextRu = computed(() =>
+	parsePseudoCode((book.value.textRu ?? '').replace(/\n/g, '<br>'))
+);
+
+const parsedTextEn = computed(() =>
+	parsePseudoCode((book.value.textEn ?? '').replace(/\n/g, '<br>'))
+);
 </script>
 
 <template>
 	<div class="container-xl">
 		<div v-if="!isBookFetched && !isBookError" class="loading-state" style="margin: auto;">
-			<!-- TODO: Add spinner -->
+			<!-- TODO: Add skeleton -->
 		</div>
 
-		<div v-else-if="isBookError" class="error-state">
-			Ошибка загрузки книги <!-- TODO: Add error message -->
+		<div v-else-if="isBookError" class="error-state alert alert-danger mt-4">
+			<h5>Ошибка загрузки книги</h5>
+			<p>Попробуйте обновить страницу или вернуться позже.</p>
 		</div>
 
 		<NotFoundView v-else-if="isNotFound" />
@@ -152,12 +166,12 @@ watch(isMobile, (newValue) => {
 				<div class="tab-content" id="categoriesTabContent">
 					<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
 						<h1 class="book-title">{{ book.titleRu }}</h1>
-						<div class="book-main" v-html="parsePseudoCode((book.textRu ?? '').replace(/\n/g, '<br>'))"></div>
+						<div class="book-main" v-html="parsedTextRu"></div>
 					</div>
 
 					<div class="tab-pane p-3" id="english-pane" role="tabpanel" aria-labelledby="english-pane" tabindex="1">
 						<h1 class="book-title">{{ book.titleEn }}</h1>
-						<div class="book-main" v-html="parsePseudoCode((book.textEn ?? '').replace(/\n/g, '<br>'))"></div>
+						<div class="book-main" v-html="parsedTextEn"></div>
 					</div>
 
 					<div class="tab-pane p-3" id="info-pane" role="tabpanel" aria-labelledby="info-pane" tabindex="2">
@@ -177,7 +191,7 @@ watch(isMobile, (newValue) => {
 				<Teleport defer to="#info-pane" :disabled="!isMobile">
 					<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
 						<div class="card">
-							<div class="card-element">
+							<div class="card-element book-icon">
 								<img :src="prepareIcon(book.icon)" :alt="book.titleRu">
 							</div>
 							<div class="card-element">
@@ -206,7 +220,7 @@ watch(isMobile, (newValue) => {
 						</div>
 					</div>
 
-					<div v-if="book.group && book.group.length" class="p-3">
+					<div v-if="book.group && book.group.length" class="p-3 card-related-books-wrapper">
 						<div class="card card-book-group">
 							<div class="list-group list-group-flush">
 								<h5 class="list-group-item h5-list-group-item">Связанные книги</h5>
@@ -244,13 +258,15 @@ watch(isMobile, (newValue) => {
 }
 
 .card-wrapper {
-	margin-top: 20px;
+	margin-top: 14px;
 }
 
 .card {
-	padding: 5px 0 0;
+	padding: 1.25rem !important;
 	text-align: center;
-	margin: 0 30px;
+	margin: 0 0 0 15px;
+	border: none;
+	background: var(--bs-block-bg);
 }
 
 .card-book-group {
@@ -259,17 +275,24 @@ watch(isMobile, (newValue) => {
 }
 
 .card-element {
-	padding: 13px;
+	padding: 1rem 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	text-align: center;
 }
 
-.card-element:nth-child(even) {
-	background-color: #222433;
+.card-element:last-child {
+	border-bottom: none;
 }
 
 .card-subtitle {
 	font-size: 13px;
-	margin-bottom: 0;
-	color: #ffffff79;
+	margin-bottom: 0.3rem;
+	color: #a1a1aa;
+	font-weight: 500;
+}
+
+.book-icon {
+	border: none;
 }
 
 .book-main .alert {
@@ -278,9 +301,43 @@ watch(isMobile, (newValue) => {
 	color: #ffffff;
 }
 
+.list-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
 .h5-list-group-item {
-	margin-bottom: 0;
+	padding: 0;
+	font-size: 1.125rem;
 	text-align: center;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	padding-bottom: 20px;
+	background: none;
+}
+
+.list-group-item-action {
+	background: none;
+	border: none;
+	padding: 0.75rem 1rem;
+	border-radius: 6px;
+	text-decoration: none;
+	color: var(--bs-body-color);
+	font-size: 0.9375rem;
+	line-height: normal;
+
+	&:hover {
+		background: none;
+		color: var(--bs-primary);
+		transition: color 0.2s;
+	}
+
+	&.active {
+		background: var(--bs-primary);
+		color: #27272a;
+		font-weight: 500;
+		pointer-events: none;
+	}
 }
 
 .prev-next-container {
@@ -314,10 +371,18 @@ watch(isMobile, (newValue) => {
 @media (max-width: 991.98px) {
 	.card-wrapper {
 		margin-top: 0;
+		padding: 0 0 10px !important;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.card-related-books-wrapper {
+		margin-top: 20px;
+		padding: 0 !important;
 	}
 
 	.card {
 		margin: 0;
+		padding: 0 !important;
 	}
 }
 
@@ -334,7 +399,7 @@ watch(isMobile, (newValue) => {
 		width: 33.33%;
 	}
 
-	.nav-tabs  .nav-link {
+	.nav-tabs .nav-link {
 		width: 100%;
 	}
 

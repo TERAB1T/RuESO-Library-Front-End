@@ -13,6 +13,9 @@
 	--bs-link-color-rgb: var(--bs-primary-rgb);
 	--bs-link-hover-color: #fb923c;
 	--bs-link-hover-color-rgb: 251, 146, 60;
+
+	--bs-block-bg: #18181b;
+	--bs-block-border-radius: 12px;
 }
 
 html {
@@ -38,7 +41,7 @@ a.col:hover .card {
 	position: sticky;
 	top: 0;
 	z-index: 4;
-	background: #18181b !important;
+	background: var(--bs-block-bg) !important;
 	border-bottom: 1px solid #3f3f46;
 	padding: 0.5rem 1rem;
 }
@@ -49,9 +52,9 @@ a.col:hover .card {
 
 /* Tabs */
 .nav-tabs {
-	background: #18181b;
-	border-top-left-radius: 12px;
-	border-top-right-radius: 12px;
+	background: var(--bs-block-bg);
+	border-top-left-radius: var(--bs-block-border-radius);
+	border-top-right-radius: var(--bs-block-border-radius);
 }
 
 .nav-tabs .nav-link {
@@ -74,10 +77,14 @@ a.col:hover .card {
 }
 
 .tab-content {
-	background: #18181b;
-	border-bottom-left-radius: 12px;
-	border-bottom-right-radius: 12px;
+	background: var(--bs-block-bg);
+	border-bottom-left-radius: var(--bs-block-border-radius);
+	border-bottom-right-radius: var(--bs-block-border-radius);
 	padding: 1rem 1.2rem;
+}
+
+.card {
+	--bs-card-border-radius: var(--bs-block-border-radius);
 }
 
 /* Main block */
