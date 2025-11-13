@@ -40,6 +40,11 @@ export const prepareIcon = (icon: string) => {
 	return icon.replace(/\/?esoui\/(.*?)\.dds/gi, '/public/img/eso/esoui/$1.png').toLowerCase();
 }
 
+export const prepareAtomicShopImage = (icon: any) => {
+	if (!icon) return `/public/img/f76/atx/notfound.webp`;
+	return `/public/img/f76/atx/${icon}`;
+}
+
 /**
  * Returns a debounced version of the given function. The function will be
  * invoked after `timeout` milliseconds have passed since the last time it was
