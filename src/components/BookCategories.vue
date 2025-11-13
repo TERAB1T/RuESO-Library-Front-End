@@ -109,12 +109,12 @@ onMounted(async () => {
 			</ul>
 
 			<div class="tab-content" id="categoriesTabContent">
-				<div class="tab-pane list-group list-group-flush" :class="{ 'active': state.currentPatchVersion === '-1' }" id="book-categories-pane" role="tabpanel" aria-labelledby="book-categories-pane" tabindex="0">
+				<div class="tab-pane list-group list-group-flush eso-category-list" :class="{ 'active': state.currentPatchVersion === '-1' }" id="book-categories-pane" role="tabpanel" aria-labelledby="book-categories-pane" tabindex="0">
 					<RouterLink v-for="category in sortedCategories" :key="category.id" class="list-group-item list-group-item-action" :class="{ 'active': state.currentCategoryId === category.id }" :to="state.currentCategoryId === category.id ? '/library/eso' : `/library/eso/category/${category.id}-${category.slug}`" @mouseenter="prefetchCategory(category.id)">
 						{{ category.titleRu }}
 					</RouterLink>
 				</div>
-				<div class="tab-pane list-group list-group-flush" :class="{ 'active': state.currentPatchVersion !== '-1' }" id="book-patches-pane" role="tabpanel" aria-labelledby="book-patches-pane" tabindex="0">
+				<div class="tab-pane list-group list-group-flush eso-category-list" :class="{ 'active': state.currentPatchVersion !== '-1' }" id="book-patches-pane" role="tabpanel" aria-labelledby="book-patches-pane" tabindex="0">
 					<RouterLink v-for="patch in props.patches" :key="patch.version" class="list-group-item list-group-item-action" :class="{ 'active': state.currentPatchVersion === patch.version }" :to="state.currentPatchVersion === patch.version ? '/library/eso' : `/library/eso/patch/${patch.version}-${patch.slug}`" @mouseenter="prefetchPatch(patch.version)">
 						{{ patch.version }} ({{ patch.nameRu }})
 					</RouterLink>

@@ -6,6 +6,7 @@ import GlossaryTESView from '@/views/GlossaryTESView.vue'
 import GlossaryFalloutView from '@/views/GlossaryFalloutView.vue'
 import BooksExportView from '@/views/BooksExportView.vue'
 import F76AtomicShopView from '@/views/F76AtomicShopView.vue'
+import F76AtomicShopItemView from '@/views/F76AtomicShopItemView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 
 const router = createRouter({
@@ -68,8 +69,25 @@ const router = createRouter({
 		},
 		{
 			path: '/f76-atomic-shop',
-			name: 'f76-atomic-shop',
+			name: 'atomic-shop',
 			component: F76AtomicShopView,
+			children: [
+				{
+					path: 'category/:categoryFormId([a-f0-9]{8}):slug?',
+					name: 'atomic-shop-category',
+					component: F76AtomicShopView,
+				},
+				{
+					path: 'subcategory/:subcategoryFormId([a-f0-9]{8}):slug?',
+					name: 'atomic-shop-subcategory',
+					component: F76AtomicShopView,
+				}
+			],
+		},
+		{
+			path: '/f76-atomic-shop/:itemFormId([a-f0-9]{8}):slug?',
+			name: 'atomic-shop-item',
+			component: F76AtomicShopItemView,
 		},
 		{
 			path: '/books-export',

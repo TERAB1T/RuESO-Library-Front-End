@@ -193,7 +193,7 @@ table.dataTable {
 
 table.dataTable thead {
 	position: sticky;
-	top: 77px;
+	top: 67px;
 	z-index: 3;
 	box-shadow: rgba(0, 0, 0, 0.4) 0 0 20px;
 	clip-path: inset(0 0 -20px 0);
@@ -347,6 +347,54 @@ table.dataTable pre {
 .game-checks label.disabled {
 	opacity: 0.5;
 	filter: grayscale(1);
+}
+
+.btn-primary {
+	background: var(--bs-primary);
+	border-color: var(--bs-primary);
+	color: black;
+}
+
+.pagination {
+	--bs-pagination-active-bg: var(--bs-primary);
+	--bs-pagination-active-border-color: var(--bs-primary);
+	--bs-pagination-active-color: black;
+}
+
+.list-group {
+	--bs-list-group-active-bg: var(--bs-primary);
+	--bs-list-group-active-border-color: var(--bs-primary);
+	--bs-list-group-active-color: black;
+}
+
+.eso-category-list .list-group-item {
+	background: transparent;
+}
+
+.eso-category-list .list-group-item {
+	background: transparent;
+	border-bottom: none;
+	padding: 0.75rem 1rem;
+    border-radius: 6px;
+
+	&.active {
+		background: var(--bs-primary) !important;
+		color: black !important;
+	}
+
+	&:hover {
+		color: var(--bs-primary);
+		background: transparent;
+	}
+
+	&:focus {
+		background: transparent;
+	}
+}
+
+#collapse-categories {
+	z-index: 3;
+	position: relative;
 }
 
 @media (max-width: 767.98px) {
