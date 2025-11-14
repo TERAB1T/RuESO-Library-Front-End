@@ -106,7 +106,8 @@ export interface AtomicShopItem {
 	subcategoryFormId: string | null;
 	rarity: number | null;
 	slug: string | null;
-	orderId: number;
+	orderByName: number;
+	orderByFormId: number;
 }
 
 export interface AtomicShopItemsResponse {

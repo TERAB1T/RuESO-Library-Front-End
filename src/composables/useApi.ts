@@ -1,5 +1,5 @@
 import { useQuery, keepPreviousData } from '@tanstack/vue-query';
-import { prepareURL } from '@/utils';
+import { prepareURL, getAtomicShopSortOrder } from '@/utils';
 import { useDebounceFn } from '@vueuse/core';
 
 import type {
@@ -86,13 +86,13 @@ export const useFetchAtomicShopItem = (itemFormId: ComputedRef<string>): UseQuer
 	});
 }
 
-export const useFetchAtomicShopItems = (categoryFormId: ComputedRef<string>, subcategoryFormId: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: Ref<string>): UseQueryReturnType<AtomicShopItemsResponse, Error> => {
+export const useFetchAtomicShopItems = (categoryFormId: ComputedRef<string>, subcategoryFormId: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>): UseQueryReturnType<AtomicShopItemsResponse, Error> => {
 	return useQuery({
-		queryKey: ['f76_atx_items', categoryFormId, subcategoryFormId, { currentPage, pageSize, filter }],
+		queryKey: ['f76_atx_items', categoryFormId, subcategoryFormId, { currentPage, pageSize, filter, sortOrder }],
 		queryFn: () => {
-			if (subcategoryFormId.value !== '-1') return fetchApi(prepareURL(`/api/f76/atomicshop/subcategories/${subcategoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}`));
-			else if (categoryFormId.value !== '-1') return fetchApi(prepareURL(`/api/f76/atomicshop/categories/${categoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}`));
-			else return fetchApi(prepareURL(`/api/f76/atomicshop/items?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}`));
+			if (subcategoryFormId.value !== '-1') return fetchApi(prepareURL(`/api/f76/atomicshop/subcategories/${subcategoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}&sort_order=${sortOrder.value}`));
+			else if (categoryFormId.value !== '-1') return fetchApi(prepareURL(`/api/f76/atomicshop/categories/${categoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}&sort_order=${sortOrder.value}`));
+			else return fetchApi(prepareURL(`/api/f76/atomicshop/items?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}&sort_order=${sortOrder.value}`));
 		},
 		staleTime: DEFAULT_STALE_TIME,
 		placeholderData: keepPreviousData
@@ -174,20 +174,22 @@ export const usePrefetchAtomicShopItem = useDebounceFn((queryClient: any, itemFo
 
 export const usePrefetchAtomicShopCategory = useDebounceFn((queryClient: any, categoryFormId: string | undefined) => {
 	if (categoryFormId === undefined || categoryFormId === '-1') return;
+	const sortOrder = getAtomicShopSortOrder();
 
 	queryClient.prefetchQuery({
-		queryKey: ['f76_atx_items', categoryFormId, '-1', { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '' }],
-		queryFn: () => fetchApi(prepareURL(`/api/f76/atomicshop/categories/${categoryFormId}?page=1&page_size=${ATX_PAGE_SIZE}`)),
+		queryKey: ['f76_atx_items', categoryFormId, '-1', { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder }],
+		queryFn: () => fetchApi(prepareURL(`/api/f76/atomicshop/categories/${categoryFormId}?page=1&page_size=${ATX_PAGE_SIZE}&sort_order=${sortOrder}`)),
 		staleTime: DEFAULT_STALE_TIME
 	});
 }, DEBOUNCE_DELAY);
 
 export const usePrefetchAtomicShopSubcategory = useDebounceFn((queryClient: any, subcategoryFormId: string | undefined) => {
 	if (subcategoryFormId === undefined || subcategoryFormId === '-1') return;
+	const sortOrder = getAtomicShopSortOrder();
 
 	queryClient.prefetchQuery({
-		queryKey: ['f76_atx_items', '-1', subcategoryFormId, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '' }],
-		queryFn: () => fetchApi(prepareURL(`/api/f76/atomicshop/subcategories/${subcategoryFormId}?page=1&page_size=${ATX_PAGE_SIZE}`)),
+		queryKey: ['f76_atx_items', '-1', subcategoryFormId, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder }],
+		queryFn: () => fetchApi(prepareURL(`/api/f76/atomicshop/subcategories/${subcategoryFormId}?page=1&page_size=${ATX_PAGE_SIZE}&sort_order=${sortOrder}`)),
 		staleTime: DEFAULT_STALE_TIME
 	});
 }, DEBOUNCE_DELAY);

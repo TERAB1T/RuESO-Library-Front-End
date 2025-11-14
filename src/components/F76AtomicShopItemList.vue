@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { reactive, watch, computed, watchEffect, onServerPrefetch, ref } from 'vue';
-import { prepareAtomicShopImage } from '@/utils';
+import { reactive, watch, computed, watchEffect, onServerPrefetch, ref, onMounted } from 'vue';
+import { prepareAtomicShopImage, getAtomicShopSortOrder, setAtomicShopSortOrder } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchAtomicShopItems, usePrefetchAtomicShopItem } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -43,16 +43,27 @@ const state = reactive({
 		nameRu: ''
 	},
 	pageSize: 15,
-	totalPages: 1
+	totalPages: 1,
+	filter: '',
+	sortOrder: getAtomicShopSortOrder()
 });
 
 const currentPage = computed(() => Number(route.query.page) || 1);
 const currentCategory = computed(() => (route.params.categoryFormId || '-1') as string);
 const currentSubcategory = computed(() => (route.params.subcategoryFormId || '-1') as string);
 
-const filter = ref('');
+watch(() => state.sortOrder, (newValue) => {
+	setAtomicShopSortOrder(newValue);
+});
 
-const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched } = useFetchAtomicShopItems(currentCategory, currentSubcategory, currentPage, state.pageSize, filter);
+const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched } = useFetchAtomicShopItems(
+	currentCategory,
+	currentSubcategory,
+	currentPage,
+	state.pageSize,
+	computed(() => state.filter),
+	computed(() => state.sortOrder)
+);
 
 watchEffect(async () => {
 	if (itemsData.value) {
@@ -99,13 +110,16 @@ const prefetchAtomicShopItem = (itemFormId: string) => usePrefetchAtomicShopItem
 
 const onChangeFilter = useDebounceFn((textFilter: string) => {
 	if (!textFilter || textFilter.length < 3) {
-		filter.value = '';
+		state.filter = '';
 	} else {
-		filter.value = encodeURI(textFilter);
+		state.filter = encodeURI(textFilter);
+	}
+
+	if (currentPage.value !== 1) {
+		router.push({ query: { ...route.query, page: 1 } });
 	}
 }, 300);
 
-// Получить полный путь категория -> подкатегория
 const getBreadcrumb = (item: AtomicShopItem): string => {
 	const category = item.categoryFormId ? getCategoryByFormId(item.categoryFormId) : null;
 	const subcategory = item.subcategoryFormId ? getSubcategoryByFormId(item.subcategoryFormId) : null;
@@ -121,22 +135,41 @@ const getBreadcrumb = (item: AtomicShopItem): string => {
 
 <template>
 	<template v-if="state.currentSubcategory.formId !== '-1' && subcategoryInfo?.nameRu">
-		<h2 class="mt-3 mb-4">{{ subcategoryInfo?.nameRu }}</h2>
+		<h2 class="mt-3 mb-4">Атомная лавка: {{ subcategoryInfo?.nameRu }}</h2>
 	</template>
 
 	<template v-else-if="state.currentCategory.formId !== '-1' && categoryInfo?.nameRu">
-		<h2 class="mt-3 mb-4">{{ categoryInfo?.nameRu }}</h2>
+		<h2 class="mt-3 mb-4">Атомная лавка: {{ categoryInfo?.nameRu === 'C.A.M.P.' ? categoryInfo?.nameRu : categoryInfo?.nameRu.toLowerCase() }}</h2>
 	</template>
 
-	<div class="mb-4">
-		<input
-			type="search"
-			class="form-control form-control-lg"
-			id="library-filter"
-			placeholder="Фильтр по названию"
-			autocomplete="off"
-			@input="onChangeFilter(($event.target as HTMLInputElement).value)"
-		>
+	<template v-else>
+		<h2 class="mt-3 mb-4">Атомная лавка Fallout 76</h2>
+	</template>
+
+	<div class="row g-4 mb-2">
+		<div class="col-12 col-md-8">
+			<input
+				type="search"
+				class="form-control form-control-lg"
+				id="library-filter"
+				placeholder="Фильтр по названию"
+				autocomplete="off"
+				@input="onChangeFilter(($event.target as HTMLInputElement).value)"
+			>
+		</div>
+		<div class="col-12 col-md-4">
+			<select
+				v-model="state.sortOrder"
+				class="form-select form-select-lg"
+				aria-label="Сортировка"
+				@change="changePage(1)"
+			>
+				<option value="date_desc">Сортировка: сначала новые</option>
+				<option value="date_asc">Сортировка: сначала старые</option>
+				<option value="name_asc">Сортировка: А-Я</option>
+				<option value="name_desc">Сортировка: Я-А</option>
+			</select>
+		</div>
 	</div>
 
 	<div class="row g-4 mb-4">
@@ -154,7 +187,8 @@ const getBreadcrumb = (item: AtomicShopItem): string => {
 					<img
 						:src="prepareAtomicShopImage(item.mainImage)"
 						class="card-img-top"
-						:alt="item.nameRu || item.nameEn || 'Item'"
+						:alt="item.nameRu || item.nameEn || 'Atomic Shop Item'"
+						loading="lazy"
 					>
 				</div>
 				<div class="card-body d-flex flex-column">
@@ -172,40 +206,42 @@ const getBreadcrumb = (item: AtomicShopItem): string => {
 		Предметы не найдены
 	</div>
 
-	<Pagination :currentPage="currentPage" :totalPages="state.totalPages" @changePage="changePage" />
+	<Pagination :currentPage="currentPage" :totalPages="state.totalPages" @changePage="changePage" :maxVisiblePages="9" />
 </template>
 
 <style scoped>
 .atomic-shop-card {
-	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 	overflow: hidden;
 	border: 1px solid rgba(0, 0, 0, 0.125);
 	background: var(--bs-block-bg);
 }
 
 .atomic-shop-card:hover {
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	background: #1e1e20;
 	text-decoration: none;
 }
 
 .card-img-wrapper {
 	width: 100%;
-	height: 300px;
+	aspect-ratio: 1 / 1;
 	overflow: hidden;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	background: linear-gradient(135deg, #4e4e4e 0%, #383838 100%);
 }
 
 .card-img-top {
 	width: 100%;
 	height: 100%;
-	object-fit: cover;
+	object-fit: contain;
+	padding: 0rem;
 	transition: transform 0.3s ease;
 }
 
 .atomic-shop-card:hover .card-img-top {
-	transform: scale(1.05);
+	transform: scale(1.08);
 }
 
 .card-title {
@@ -233,9 +269,9 @@ const getBreadcrumb = (item: AtomicShopItem): string => {
 	min-height: 140px;
 }
 
-@media (max-width: 767px) {
-	.card-img-wrapper {
-		height: 180px;
-	}
+.form-select-lg {
+    font-size: 1rem !important;
+    line-height: 1.85rem;
+	cursor: pointer;
 }
 </style>

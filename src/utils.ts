@@ -168,3 +168,38 @@ export const formatDateTime = (input: string): string => {
   const [dd, mm, yyyy] = input.split(".");
   return `${yyyy}-${mm}-${dd} 00:00`;
 }
+
+const atomicShopLocalStorageKey = 'atomic-shop-sort-order';
+
+/**
+ * Returns the saved sort order for the atomic shop list. If no saved sort order
+ * is found, sets the default sort order to "date_desc" and returns it.
+ *
+ * @returns The saved sort order, or "date_desc" if no saved sort order is found.
+ */
+export const getAtomicShopSortOrder = (): string => {
+	const validSortOrders = ['date_desc', 'date_asc', 'name_desc', 'name_asc'];
+
+	if (!import.meta.env.SSR) {
+		let saved = localStorage.getItem(atomicShopLocalStorageKey);
+
+		if (!saved || !validSortOrders.includes(saved)) {
+			saved = "date_desc";
+			setAtomicShopSortOrder(saved);
+		}
+
+		return saved;
+	} else {
+		return "date_desc";
+	}
+}
+
+/**
+ * Saves the given sort order to local storage.
+ * @param order The sort order to save.
+ */
+export const setAtomicShopSortOrder = (order: string) => {
+	if (!import.meta.env.SSR) {
+		localStorage.setItem(atomicShopLocalStorageKey, order);
+	}
+}
