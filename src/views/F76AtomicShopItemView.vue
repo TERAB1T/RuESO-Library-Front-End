@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { RouterLink, useRoute } from 'vue-router';
+import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick, onBeforeUnmount } from 'vue';
 import { useHead } from '@unhead/vue';
 import { prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
@@ -236,6 +236,16 @@ onBeforeUnmount(() => {
 		lightbox = null;
 	}
 });
+
+const showTeleport = ref(true);
+
+onBeforeRouteLeave(() => {
+	showTeleport.value = false;
+
+	return new Promise(resolve => {
+		nextTick(() => resolve(true));
+	});
+});
 </script>
 
 <template>
@@ -263,7 +273,7 @@ onBeforeUnmount(() => {
 						<li class="nav-item" role="presentation">
 							<button class="nav-link" id="english-tab" data-bs-toggle="tab" data-bs-target="#english-pane" type="button" role="tab" aria-controls="english-pane" aria-selected="false">Английская<span class="hide-mobile"> версия</span></button>
 						</li>
-						<li class="nav-item" :class="isMobile ? '' : 'hide-tab'" role="presentation">
+						<li class="nav-item hide-tab" role="presentation">
 							<button ref="infoTabTrigger" class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab" aria-controls="info-pane" aria-selected="false">Информация</button>
 						</li>
 					</ul>
@@ -300,7 +310,7 @@ onBeforeUnmount(() => {
 				</div>
 
 				<div class="col-lg-4">
-					<Teleport defer to="#info-pane" :disabled="!isMobile">
+					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
 						<div class="p-3 card-wrapper book-info-card-sticky">
 							<div class="card">
 								<div v-if="!isMobile" class="card-element book-icon">
@@ -464,6 +474,10 @@ onBeforeUnmount(() => {
 
 	.screenshots {
 		padding: 0 1.2rem 1.25rem;
+	}
+
+	.hide-tab {
+		display: block;
 	}
 }
 
