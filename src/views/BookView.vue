@@ -133,6 +133,12 @@ onMounted(async () => {
 	showTeleport = ref(!!document.querySelector("#glossary-search-nav"));
 });
 
+onBeforeRouteLeave(async (to, from, next) => {
+	console.log('showTeleport', showTeleport.value);
+	console.log('showTeleport2', !!document.querySelector("#glossary-search-nav"));
+	next();
+});
+
 const parsedTextRu = computed(() =>
 	parsePseudoCode((book.value.textRu ?? '').replace(/\n/g, '<br>'))
 );
