@@ -163,6 +163,13 @@ onBeforeRouteLeave(async (to, from, next) => {
 	await nextTick();
 	console.log('showTeleport', showTeleport.value);
 	await nextTick();
+	await nextTick();
+	await nextTick();
+	await nextTick();
+	await nextTick();
+	await nextTick();
+	await nextTick();
+	await nextTick();
 	next();
 });
 </script>
