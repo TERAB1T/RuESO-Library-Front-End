@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref } from 'vue';
+import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, onBeforeUnmount } from 'vue';
 import { useHead } from '@unhead/vue';
 import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
 import { useFetchBook, useFetchCategories, useFetchPatches, usePrefetchBook, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
@@ -155,6 +155,12 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 
 	return items;
 });
+
+const teleportMounted = ref(true);
+
+onBeforeUnmount(() => {
+	teleportMounted.value = false;
+});
 </script>
 
 <template>
@@ -211,7 +217,7 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 					</div>
 				</div>
 				<div class="col-lg-4 order-2 order-lg-2">
-					<Teleport defer to="#info-pane" :disabled="!isMobile">
+					<Teleport v-if="teleportMounted" defer to="#info-pane" :disabled="!isMobile">
 						<template v-if="book.titleRu">
 							<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
 								<div class="card">
