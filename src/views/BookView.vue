@@ -191,7 +191,7 @@ onBeforeRouteLeave(() => {
 						<li class="nav-item" role="presentation">
 							<button class="nav-link" id="english-tab" data-bs-toggle="tab" data-bs-target="#english-pane" type="button" role="tab" aria-controls="english-pane" aria-selected="false">Английская<span class="hide-mobile"> версия</span></button>
 						</li>
-						<li class="nav-item" :class="isMobile ? '' : 'hide-tab'" role="presentation">
+						<li class="nav-item hide-tab" role="presentation">
 							<button ref="infoTabTrigger" class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab" aria-controls="info-pane" aria-selected="false">Информация</button>
 						</li>
 					</ul>
@@ -419,6 +419,10 @@ onBeforeRouteLeave(() => {
 	.card {
 		margin: 0;
 		padding: 0 !important;
+	}
+
+	.hide-tab {
+		display: block;
 	}
 }
 
