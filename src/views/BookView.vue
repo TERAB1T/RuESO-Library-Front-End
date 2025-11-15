@@ -160,10 +160,6 @@ const showTeleport = ref(true);
 
 onBeforeRouteLeave(() => {
 	showTeleport.value = false;
-
-	return new Promise(resolve => {
-		nextTick(() => resolve(true));
-	});
 });
 </script>
 
