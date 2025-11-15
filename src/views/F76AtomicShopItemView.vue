@@ -91,33 +91,47 @@ const initLightbox = () => {
 		const galleryElement = document.querySelector('#main-item-container');
 		if (!galleryElement) return;
 
+		const sizeCache = new Map();
+
 		lightbox = new PhotoSwipeLightbox({
 			gallery: '#main-item-container',
 			children: '.screenshot-link',
 			pswpModule: () => import('photoswipe'),
 		});
 
-		// Динамическое определение размеров
 		lightbox.addFilter('itemData', (itemData, index) => {
+			const imgSrc = itemData.src || itemData.element?.href || '';
+
+			if (sizeCache.has(imgSrc)) {
+				const cached = sizeCache.get(imgSrc);
+				itemData.width = cached.width;
+				itemData.height = cached.height;
+				return itemData;
+			}
+
 			const img = new Image();
-			img.src = itemData.src || itemData.element?.href || '';
 
 			if (img.complete && img.naturalWidth && img.naturalHeight) {
 				itemData.width = img.naturalWidth;
 				itemData.height = img.naturalHeight;
+				sizeCache.set(imgSrc, { width: img.naturalWidth, height: img.naturalHeight });
 			} else {
 				itemData.width = 512;
 				itemData.height = 512;
 
 				img.onload = () => {
-					itemData.width = img.naturalWidth;
-					itemData.height = img.naturalHeight;
+					sizeCache.set(imgSrc, {
+						width: img.naturalWidth,
+						height: img.naturalHeight
+					});
 
-					if (lightbox?.pswp) {
-						lightbox.pswp.refreshSlideContent(index);
+					if (lightbox?.pswp && lightbox.pswp.currSlide?.index === index) {
+						lightbox.pswp.updateSize(true);
 					}
 				};
 			}
+
+			img.src = imgSrc;
 
 			return itemData;
 		});
