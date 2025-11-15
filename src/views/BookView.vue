@@ -3,11 +3,13 @@ import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref } from 'vue';
 import { useHead } from '@unhead/vue';
 import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
-import type { Book } from '@/types';
 import { useFetchBook, useFetchCategories, useFetchPatches, usePrefetchBook, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
+import Breadcrumb from '@/components/Breadcrumb.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
+
+import type { Book, BreadcrumbItem } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
@@ -51,13 +53,13 @@ const updateMetaTags = (bookData: Book) => {
 			{ name: 'description', content: metaDescription },
 			{ name: 'robots', content: 'index, follow' },
 
-			{ name: 'og:title', content: metaTitle },
-			{ name: 'og:description', content: metaDescription },
-			{ name: 'og:image', content: metaIcon },
-			{ name: 'og:url', content: metaLink },
-			{ name: 'og:locale', content: 'ru_RU' },
-			{ name: 'og:type', content: 'book' },
-			{ name: 'og:site_name', content: 'RuESO' },
+			{ property: 'og:title', content: metaTitle },
+			{ property: 'og:description', content: metaDescription },
+			{ property: 'og:image', content: metaIcon },
+			{ property: 'og:url', content: metaLink },
+			{ property: 'og:locale', content: 'ru_RU' },
+			{ property: 'og:type', content: 'book' },
+			{ property: 'og:site_name', content: 'RuESO' },
 
 			{ name: 'twitter:title', content: metaTitle },
 			{ name: 'twitter:description', content: metaDescription },
@@ -134,6 +136,25 @@ const parsedTextRu = computed(() =>
 const parsedTextEn = computed(() =>
 	parsePseudoCode((book.value.textEn ?? '').replace(/\n/g, '<br>'))
 );
+
+const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+	const items: BreadcrumbItem[] = [
+		{ label: 'Библиотека TES Online', to: '/library/eso' }
+	];
+
+	if (book.value.category) {
+		items.push({
+			label: book.value.category.titleRu as string,
+			to: `/library/eso/category/${book.value.category.id}-${book.value.category.slug}`
+		});
+	}
+
+	items.push({
+		label: book.value.titleRu || 'Загрузка...'
+	});
+
+	return items;
+});
 </script>
 
 <template>
@@ -149,90 +170,93 @@ const parsedTextEn = computed(() =>
 
 		<NotFoundView v-else-if="isNotFound" />
 
-		<div v-else class="row">
-			<div class="col-lg-8 order-2 order-lg-1">
-				<ul class="nav nav-tabs" id="bookTab" role="tablist" style="margin-top: 30px;">
-					<li class="nav-item" role="presentation">
-						<button class="nav-link active" id="russian-tab" data-bs-toggle="tab" data-bs-target="#russian-pane" type="button" role="tab" aria-controls="russian-pane" aria-selected="true">Русская<span class="hide-mobile"> версия</span></button>
-					</li>
-					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="english-tab" data-bs-toggle="tab" data-bs-target="#english-pane" type="button" role="tab" aria-controls="english-pane" aria-selected="false">Английская<span class="hide-mobile"> версия</span></button>
-					</li>
-					<li class="nav-item" :class="isMobile ? '' : 'hide-tab'" role="presentation">
-						<button ref="infoTabTrigger" class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab" aria-controls="info-pane" aria-selected="false">Информация</button>
-					</li>
-				</ul>
+		<template v-else>
+			<Breadcrumb :items="breadcrumbItems" />
+			<div class="row">
+				<div class="col-lg-8 order-2 order-lg-1">
+					<ul class="nav nav-tabs" id="bookTab" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button class="nav-link active" id="russian-tab" data-bs-toggle="tab" data-bs-target="#russian-pane" type="button" role="tab" aria-controls="russian-pane" aria-selected="true">Русская<span class="hide-mobile"> версия</span></button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="english-tab" data-bs-toggle="tab" data-bs-target="#english-pane" type="button" role="tab" aria-controls="english-pane" aria-selected="false">Английская<span class="hide-mobile"> версия</span></button>
+						</li>
+						<li class="nav-item" :class="isMobile ? '' : 'hide-tab'" role="presentation">
+							<button ref="infoTabTrigger" class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab" aria-controls="info-pane" aria-selected="false">Информация</button>
+						</li>
+					</ul>
 
-				<div class="tab-content" id="categoriesTabContent">
-					<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
-						<h1 class="book-title">{{ book.titleRu }}</h1>
-						<div class="book-main" v-html="parsedTextRu"></div>
-					</div>
+					<div class="tab-content" id="categoriesTabContent">
+						<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
+							<h1 class="book-title">{{ book.titleRu }}</h1>
+							<div class="book-main" v-html="parsedTextRu"></div>
+						</div>
 
-					<div class="tab-pane p-3" id="english-pane" role="tabpanel" aria-labelledby="english-pane" tabindex="1">
-						<h1 class="book-title">{{ book.titleEn }}</h1>
-						<div class="book-main" v-html="parsedTextEn"></div>
-					</div>
+						<div class="tab-pane p-3" id="english-pane" role="tabpanel" aria-labelledby="english-pane" tabindex="1">
+							<h1 class="book-title">{{ book.titleEn }}</h1>
+							<div class="book-main" v-html="parsedTextEn"></div>
+						</div>
 
-					<div class="tab-pane p-3" id="info-pane" role="tabpanel" aria-labelledby="info-pane" tabindex="2">
-					</div>
-				</div>
-
-				<div class="d-flex flex-column flex-md-row mb-4 prev-next-container">
-					<RouterLink v-if="prevBook" :to="`/library/eso/${prevBook.id}-${prevBook.slug}`" type="button" class="btn btn-link mb-2 mb-md-0 me-md-auto prev-button" @mouseenter="prefetchBook(prevBook.id)">
-						{{ '← ' + prevBook.titleRu }}
-					</RouterLink>
-					<RouterLink v-if="nextBook" :to="`/library/eso/${nextBook.id}-${nextBook.slug}`" type="button" class="btn btn-link ms-auto next-button" @mouseenter="prefetchBook(nextBook.id)">
-						{{ nextBook.titleRu + ' →' }}
-					</RouterLink>
-				</div>
-			</div>
-			<div class="col-lg-4 order-2 order-lg-2">
-				<Teleport defer to="#info-pane" :disabled="!isMobile">
-					<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
-						<div class="card">
-							<div class="card-element book-icon">
-								<img :src="prepareIcon(book.icon)" :alt="book.titleRu">
-							</div>
-							<div class="card-element">
-								<div class="card-subtitle">Категория</div>
-								<RouterLink :to="`/library/eso/category/${book.category?.id}-${book.category?.slug}`" @mouseenter="prefetchCategory(book.category?.id)">
-									{{ book.category?.titleRu }}
-								</RouterLink>
-							</div>
-							<div class="card-element">
-								<div class="card-subtitle">Оригинальное название</div>
-								{{ book.titleEn }}
-							</div>
-							<div class="card-element">
-								<div class="card-subtitle">Добавлена</div>
-								<RouterLink :to="`/library/eso/patch/${book.created.version}-${book.created.slug}`" @mouseenter="prefetchPatch(book.created.version)">
-									Патч <time :datetime="`${book.created.date} 00:00`">{{ book.created.version }}</time> ({{ book.created.nameRu }})
-								</RouterLink>
-							</div>
-							<div v-if="book.created.version !== book.updated.version" class="card-element">
-								<div v-if="book.category?.id === 2000" class="card-subtitle">Удалена</div>
-								<div v-else class="card-subtitle">Обновлена</div>
-								<RouterLink :to="`/library/eso/patch/${book.updated.version}-${book.updated.slug}`" @mouseenter="prefetchPatch(book.updated.version)">
-									Патч <time :datetime="`${book.updated.date} 00:00`">{{ book.updated.version }}</time> ({{ book.updated.nameRu }})
-								</RouterLink>
-							</div>
+						<div class="tab-pane p-3" id="info-pane" role="tabpanel" aria-labelledby="info-pane" tabindex="2">
 						</div>
 					</div>
 
-					<div v-if="book.group && book.group.length" class="p-3 card-related-books-wrapper">
-						<div class="card card-book-group">
-							<div class="list-group list-group-flush">
-								<h5 class="list-group-item h5-list-group-item">Связанные книги</h5>
-								<RouterLink v-for="relatedBook in book.group" :key="relatedBook.id" :to="`/library/eso/${relatedBook.id}-${relatedBook.slug}`" class="list-group-item list-group-item-action" :class="{ 'active': currentBookId === relatedBook.id }" @mouseenter="prefetchBook(relatedBook.id)">
-									{{ relatedBook.titleRu }}
-								</RouterLink>
+					<div class="d-flex flex-column flex-md-row mb-4 prev-next-container">
+						<RouterLink v-if="prevBook" :to="`/library/eso/${prevBook.id}-${prevBook.slug}`" type="button" class="btn btn-link mb-2 mb-md-0 me-md-auto prev-button" @mouseenter="prefetchBook(prevBook.id)">
+							{{ '← ' + prevBook.titleRu }}
+						</RouterLink>
+						<RouterLink v-if="nextBook" :to="`/library/eso/${nextBook.id}-${nextBook.slug}`" type="button" class="btn btn-link ms-auto next-button" @mouseenter="prefetchBook(nextBook.id)">
+							{{ nextBook.titleRu + ' →' }}
+						</RouterLink>
+					</div>
+				</div>
+				<div class="col-lg-4 order-2 order-lg-2">
+					<Teleport defer to="#info-pane" :disabled="!isMobile">
+						<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
+							<div class="card">
+								<div class="card-element book-icon">
+									<img :src="prepareIcon(book.icon)" :alt="book.titleRu">
+								</div>
+								<div class="card-element">
+									<div class="card-subtitle">Категория</div>
+									<RouterLink :to="`/library/eso/category/${book.category?.id}-${book.category?.slug}`" @mouseenter="prefetchCategory(book.category?.id)">
+										{{ book.category?.titleRu }}
+									</RouterLink>
+								</div>
+								<div class="card-element">
+									<div class="card-subtitle">Оригинальное название</div>
+									{{ book.titleEn }}
+								</div>
+								<div class="card-element">
+									<div class="card-subtitle">Добавлена</div>
+									<RouterLink :to="`/library/eso/patch/${book.created.version}-${book.created.slug}`" @mouseenter="prefetchPatch(book.created.version)">
+										Патч <time :datetime="`${book.created.date} 00:00`">{{ book.created.version }}</time> ({{ book.created.nameRu }})
+									</RouterLink>
+								</div>
+								<div v-if="book.created.version !== book.updated.version" class="card-element">
+									<div v-if="book.category?.id === 2000" class="card-subtitle">Удалена</div>
+									<div v-else class="card-subtitle">Обновлена</div>
+									<RouterLink :to="`/library/eso/patch/${book.updated.version}-${book.updated.slug}`" @mouseenter="prefetchPatch(book.updated.version)">
+										Патч <time :datetime="`${book.updated.date} 00:00`">{{ book.updated.version }}</time> ({{ book.updated.nameRu }})
+									</RouterLink>
+								</div>
 							</div>
 						</div>
-					</div>
-				</Teleport>
+
+						<div v-if="book.group && book.group.length" class="p-3 card-related-books-wrapper">
+							<div class="card card-book-group">
+								<div class="list-group list-group-flush">
+									<h5 class="list-group-item h5-list-group-item">Связанные книги</h5>
+									<RouterLink v-for="relatedBook in book.group" :key="relatedBook.id" :to="`/library/eso/${relatedBook.id}-${relatedBook.slug}`" class="list-group-item list-group-item-action" :class="{ 'active': currentBookId === relatedBook.id }" @mouseenter="prefetchBook(relatedBook.id)">
+										{{ relatedBook.titleRu }}
+									</RouterLink>
+								</div>
+							</div>
+						</div>
+					</Teleport>
+				</div>
 			</div>
-		</div>
+		</template>
 	</div>
 </template>
 
@@ -258,7 +282,7 @@ const parsedTextEn = computed(() =>
 }
 
 .card-wrapper {
-	margin-top: 14px;
+	padding-top: 0 !important;
 }
 
 .card {

@@ -9,6 +9,8 @@
 	--bs-primary: #fbbf24;
 	--bs-primary-rgb: 251, 191, 36;
 
+	--bs-primary-hover: #fcd34d;
+
 	--bs-link-color: var(--bs-primary);
 	--bs-link-color-rgb: var(--bs-primary-rgb);
 	--bs-link-hover-color: #fb923c;
@@ -16,6 +18,19 @@
 
 	--bs-block-bg: #18181b;
 	--bs-block-border-radius: 12px;
+}
+
+.dropdown-menu {
+	--bs-dropdown-link-active-bg: transparent;
+	--bs-dropdown-link-active-color: #000;
+}
+
+.dropdown-item.active {
+	color: var(--bs-link-color) !important;
+
+	&:hover {
+		background-color: var(--bs-dropdown-link-hover-bg);
+	}
 }
 
 html {
@@ -31,10 +46,6 @@ html {
 a {
 	text-decoration: none;
 	transition: color 0.2s;
-}
-
-a.col:hover .card {
-	border-color: rgba(var(--bs-link-color-rgb), 0.3);
 }
 
 .navbar {
@@ -76,6 +87,16 @@ a.col:hover .card {
 	}
 }
 
+.navbar .nav-link {
+	&:hover {
+		color: var(--bs-body-color);
+	}
+
+	&.active {
+		color: var(--bs-primary);
+	}
+}
+
 .tab-content {
 	background: var(--bs-block-bg);
 	border-bottom-left-radius: var(--bs-block-border-radius);
@@ -85,6 +106,8 @@ a.col:hover .card {
 
 .card {
 	--bs-card-border-radius: var(--bs-block-border-radius);
+	overflow: hidden;
+	transition: all 0.2s ease;
 }
 
 /* Main block */
@@ -353,12 +376,26 @@ table.dataTable pre {
 	background: var(--bs-primary);
 	border-color: var(--bs-primary);
 	color: black;
+
+	&:hover, &:focus, &:active {
+		background: var(--bs-primary-hover) !important;
+		border-color: var(--bs-primary-hover) !important;
+		color: black !important;
+	}
 }
 
 .pagination {
 	--bs-pagination-active-bg: var(--bs-primary);
 	--bs-pagination-active-border-color: var(--bs-primary);
 	--bs-pagination-active-color: black;
+	--bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.form-select {
+	&:focus {
+		border-color: var(--bs-primary);
+		box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+	}
 }
 
 .list-group {

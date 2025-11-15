@@ -121,3 +121,8 @@ export interface AtomicShopItemsResponse {
 		total_pages: number;
 	}
 }
+
+export interface BreadcrumbItem {
+	label: string;
+	to?: string;
+}
