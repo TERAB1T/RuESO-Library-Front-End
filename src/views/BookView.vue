@@ -160,6 +160,7 @@ const showTeleport = ref(true);
 
 onBeforeRouteLeave((to, from, next) => {
 	showTeleport.value = false;
+	console.log('showTeleport', showTeleport.value);
 	next();
 });
 </script>
