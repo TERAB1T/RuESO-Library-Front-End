@@ -26,12 +26,12 @@ useHead({
 		{ name: 'description', content: metaDescription },
 		{ name: 'robots', content: 'index, follow' },
 
-		{ name: 'og:title', content: metaTitle },
-		{ name: 'og:description', content: metaDescription },
-		{ name: 'og:image', content: metaIcon },
-		{ name: 'og:url', content: metaLink },
-		{ name: 'og:locale', content: 'ru_RU' },
-		{ name: 'og:site_name', content: 'RuESO' },
+		{ property: 'og:title', content: metaTitle },
+		{ property: 'og:description', content: metaDescription },
+		{ property: 'og:image', content: metaIcon },
+		{ property: 'og:url', content: metaLink },
+		{ property: 'og:locale', content: 'ru_RU' },
+		{ property: 'og:site_name', content: 'RuESO' },
 
 		{ name: 'twitter:title', content: metaTitle },
 		{ name: 'twitter:description', content: metaDescription },

@@ -40,6 +40,11 @@ export const prepareIcon = (icon: string) => {
 	return icon.replace(/\/?esoui\/(.*?)\.dds/gi, '/public/img/eso/esoui/$1.png').toLowerCase();
 }
 
+export const prepareAtomicShopImage = (icon: any) => {
+	if (!icon) return `/public/img/f76/atx/notfound.webp`;
+	return `/public/img/f76/atx/${icon}`;
+}
+
 /**
  * Returns a debounced version of the given function. The function will be
  * invoked after `timeout` milliseconds have passed since the last time it was
@@ -118,6 +123,8 @@ export const parsePseudoCode = (text: string): string => {
  *          length of 160 characters.
  */
 export const generateMetaDescription = (text: string): string => {
+	if (!text || text === '') return '';
+
 	let cleanText = text.replace(/\[.*?\]/g, ' ').replace(/\s+/g, ' ').trim();
 
 	if (cleanText.length <= 160) return cleanText;
@@ -132,6 +139,23 @@ export const generateMetaDescription = (text: string): string => {
 	}
 
 	return cleanText;
+}
+
+/**
+ * Generates a meta description for an Atomic Shop item by cleaning and truncating the input text.
+ *
+ * - If the input text is empty or null, returns an empty string.
+ * - Splits the input text into lines and takes the first line.
+ * - If the first line is empty, returns an empty string.
+ * - Otherwise, calls generateMetaDescription with the first line and returns the result.
+ *
+ * @param text The input text to process.
+ * @returns A string suitable for use as a meta description, with a maximum
+ *          length of 160 characters.
+ */
+export const generateMetaDescriptionAtomicShop = (text: string): string => {
+	if (!text || text === '') return '';
+	return generateMetaDescription(text.split('\n')[0] || '');
 }
 
 /**
@@ -163,3 +187,43 @@ export const formatDateTime = (input: string): string => {
   const [dd, mm, yyyy] = input.split(".");
   return `${yyyy}-${mm}-${dd} 00:00`;
 }
+
+const atomicShopLocalStorageKey = 'atomic-shop-sort-order';
+
+/**
+ * Returns the saved sort order for the atomic shop list. If no saved sort order
+ * is found, sets the default sort order to "date_desc" and returns it.
+ *
+ * @returns The saved sort order, or "date_desc" if no saved sort order is found.
+ */
+export const getAtomicShopSortOrder = (): string => {
+	const validSortOrders = ['date_desc', 'date_asc', 'name_desc', 'name_asc'];
+
+	if (!import.meta.env.SSR) {
+		let saved = localStorage.getItem(atomicShopLocalStorageKey);
+
+		if (!saved || !validSortOrders.includes(saved)) {
+			saved = "date_desc";
+			setAtomicShopSortOrder(saved);
+		}
+
+		return saved;
+	} else {
+		return "date_desc";
+	}
+}
+
+/**
+ * Saves the given sort order to local storage.
+ * @param order The sort order to save.
+ */
+export const setAtomicShopSortOrder = (order: string) => {
+	if (!import.meta.env.SSR) {
+		localStorage.setItem(atomicShopLocalStorageKey, order);
+	}
+}
+
+export const atomicShopHandleImageError = (event: Event) => {
+	const target = event.target as HTMLImageElement;
+	target.src = '/public/img/f76/atx/notfound.webp';
+};

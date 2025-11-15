@@ -68,3 +68,61 @@ export interface GlossaryConfig {
 	gameTags?: GlossaryGameTag;
 	dividerIndex: number;
 }
+
+export interface AtomicShopCategory {
+	formId: string;
+	editorId: string;
+	nameEn: string | null;
+	nameRu: string | null;
+	slug: string | null;
+	orderId: number;
+}
+
+export interface AtomicShopSubcategory {
+	formId: string;
+	editorId: string;
+	nameEn: string | null;
+	nameRu: string | null;
+	slug: string | null;
+	parentCategoryFormId: string | null;
+	parentCategoryEditorId: string | null;
+	orderId: number;
+}
+
+export interface AtomicShopCategoryWithSubcategories extends AtomicShopCategory {
+	subcategories: AtomicShopSubcategory[];
+}
+
+export interface AtomicShopItem {
+	formId: string;
+	editorId: string;
+	nameEn: string | null;
+	nameRu: string | null;
+	descriptionEn: string | null;
+	descriptionRu: string | null;
+	mainImage: string | null;
+	screenshots: string | string[] | null;
+	categoryFormId: string | null;
+	subcategoryFormId: string | null;
+	rarity: number | null;
+	slug: string | null;
+	orderByName: number;
+	orderByFormId: number;
+}
+
+export interface AtomicShopItemsResponse {
+	category?: AtomicShopCategory;
+	subcategory?: AtomicShopSubcategory;
+	items: AtomicShopItem[];
+	pagination?: {
+		page: number;
+		pageSize: number;
+		total_books: number;
+		total_pages: number;
+	}
+}
+
+export interface BreadcrumbItem {
+	label: string;
+	to?: string;
+}

@@ -5,7 +5,7 @@ import { useHead } from '@unhead/vue';
 useHead({
 	title: `Страница не найдена | RuESO`,
 	meta: [
-		{ name: 'description', content: 'Всё о серии The Elder Scrolls.' },
+		{ name: 'description', content: 'Всё о сериях The Elder Scrolls и Fallout.' },
     	{ name: 'robots', content: 'noindex, nofollow' },
 	],
 	link: [

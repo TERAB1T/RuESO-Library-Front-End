@@ -123,6 +123,10 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 	} else {
 		filter.value = encodeURI(textFilter);
 	}
+
+	if (currentPage.value !== 1) {
+		router.push({ query: { ...route.query, page: 1 } });
+	}
 }, 300);
 </script>
 
