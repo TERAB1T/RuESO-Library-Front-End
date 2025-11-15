@@ -112,6 +112,8 @@ const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
+let showTeleport = ref(true);
+
 onMounted(async () => {
 	const { Tab } = await import("bootstrap");
 
@@ -127,6 +129,8 @@ onMounted(async () => {
 			}
 		}
 	});
+
+	showTeleport = ref(!!document.querySelector("#glossary-search-nav"));
 });
 
 const parsedTextRu = computed(() =>
@@ -156,22 +160,6 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	return items;
 });
 
-const showTeleport = ref(true);
-
-onBeforeRouteLeave(async (to, from, next) => {
-	showTeleport.value = false;
-	await nextTick();
-	console.log('showTeleport', showTeleport.value);
-	await nextTick();
-	await nextTick();
-	await nextTick();
-	await nextTick();
-	await nextTick();
-	await nextTick();
-	await nextTick();
-	await nextTick();
-	next();
-});
 </script>
 
 <template>
