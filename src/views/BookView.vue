@@ -109,11 +109,14 @@ const prefetchCategory = (categoryId: number | undefined) => usePrefetchCategory
 const prefetchPatch = (patchVersion: string | undefined) => usePrefetchPatch(queryClient, patchVersion);
 
 const { width } = useWindowSize();
-const isMobile = computed(() => width.value <= 991);
+let isMobile = computed(() => false);
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
 onMounted(async () => {
 	const { Tab } = await import("bootstrap");
+
+	isMobile = computed(() => true);
+	isMobile = computed(() => width.value <= 991);
 
 	watch(isMobile, (newValue) => {
 		if (!newValue) {
@@ -154,15 +157,6 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	});
 
 	return items;
-});
-
-const showTeleport = ref(true);
-
-onBeforeRouteLeave(() => {
-  showTeleport.value = false;
-  return new Promise(resolve => {
-    nextTick(() => resolve(true));
-  });
 });
 </script>
 
@@ -220,7 +214,7 @@ onBeforeRouteLeave(() => {
 					</div>
 				</div>
 				<div class="col-lg-4 order-2 order-lg-2">
-					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
+					<Teleport defer to="#info-pane" :disabled="!isMobile">
 						<template v-if="book.titleRu">
 							<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
 								<div class="card">
