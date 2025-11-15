@@ -136,25 +136,6 @@ const parsedTextRu = computed(() =>
 const parsedTextEn = computed(() =>
 	parsePseudoCode((book.value.textEn ?? '').replace(/\n/g, '<br>'))
 );
-
-const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
-	const items: BreadcrumbItem[] = [
-		{ label: 'Библиотека TES Online', to: '/library/eso' }
-	];
-
-	if (book.value.category) {
-		items.push({
-			label: book.value.category.titleRu as string,
-			to: `/library/eso/category/${book.value.category.id}-${book.value.category.slug}`
-		});
-	}
-
-	items.push({
-		label: book.value.titleRu || 'Загрузка...'
-	});
-
-	return items;
-});
 </script>
 
 <template>
@@ -171,7 +152,6 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 		<NotFoundView v-else-if="isNotFound" />
 
 		<template v-else>
-			<Breadcrumb :items="breadcrumbItems" />
 			<div class="row">
 				<div class="col-lg-8 order-2 order-lg-1">
 					<ul class="nav nav-tabs" id="bookTab" role="tablist">
