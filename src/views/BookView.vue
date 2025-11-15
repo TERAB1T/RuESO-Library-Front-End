@@ -158,9 +158,11 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 
 const showTeleport = ref(true);
 
-onBeforeRouteLeave((to, from, next) => {
+onBeforeRouteLeave(async (to, from, next) => {
 	showTeleport.value = false;
+	await nextTick();
 	console.log('showTeleport', showTeleport.value);
+	await nextTick();
 	next();
 });
 </script>
