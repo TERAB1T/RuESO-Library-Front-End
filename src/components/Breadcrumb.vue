@@ -14,7 +14,9 @@ defineProps<{
 	<nav aria-label="breadcrumb" class="breadcrumb-nav">
 		<ol class="breadcrumb-custom">
 			<li v-for="(item, index) in items" :key="index" class="breadcrumb-custom-item">
-				<FontAwesomeIcon v-if="index > 0" :icon="faChevronRight" class="breadcrumb-separator" />
+				<svg v-if="index > 0" class="breadcrumb-separator" viewBox="0 0 320 512" fill="currentColor">
+					<path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
+				</svg>
 
 				<RouterLink v-if="item.to" :to="item.to" class="breadcrumb-custom-link">
 					{{ item.label }}
@@ -53,9 +55,10 @@ defineProps<{
 
 .breadcrumb-separator {
 	color: #71717a;
-	font-size: 0.7rem;
+	width: 0.7rem;
+	height: 0.7rem;
 	margin: 0 0.5rem;
-	max-height: .7rem;
+	flex-shrink: 0;
 }
 
 .breadcrumb-custom-link {
