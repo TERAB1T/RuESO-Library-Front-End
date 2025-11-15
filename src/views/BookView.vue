@@ -136,22 +136,32 @@ const parsedTextRu = computed(() =>
 const parsedTextEn = computed(() =>
 	parsePseudoCode((book.value.textEn ?? '').replace(/\n/g, '<br>'))
 );
+
+const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+	const items: BreadcrumbItem[] = [
+		{ label: 'Библиотека TES Online', to: '/library/eso' }
+	];
+
+	if (book.value.category) {
+		items.push({
+			label: book.value.category.titleRu as string,
+			to: `/library/eso/category/${book.value.category.id}-${book.value.category.slug}`
+		});
+	}
+
+	items.push({
+		label: book.value.titleRu || 'Загрузка...'
+	});
+
+	return items;
+});
 </script>
 
 <template>
 	<div class="container-xl">
-		<div v-if="!isBookFetched && !isBookError" class="loading-state" style="margin: auto;">
-			<!-- TODO: Add skeleton -->
-		</div>
 
-		<div v-else-if="isBookError" class="error-state alert alert-danger mt-4">
-			<h5>Ошибка загрузки книги</h5>
-			<p>Попробуйте обновить страницу или вернуться позже.</p>
-		</div>
-
-		<NotFoundView v-else-if="isNotFound" />
-
-		<template v-else>
+		<template v-if="isBookFetched">
+			<Breadcrumb :items="breadcrumbItems" />
 			<div class="row">
 				<div class="col-lg-8 order-2 order-lg-1">
 					<ul class="nav nav-tabs" id="bookTab" role="tablist">
