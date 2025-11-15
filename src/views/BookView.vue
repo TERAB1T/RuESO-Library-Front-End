@@ -156,13 +156,13 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	return items;
 });
 
-const targetRef = ref(null);
+const targetRef = ref(false);
 
 onMounted(() => {
 	targetRef.value = document.querySelector("#info-pane");
 });
 
-const showTeleport = computed(() => targetRef.value == null ? true : !!targetRef.value);
+const showTeleport = computed(() => targetRef.value === false ? true : !!targetRef.value);
 
 </script>
 
