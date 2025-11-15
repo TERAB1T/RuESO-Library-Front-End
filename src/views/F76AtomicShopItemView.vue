@@ -324,7 +324,7 @@ onBeforeRouteLeave(() => {
 										{{ categoryInfo.nameRu }}
 									</RouterLink>
 									<span v-if="subcategoryInfo">
-										<FontAwesomeIcon :icon="faChevronRight" class="fa-chevron-icon" />
+										<FontAwesomeIcon :icon="faChevronRight" class="fa-chevron-icon breadcrumb-separator" />
 										<RouterLink :to="`/f76-atomic-shop/subcategory/${subcategoryInfo.formId}-${subcategoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchSubcategory(subcategoryInfo.formId)">
 											{{ subcategoryInfo.nameRu }}
 										</RouterLink>
@@ -352,6 +352,13 @@ onBeforeRouteLeave(() => {
 </template>
 
 <style scoped lang="scss">
+.breadcrumb-separator {
+	color: #71717a;
+	font-size: 0.7rem;
+	margin: 0 0.5rem;
+	max-height: .7rem;
+}
+
 .tab-content {
 	padding: 0.5rem 1.2rem 1rem;
 
@@ -430,12 +437,6 @@ onBeforeRouteLeave(() => {
 
 .main-image {
 	max-width: 200px;
-}
-
-.fa-chevron-icon {
-	color: #a1a1aa;
-	font-size: 0.6rem;
-	margin: 0 5px;
 }
 
 .screenshot-link {

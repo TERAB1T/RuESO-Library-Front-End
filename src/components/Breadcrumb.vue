@@ -55,6 +55,7 @@ defineProps<{
 	color: #71717a;
 	font-size: 0.7rem;
 	margin: 0 0.5rem;
+	max-height: .7rem;
 }
 
 .breadcrumb-custom-link {
