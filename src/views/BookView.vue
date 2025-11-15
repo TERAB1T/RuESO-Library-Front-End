@@ -112,6 +112,8 @@ const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
+const teleportKey = ref(0);
+
 onMounted(async () => {
 	const { Tab } = await import("bootstrap");
 
@@ -127,6 +129,8 @@ onMounted(async () => {
 			}
 		}
 	});
+
+	teleportKey.value = 1;
 });
 
 const parsedTextRu = computed(() =>
@@ -154,12 +158,6 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	});
 
 	return items;
-});
-
-const showTeleport = ref(true);
-
-onBeforeUnmount(() => {
-	showTeleport.value = false;
 });
 </script>
 
@@ -217,7 +215,7 @@ onBeforeUnmount(() => {
 					</div>
 				</div>
 				<div class="col-lg-4 order-2 order-lg-2">
-					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
+					<Teleport :key="teleportKey" defer to="#info-pane" :disabled="!isMobile">
 						<template v-if="book.titleRu">
 							<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
 								<div class="card">
