@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
-import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick, onBeforeUnmount } from 'vue';
+import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
 import { useHead } from '@unhead/vue';
 import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
 import { useFetchBook, useFetchCategories, useFetchPatches, usePrefetchBook, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
@@ -112,8 +112,6 @@ const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
-const teleportKey = ref(0);
-
 onMounted(async () => {
 	const { Tab } = await import("bootstrap");
 
@@ -129,8 +127,6 @@ onMounted(async () => {
 			}
 		}
 	});
-
-	teleportKey.value = 1;
 });
 
 const parsedTextRu = computed(() =>
@@ -158,6 +154,15 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	});
 
 	return items;
+});
+
+const showTeleport = ref(true);
+
+onBeforeRouteLeave(() => {
+  showTeleport.value = false;
+  return new Promise(resolve => {
+    nextTick(() => resolve(true));
+  });
 });
 </script>
 
@@ -215,7 +220,7 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 					</div>
 				</div>
 				<div class="col-lg-4 order-2 order-lg-2">
-					<Teleport :key="teleportKey" defer to="#info-pane" :disabled="!isMobile">
+					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
 						<template v-if="book.titleRu">
 							<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
 								<div class="card">
