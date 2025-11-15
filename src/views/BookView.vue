@@ -112,6 +112,8 @@ const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
+let showTeleport = ref(true);
+
 onMounted(async () => {
 	const { Tab } = await import("bootstrap");
 
@@ -127,6 +129,14 @@ onMounted(async () => {
 			}
 		}
 	});
+
+	showTeleport = ref(!!document.querySelector("#info-pane"));
+});
+
+onBeforeRouteLeave(async (to, from, next) => {
+	console.log('showTeleport', showTeleport.value);
+	console.log('showTeleport2', !!document.querySelector("#info-pane"));
+	next();
 });
 
 const parsedTextRu = computed(() =>
@@ -154,15 +164,6 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	});
 
 	return items;
-});
-
-const showTeleport = ref(true);
-
-watch(() => route.params.bookId, () => {
-	showTeleport.value = false;
-	nextTick(() => {
-		showTeleport.value = true;
-	});
 });
 </script>
 
