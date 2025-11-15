@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
-import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
+import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick, onBeforeUnmount } from 'vue';
 import { useHead } from '@unhead/vue';
 import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
 import { useFetchBook, useFetchCategories, useFetchPatches, usePrefetchBook, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
@@ -156,13 +156,11 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	return items;
 });
 
-const targetRef = ref(null);
+const showTeleport = ref(true);
 
-onMounted(() => {
-	targetRef.value = document.querySelector("#info-pane");
+onBeforeUnmount(() => {
+	showTeleport.value = false;
 });
-
-const showTeleport = computed(() => !!targetRef.value);
 </script>
 
 <template>
