@@ -159,8 +159,18 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 
 <template>
 	<div class="container-xl">
+		<div v-if="!isBookFetched && !isBookError" class="loading-state" style="margin: auto;">
+			<!-- TODO: Add skeleton -->
+		</div>
 
-		<template v-if="isBookFetched">
+		<div v-else-if="isBookError" class="error-state alert alert-danger mt-4">
+			<h5>Ошибка загрузки книги</h5>
+			<p>Попробуйте обновить страницу или вернуться позже.</p>
+		</div>
+
+		<NotFoundView v-else-if="isNotFound" />
+
+		<template v-else>
 			<Breadcrumb :items="breadcrumbItems" />
 			<div class="row">
 				<div class="col-lg-8 order-2 order-lg-1">
@@ -202,47 +212,49 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 				</div>
 				<div class="col-lg-4 order-2 order-lg-2">
 					<Teleport defer to="#info-pane" :disabled="!isMobile">
-						<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
-							<div class="card">
-								<div class="card-element book-icon">
-									<img :src="prepareIcon(book.icon)" :alt="book.titleRu">
-								</div>
-								<div class="card-element">
-									<div class="card-subtitle">Категория</div>
-									<RouterLink :to="`/library/eso/category/${book.category?.id}-${book.category?.slug}`" @mouseenter="prefetchCategory(book.category?.id)">
-										{{ book.category?.titleRu }}
-									</RouterLink>
-								</div>
-								<div class="card-element">
-									<div class="card-subtitle">Оригинальное название</div>
-									{{ book.titleEn }}
-								</div>
-								<div class="card-element">
-									<div class="card-subtitle">Добавлена</div>
-									<RouterLink :to="`/library/eso/patch/${book.created.version}-${book.created.slug}`" @mouseenter="prefetchPatch(book.created.version)">
-										Патч <time :datetime="`${book.created.date} 00:00`">{{ book.created.version }}</time> ({{ book.created.nameRu }})
-									</RouterLink>
-								</div>
-								<div v-if="book.created.version !== book.updated.version" class="card-element">
-									<div v-if="book.category?.id === 2000" class="card-subtitle">Удалена</div>
-									<div v-else class="card-subtitle">Обновлена</div>
-									<RouterLink :to="`/library/eso/patch/${book.updated.version}-${book.updated.slug}`" @mouseenter="prefetchPatch(book.updated.version)">
-										Патч <time :datetime="`${book.updated.date} 00:00`">{{ book.updated.version }}</time> ({{ book.updated.nameRu }})
-									</RouterLink>
+						<template v-if="book.titleRu">
+							<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
+								<div class="card">
+									<div class="card-element book-icon">
+										<img :src="prepareIcon(book.icon)" :alt="book.titleRu">
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Категория</div>
+										<RouterLink :to="`/library/eso/category/${book.category?.id}-${book.category?.slug}`" @mouseenter="prefetchCategory(book.category?.id)">
+											{{ book.category?.titleRu }}
+										</RouterLink>
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Оригинальное название</div>
+										{{ book.titleEn }}
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Добавлена</div>
+										<RouterLink :to="`/library/eso/patch/${book.created.version}-${book.created.slug}`" @mouseenter="prefetchPatch(book.created.version)">
+											Патч <time :datetime="`${book.created.date} 00:00`">{{ book.created.version }}</time> ({{ book.created.nameRu }})
+										</RouterLink>
+									</div>
+									<div v-if="book.created.version !== book.updated.version" class="card-element">
+										<div v-if="book.category?.id === 2000" class="card-subtitle">Удалена</div>
+										<div v-else class="card-subtitle">Обновлена</div>
+										<RouterLink :to="`/library/eso/patch/${book.updated.version}-${book.updated.slug}`" @mouseenter="prefetchPatch(book.updated.version)">
+											Патч <time :datetime="`${book.updated.date} 00:00`">{{ book.updated.version }}</time> ({{ book.updated.nameRu }})
+										</RouterLink>
+									</div>
 								</div>
 							</div>
-						</div>
 
-						<div v-if="book.group && book.group.length" class="p-3 card-related-books-wrapper">
-							<div class="card card-book-group">
-								<div class="list-group list-group-flush">
-									<h5 class="list-group-item h5-list-group-item">Связанные книги</h5>
-									<RouterLink v-for="relatedBook in book.group" :key="relatedBook.id" :to="`/library/eso/${relatedBook.id}-${relatedBook.slug}`" class="list-group-item list-group-item-action" :class="{ 'active': currentBookId === relatedBook.id }" @mouseenter="prefetchBook(relatedBook.id)">
-										{{ relatedBook.titleRu }}
-									</RouterLink>
+							<div v-if="book.group && book.group.length" class="p-3 card-related-books-wrapper">
+								<div class="card card-book-group">
+									<div class="list-group list-group-flush">
+										<h5 class="list-group-item h5-list-group-item">Связанные книги</h5>
+										<RouterLink v-for="relatedBook in book.group" :key="relatedBook.id" :to="`/library/eso/${relatedBook.id}-${relatedBook.slug}`" class="list-group-item list-group-item-action" :class="{ 'active': currentBookId === relatedBook.id }" @mouseenter="prefetchBook(relatedBook.id)">
+											{{ relatedBook.titleRu }}
+										</RouterLink>
+									</div>
 								</div>
 							</div>
-						</div>
+						</template>
 					</Teleport>
 				</div>
 			</div>
