@@ -325,7 +325,7 @@ onBeforeRouteLeave(() => {
 				</div>
 
 				<div class="col-lg-4">
-					<Teleport v-if="!showTeleport" defer to="#info-pane" :disabled="!isMobile">
+					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="isMobile">
 						<div class="p-3 card-wrapper book-info-card-sticky">
 							<div class="card">
 								<div v-if="!isMobile" class="card-element book-icon">
