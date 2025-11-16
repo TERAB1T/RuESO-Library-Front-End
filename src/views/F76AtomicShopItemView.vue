@@ -166,6 +166,8 @@ const infoTabTrigger = ref<HTMLElement | null>(null);
 onMounted(async () => {
 	const { Tab } = await import("bootstrap");
 
+	console.log("isMobile", isMobile);
+
 	watch(isMobile, (newValue) => {
 		console.log("watch", newValue);
 		if (!newValue) {
