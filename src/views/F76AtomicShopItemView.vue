@@ -17,8 +17,6 @@ import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbIte
 
 const route = useRoute();
 
-let lightbox: PhotoSwipeLightbox | null = null;
-
 const currentItemFormId = computed(() => (route.params.itemFormId || '') as string);
 
 const { data: itemData, suspense: itemSuspense, isSuccess: isItemFetched, isError: isItemError } = useFetchAtomicShopItem(currentItemFormId);
@@ -174,13 +172,6 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	});
 
 	return items;
-});
-
-onBeforeUnmount(() => {
-	if (lightbox) {
-		lightbox.destroy();
-		lightbox = null;
-	}
 });
 
 const showTeleport = ref(true);
