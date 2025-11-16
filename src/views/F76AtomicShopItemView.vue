@@ -26,6 +26,7 @@ const { data: itemData, suspense: itemSuspense, isSuccess: isItemFetched, isErro
 const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchAtomicShopCategories();
 
 const item = computed(() => itemData.value ?? {} as AtomicShopItem);
+const categories = computed(() => categoriesData.value ?? [] as AtomicShopCategoryWithSubcategories[]);
 
 const isNotFound = computed(() =>
 	isItemFetched.value && !item.value.nameRu
@@ -148,6 +149,7 @@ watchEffect(() => {
 
 onServerPrefetch(async () => {
 	await itemSuspense();
+	await categoriesSuspense();
 	if (item.value.nameRu) {
 		updateMetaTags(item.value);
 	}
@@ -191,6 +193,20 @@ const splittedScreenshots = computed(() => {
 	return screenshotsArray.map(s => prepareAtomicShopImage(s));
 });
 
+const categoryInfo = computed(() => {
+	if (!item.value.categoryFormId) return null;
+	return categories.value.find(cat => cat.formId === item.value.categoryFormId);
+});
+
+const subcategoryInfo = computed(() => {
+	if (!item.value.subcategoryFormId) return null;
+	for (const category of categories.value) {
+		const subcategory = category.subcategories.find(sub => sub.formId === item.value.subcategoryFormId);
+		if (subcategory) return subcategory;
+	}
+	return null;
+});
+
 const parsedTextRu = computed(() =>
 	(item.value.descriptionRu ?? '').replace(/\n/g, '<br>')
 );
@@ -203,6 +219,20 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	const items: BreadcrumbItem[] = [
 		{ label: 'Атомная лавка Fallout 76', to: '/f76-atomic-shop' }
 	];
+
+	if (categoryInfo.value) {
+		items.push({
+			label: categoryInfo.value.nameRu as string,
+			to: `/f76-atomic-shop/category/${categoryInfo.value.formId}-${categoryInfo.value.slug}`
+		});
+	}
+
+	if (subcategoryInfo.value) {
+		items.push({
+			label: subcategoryInfo.value.nameRu as string,
+			to: `/f76-atomic-shop/subcategory/${subcategoryInfo.value.formId}-${subcategoryInfo.value.slug}`
+		});
+	}
 
 	items.push({
 		label: item.value.nameRu || 'Загрузка...'
@@ -296,7 +326,41 @@ onBeforeRouteLeave(() => {
 
 				<div class="col-lg-4">
 					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
-						<div>Тест тест тест</div>
+						<div class="p-3 card-wrapper book-info-card-sticky">
+							<div class="card">
+								<div v-if="!isMobile" class="card-element book-icon">
+									<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
+										<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
+									</a>
+								</div>
+								<div v-if="categoryInfo" class="card-element">
+									<div class="card-subtitle">Категория</div>
+									<RouterLink :to="`/f76-atomic-shop/category/${categoryInfo.formId}-${categoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchCategory(categoryInfo.formId)">
+										{{ categoryInfo.nameRu }}
+									</RouterLink>
+									<span v-if="subcategoryInfo">
+										<svg class="breadcrumb-separator" viewBox="0 0 320 512" fill="currentColor">
+											<path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
+										</svg>
+										<RouterLink :to="`/f76-atomic-shop/subcategory/${subcategoryInfo.formId}-${subcategoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchSubcategory(subcategoryInfo.formId)">
+											{{ subcategoryInfo.nameRu }}
+										</RouterLink>
+									</span>
+								</div>
+								<div class="card-element">
+									<div class="card-subtitle">Оригинальное название</div>
+									{{ item.nameEn || '—' }}
+								</div>
+								<div class="card-element">
+									<div class="card-subtitle">Form ID</div>
+									{{ item.formId }}
+								</div>
+								<div class="card-element">
+									<div class="card-subtitle">Editor ID</div>
+									{{ item.editorId }}
+								</div>
+							</div>
+						</div>
 					</Teleport>
 				</div>
 			</div>
