@@ -331,9 +331,6 @@ onBeforeRouteLeave(() => {
 								<div class="card">
 									<div class="card-element">
 										<div class="card-subtitle">Категория</div>
-										<RouterLink :to="`/f76-atomic-shop/category/${categoryInfo.formId}-${categoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchCategory(categoryInfo.formId)">
-											{{ categoryInfo.nameRu }}
-										</RouterLink>
 									</div>
 									<div class="card-element">
 										<div class="card-subtitle">Оригинальное название</div>
