@@ -163,12 +163,8 @@ const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
-console.log("isMobile", isMobile.value);
-
 onMounted(async () => {
 	const { Tab } = await import("bootstrap");
-
-	console.log("isMobile", isMobile.value);
 
 	watch(isMobile, (newValue) => {
 		if (!newValue) {
@@ -329,42 +325,44 @@ onBeforeRouteLeave(() => {
 				</div>
 
 				<div class="col-lg-4">
-					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
-						<div class="p-3 card-wrapper book-info-card-sticky">
-							<div class="card">
-								<div v-if="!isMobile" class="card-element book-icon">
-									<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
-										<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
-									</a>
-								</div>
-								<div v-if="categoryInfo" class="card-element">
-									<div class="card-subtitle">Категория</div>
-									<RouterLink :to="`/f76-atomic-shop/category/${categoryInfo.formId}-${categoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchCategory(categoryInfo.formId)">
-										{{ categoryInfo.nameRu }}
-									</RouterLink>
-									<span v-if="subcategoryInfo">
-										<svg class="breadcrumb-separator" viewBox="0 0 320 512" fill="currentColor">
-											<path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
-										</svg>
-										<RouterLink :to="`/f76-atomic-shop/subcategory/${subcategoryInfo.formId}-${subcategoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchSubcategory(subcategoryInfo.formId)">
-											{{ subcategoryInfo.nameRu }}
+					<Teleport v-if="showTeleport" to="#info-pane" :disabled="!isMobile">
+						<template v-if="showTeleport && item.nameRu">
+							<div class="p-3 card-wrapper book-info-card-sticky">
+								<div class="card">
+									<div v-if="!isMobile" class="card-element book-icon">
+										<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
+											<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
+										</a>
+									</div>
+									<div v-if="categoryInfo" class="card-element">
+										<div class="card-subtitle">Категория</div>
+										<RouterLink :to="`/f76-atomic-shop/category/${categoryInfo.formId}-${categoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchCategory(categoryInfo.formId)">
+											{{ categoryInfo.nameRu }}
 										</RouterLink>
-									</span>
-								</div>
-								<div class="card-element">
-									<div class="card-subtitle">Оригинальное название</div>
-									{{ item.nameEn || '—' }}
-								</div>
-								<div class="card-element">
-									<div class="card-subtitle">Form ID</div>
-									{{ item.formId }}
-								</div>
-								<div class="card-element">
-									<div class="card-subtitle">Editor ID</div>
-									{{ item.editorId }}
+										<span v-if="subcategoryInfo">
+											<svg class="breadcrumb-separator" viewBox="0 0 320 512" fill="currentColor">
+												<path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
+											</svg>
+											<RouterLink :to="`/f76-atomic-shop/subcategory/${subcategoryInfo.formId}-${subcategoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchSubcategory(subcategoryInfo.formId)">
+												{{ subcategoryInfo.nameRu }}
+											</RouterLink>
+										</span>
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Оригинальное название</div>
+										{{ item.nameEn || '—' }}
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Form ID</div>
+										{{ item.formId }}
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Editor ID</div>
+										{{ item.editorId }}
+									</div>
 								</div>
 							</div>
-						</div>
+						</template>
 					</Teleport>
 				</div>
 			</div>
