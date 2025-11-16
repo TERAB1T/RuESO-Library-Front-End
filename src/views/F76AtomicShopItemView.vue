@@ -161,7 +161,7 @@ const prefetchSubcategory = (subcategoryFormId: string | undefined) => usePrefet
 
 const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
-const teleportDisabled = ref(true);
+let teleportDisabled = ref(true);
 
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
@@ -182,7 +182,7 @@ onMounted(async () => {
 	});
 
 	nextTick(() => {
-		teleportDisabled.value = !isMobile.value;
+		teleportDisabled = computed(() => width.value <= 991);
 	});
 
 	initLightbox();
