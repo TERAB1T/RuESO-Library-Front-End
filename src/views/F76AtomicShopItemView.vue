@@ -202,7 +202,7 @@ onBeforeRouteLeave(() => {
 			<Breadcrumb :items="breadcrumbItems" />
 
 			<div class="row" id="main-item-container">
-				<div class="col-lg-8">
+				<div class="col-lg-8 order-2 order-lg-1">
 					<ul class="nav nav-tabs" id="bookTab" role="tablist">
 						<li class="nav-item" role="presentation">
 							<button class="nav-link active" id="russian-tab" data-bs-toggle="tab" data-bs-target="#russian-pane" type="button" role="tab" aria-controls="russian-pane" aria-selected="true">Русская<span class="hide-mobile"> версия</span></button>
@@ -215,7 +215,7 @@ onBeforeRouteLeave(() => {
 						</li>
 					</ul>
 
-					<div class="tab-content" :class="splittedScreenshots.length > 0 || isMobile ? 'with-screenshots' : ''" id="categoriesTabContent">
+					<div class="tab-content" id="categoriesTabContent">
 						<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
 							<h1 class="book-title">{{ item.nameRu }}</h1>
 							<div class="book-main" v-html="parsedTextRu"></div>
@@ -229,24 +229,9 @@ onBeforeRouteLeave(() => {
 						<div class="tab-pane p-3" id="info-pane" role="tabpanel" aria-labelledby="info-pane" tabindex="2">
 						</div>
 					</div>
-
-					<div v-if="isMobile || splittedScreenshots.length > 0" class="screenshots">
-						<div class="row g-3">
-							<div v-if="isMobile" class="col-12 col-md-4">
-								<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
-									<img :src="prepareAtomicShopImage(item.mainImage)" class="img-fluid screenshot-img" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
-								</a>
-							</div>
-							<div v-for="(screenshot, index) in splittedScreenshots" :key="index" class="col-12 col-md-4">
-								<a :href="screenshot" class="screenshot-link">
-									<img :src="screenshot" class="img-fluid screenshot-img" :alt="`${item.nameRu || item.nameEn} - скриншот ${index + 1}`" @error="atomicShopHandleImageError">
-								</a>
-							</div>
-						</div>
-					</div>
 				</div>
 
-				<div class="col-lg-4">
+				<div class="col-lg-4 order-2 order-lg-2">
 					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
 						<template v-if="item.nameRu">
 							<div class="p-3 card-wrapper book-info-card-sticky">
