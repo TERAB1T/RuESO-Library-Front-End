@@ -163,25 +163,23 @@ const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
+console.log("isMobile", isMobile.value);
+
 onMounted(async () => {
 	const { Tab } = await import("bootstrap");
 
-	console.log("isMobile", isMobile);
+	console.log("isMobile", isMobile.value);
 
 	watch(isMobile, (newValue) => {
-		console.log("watch", newValue);
 		if (!newValue) {
-			nextTick(() => {
-				console.log("nextTick");
-				const infoTab = document.querySelector('#info-tab');
-				if (infoTab?.classList.contains('active')) {
-					const firstTab = document.querySelector('#russian-tab');
-					if (firstTab) {
-						const tab = new Tab(firstTab as HTMLElement);
-						tab.show();
-					}
+			const infoTab = document.querySelector('#info-tab');
+			if (infoTab?.classList.contains('active')) {
+				const firstTab = document.querySelector('#russian-tab');
+				if (firstTab) {
+					const tab = new Tab(firstTab as HTMLElement);
+					tab.show();
 				}
-			});
+			}
 		}
 	});
 
