@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { reactive, watch, computed, watchEffect, onServerPrefetch } from 'vue';
+import { reactive, watch, computed, watchEffect, onServerPrefetch, ref } from 'vue';
 import { prepareAtomicShopImage, getAtomicShopSortOrder, setAtomicShopSortOrder, atomicShopHandleImageError } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchAtomicShopItems, usePrefetchAtomicShopItem } from '@/composables/useApi';
@@ -131,6 +131,19 @@ const getBreadcrumb = (item: AtomicShopItem): string => {
 	}
 	return '';
 };
+
+const hoveredItem = ref<string | null>(null);
+
+const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
+	const hasAvif = item.mainImage?.includes('.avif');
+
+	if (!hasAvif) {
+		return prepareAtomicShopImage(item.mainImage);
+	}
+
+	const format = isHovered ? '.avif' : '.webp';
+	return prepareAtomicShopImage(item.mainImage?.replace(/\.(avif|webp)$/, format));
+};
 </script>
 
 <template>
@@ -162,9 +175,9 @@ const getBreadcrumb = (item: AtomicShopItem): string => {
 
 	<div class="row g-4 mb-4">
 		<div v-for="item in state.items" :key="item.formId" class="col-12 col-md-6 col-lg-4">
-			<RouterLink :to="`/f76-atomic-shop/${item.formId}-${item.slug}`" class="card h-100 text-decoration-none atomic-shop-card" @mouseenter="prefetchAtomicShopItem(item.formId)">
+			<RouterLink :to="`/f76-atomic-shop/${item.formId}-${item.slug}`" class="card h-100 text-decoration-none atomic-shop-card" @mouseenter="hoveredItem = item.formId; prefetchAtomicShopItem(item.formId)" @mouseleave="hoveredItem = null">
 				<div class="card-img-wrapper">
-					<img :src="prepareAtomicShopImage(item.mainImage?.replace('.avif', '.webp'))" class="card-img-top" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
+					<img :src="getImageSrc(item, hoveredItem === item.formId)" class="card-img-top" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
 				</div>
 				<div class="card-body d-flex flex-column">
 					<h5 class="card-title mb-2">{{ item.nameRu || item.nameEn || 'Без названия' }}</h5>
