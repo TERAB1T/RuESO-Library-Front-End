@@ -160,7 +160,10 @@ const prefetchCategory = (categoryFormId: string | undefined) => usePrefetchAtom
 const prefetchSubcategory = (subcategoryFormId: string | undefined) => usePrefetchAtomicShopSubcategory(queryClient, subcategoryFormId);
 
 const { width } = useWindowSize();
-const isMobile = ref(true);
+const isMobile = computed(() => {
+	if (typeof window === 'undefined') return false;
+	return width.value <= 991;
+});
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
 onMounted(async () => {
