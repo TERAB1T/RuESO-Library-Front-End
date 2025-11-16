@@ -179,11 +179,9 @@ onMounted(async () => {
 				}
 			}
 		}
-	});
 
-watch(isMobile, (newVal) => {
-	teleportDisabled.value = !newVal;
-}, { immediate: true });
+		teleportDisabled.value = !newValue;
+	}, { immediate: true });
 
 	initLightbox();
 });
