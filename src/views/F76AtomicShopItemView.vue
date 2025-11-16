@@ -161,7 +161,7 @@ const prefetchSubcategory = (subcategoryFormId: string | undefined) => usePrefet
 
 const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
-const initialDisabled = ref(!isMobile.value);
+const teleportDisabled = ref(true);
 
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
@@ -182,7 +182,7 @@ onMounted(async () => {
 	});
 
 	nextTick(() => {
-		initialDisabled.value = !isMobile.value;
+		teleportDisabled.value = !isMobile.value;
 	});
 
 	initLightbox();
@@ -331,7 +331,7 @@ onBeforeRouteLeave(() => {
 				</div>
 
 				<div class="col-lg-4">
-					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="initialDisabled">
+					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="teleportDisabled">
 						<template v-if="item.nameRu">
 							<div class="p-3 card-wrapper book-info-card-sticky">
 								<div class="card">
