@@ -528,6 +528,7 @@ onBeforeRouteLeave(() => {
 	.nav-tabs .nav-link {
 		min-width: 0;
 		white-space: normal;
+		padding: 15px clamp(5px, 5vw, 25px);
 	}
 
 	.hide-mobile {
