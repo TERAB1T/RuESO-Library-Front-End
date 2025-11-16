@@ -149,7 +149,6 @@ watchEffect(() => {
 
 onServerPrefetch(async () => {
 	await itemSuspense();
-	await categoriesSuspense();
 	if (item.value.nameRu) {
 		updateMetaTags(item.value);
 	}
