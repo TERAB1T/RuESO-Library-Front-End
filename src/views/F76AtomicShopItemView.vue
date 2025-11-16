@@ -331,7 +331,7 @@ onBeforeRouteLeave(() => {
 								<div class="card">
 									<div v-if="!isMobile" class="card-element book-icon">
 										<a :href="prepareAtomicShopImage(item.mainImage)">
-											<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
+											<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image">
 										</a>
 									</div>
 									<div v-if="categoryInfo" class="card-element">
