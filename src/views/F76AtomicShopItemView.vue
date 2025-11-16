@@ -109,16 +109,18 @@ const initLightbox = () => {
 				return itemData;
 			}
 
-			const img = new Image();
 
-			if (img.complete && img.naturalWidth && img.naturalHeight) {
-				itemData.width = img.naturalWidth;
-				itemData.height = img.naturalHeight;
-				sizeCache.set(imgSrc, { width: img.naturalWidth, height: img.naturalHeight });
+			const existingImg = itemData.element?.querySelector('img');
+			if (existingImg?.complete && existingImg.naturalWidth && existingImg.naturalHeight) {
+				itemData.width = existingImg.naturalWidth;
+				itemData.height = existingImg.naturalHeight;
+				sizeCache.set(imgSrc, { width: existingImg.naturalWidth, height: existingImg.naturalHeight });
 			} else {
+
 				itemData.width = 512;
 				itemData.height = 512;
 
+				const img = new Image();
 				img.onload = () => {
 					sizeCache.set(imgSrc, {
 						width: img.naturalWidth,
@@ -129,9 +131,8 @@ const initLightbox = () => {
 						lightbox.pswp.updateSize(true);
 					}
 				};
+				img.src = imgSrc;
 			}
-
-			img.src = imgSrc;
 
 			return itemData;
 		});
