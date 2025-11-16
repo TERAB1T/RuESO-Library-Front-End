@@ -78,69 +78,6 @@ const updateMetaTags = (itemData: AtomicShopItem) => {
 		]
 	});
 }
-
-const initLightbox = () => {
-	if (import.meta.env.SSR) return;
-
-	if (lightbox) {
-		lightbox.destroy();
-		lightbox = null;
-	}
-
-	nextTick(() => {
-		const galleryElement = document.querySelector('#main-item-container');
-		if (!galleryElement) return;
-
-		const sizeCache = new Map();
-
-		lightbox = new PhotoSwipeLightbox({
-			gallery: '#main-item-container',
-			children: '.screenshot-link',
-			pswpModule: () => import('photoswipe'),
-		});
-
-		lightbox.addFilter('itemData', (itemData, index) => {
-			const imgSrc = itemData.src || itemData.element?.href || '';
-
-			if (sizeCache.has(imgSrc)) {
-				const cached = sizeCache.get(imgSrc);
-				itemData.width = cached.width;
-				itemData.height = cached.height;
-				return itemData;
-			}
-
-
-			const existingImg = itemData.element?.querySelector('img');
-			if (existingImg?.complete && existingImg.naturalWidth && existingImg.naturalHeight) {
-				itemData.width = existingImg.naturalWidth;
-				itemData.height = existingImg.naturalHeight;
-				sizeCache.set(imgSrc, { width: existingImg.naturalWidth, height: existingImg.naturalHeight });
-			} else {
-
-				itemData.width = 512;
-				itemData.height = 512;
-
-				const img = new Image();
-				img.onload = () => {
-					sizeCache.set(imgSrc, {
-						width: img.naturalWidth,
-						height: img.naturalHeight
-					});
-
-					if (lightbox?.pswp && lightbox.pswp.currSlide?.index === index) {
-						lightbox.pswp.updateSize(true);
-					}
-				};
-				img.src = imgSrc;
-			}
-
-			return itemData;
-		});
-
-		lightbox.init();
-	});
-};
-
 watchEffect(() => {
 	if (item.value.nameRu) {
 		updateMetaTags(item.value);
@@ -178,8 +115,6 @@ onMounted(async () => {
 			}
 		}
 	});
-
-	initLightbox();
 });
 
 const splittedScreenshots = computed(() => {
@@ -239,10 +174,6 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	});
 
 	return items;
-});
-
-watch(() => item.value.mainImage, () => {
-	initLightbox();
 });
 
 onBeforeUnmount(() => {
@@ -326,41 +257,43 @@ onBeforeRouteLeave(() => {
 
 				<div class="col-lg-4">
 					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
-						<div class="p-3 card-wrapper book-info-card-sticky">
-							<div class="card">
-								<div v-if="!isMobile" class="card-element book-icon">
-									<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
-										<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
-									</a>
-								</div>
-								<div v-if="categoryInfo" class="card-element">
-									<div class="card-subtitle">Категория</div>
-									<RouterLink :to="`/f76-atomic-shop/category/${categoryInfo.formId}-${categoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchCategory(categoryInfo.formId)">
-										{{ categoryInfo.nameRu }}
-									</RouterLink>
-									<span v-if="subcategoryInfo">
-										<svg class="breadcrumb-separator" viewBox="0 0 320 512" fill="currentColor">
-											<path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
-										</svg>
-										<RouterLink :to="`/f76-atomic-shop/subcategory/${subcategoryInfo.formId}-${subcategoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchSubcategory(subcategoryInfo.formId)">
-											{{ subcategoryInfo.nameRu }}
+						<template v-if="item.nameRu">
+							<div class="p-3 card-wrapper book-info-card-sticky">
+								<div class="card">
+									<div v-if="!isMobile" class="card-element book-icon">
+										<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
+											<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
+										</a>
+									</div>
+									<div v-if="categoryInfo" class="card-element">
+										<div class="card-subtitle">Категория</div>
+										<RouterLink :to="`/f76-atomic-shop/category/${categoryInfo.formId}-${categoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchCategory(categoryInfo.formId)">
+											{{ categoryInfo.nameRu }}
 										</RouterLink>
-									</span>
-								</div>
-								<div class="card-element">
-									<div class="card-subtitle">Оригинальное название</div>
-									{{ item.nameEn || '—' }}
-								</div>
-								<div class="card-element">
-									<div class="card-subtitle">Form ID</div>
-									{{ item.formId }}
-								</div>
-								<div class="card-element">
-									<div class="card-subtitle">Editor ID</div>
-									{{ item.editorId }}
+										<span v-if="subcategoryInfo">
+											<svg class="breadcrumb-separator" viewBox="0 0 320 512" fill="currentColor">
+												<path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
+											</svg>
+											<RouterLink :to="`/f76-atomic-shop/subcategory/${subcategoryInfo.formId}-${subcategoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchSubcategory(subcategoryInfo.formId)">
+												{{ subcategoryInfo.nameRu }}
+											</RouterLink>
+										</span>
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Оригинальное название</div>
+										{{ item.nameEn || '—' }}
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Form ID</div>
+										{{ item.formId }}
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Editor ID</div>
+										{{ item.editorId }}
+									</div>
 								</div>
 							</div>
-						</div>
+						</template>
 					</Teleport>
 				</div>
 			</div>
