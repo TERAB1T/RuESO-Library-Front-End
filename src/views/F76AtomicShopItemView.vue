@@ -191,20 +191,6 @@ const splittedScreenshots = computed(() => {
 	return screenshotsArray.map(s => prepareAtomicShopImage(s));
 });
 
-const categoryInfo = computed(() => {
-	if (!item.value.categoryFormId) return null;
-	return categories.value.find(cat => cat.formId === item.value.categoryFormId);
-});
-
-const subcategoryInfo = computed(() => {
-	if (!item.value.subcategoryFormId) return null;
-	for (const category of categories.value) {
-		const subcategory = category.subcategories.find(sub => sub.formId === item.value.subcategoryFormId);
-		if (subcategory) return subcategory;
-	}
-	return null;
-});
-
 const parsedTextRu = computed(() =>
 	(item.value.descriptionRu ?? '').replace(/\n/g, '<br>')
 );
