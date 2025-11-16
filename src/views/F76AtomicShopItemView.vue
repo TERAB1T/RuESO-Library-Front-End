@@ -36,7 +36,7 @@ const updateMetaTags = (itemData: AtomicShopItem) => {
 	let metaTitle = `${itemData.nameRu} | Fallout 76`;
 	let metaDescription = generateMetaDescriptionAtomicShop(itemData.descriptionRu as string);
 	let metaLink = `https://rueso.ru/f76-atomic-shop/${itemData.formId}-${itemData.slug}`;
-	let metaIcon = `https://rueso.ru${prepareAtomicShopImage(itemData.mainImage)}`;
+	let metaIcon = `https://rueso.ru${prepareAtomicShopImage(itemData.mainImage?.replace(".avif", ".webp"))}`;
 
 	useHead({
 		title: metaTitle,

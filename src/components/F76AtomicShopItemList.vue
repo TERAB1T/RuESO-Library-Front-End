@@ -164,7 +164,7 @@ const getBreadcrumb = (item: AtomicShopItem): string => {
 		<div v-for="item in state.items" :key="item.formId" class="col-12 col-md-6 col-lg-4">
 			<RouterLink :to="`/f76-atomic-shop/${item.formId}-${item.slug}`" class="card h-100 text-decoration-none atomic-shop-card" @mouseenter="prefetchAtomicShopItem(item.formId)">
 				<div class="card-img-wrapper">
-					<img :src="prepareAtomicShopImage(item.mainImage)" class="card-img-top" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
+					<img :src="prepareAtomicShopImage(item.mainImage?.replace('.avif', '.webp'))" class="card-img-top" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
 				</div>
 				<div class="card-body d-flex flex-column">
 					<h5 class="card-title mb-2">{{ item.nameRu || item.nameEn || 'Без названия' }}</h5>
