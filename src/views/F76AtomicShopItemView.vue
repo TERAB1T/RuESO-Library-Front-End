@@ -8,16 +8,11 @@ import Breadcrumb from '@/components/Breadcrumb.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import PhotoSwipeLightbox from 'photoswipe/lightbox';
-import 'photoswipe/style.css';
 
 import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbItem } from '@/types';
 
 const route = useRoute();
 
-let lightbox: PhotoSwipeLightbox | null = null;
 
 const currentItemFormId = computed(() => (route.params.itemFormId || '') as string);
 
@@ -79,68 +74,6 @@ const updateMetaTags = (itemData: AtomicShopItem) => {
 	});
 }
 
-const initLightbox = () => {
-	if (import.meta.env.SSR) return;
-
-	if (lightbox) {
-		lightbox.destroy();
-		lightbox = null;
-	}
-
-	nextTick(() => {
-		const galleryElement = document.querySelector('#main-item-container');
-		if (!galleryElement) return;
-
-		const sizeCache = new Map();
-
-		lightbox = new PhotoSwipeLightbox({
-			gallery: '#main-item-container',
-			children: '.screenshot-link',
-			pswpModule: () => import('photoswipe'),
-		});
-
-		lightbox.addFilter('itemData', (itemData, index) => {
-			const imgSrc = itemData.src || itemData.element?.href || '';
-
-			if (sizeCache.has(imgSrc)) {
-				const cached = sizeCache.get(imgSrc);
-				itemData.width = cached.width;
-				itemData.height = cached.height;
-				return itemData;
-			}
-
-
-			const existingImg = itemData.element?.querySelector('img');
-			if (existingImg?.complete && existingImg.naturalWidth && existingImg.naturalHeight) {
-				itemData.width = existingImg.naturalWidth;
-				itemData.height = existingImg.naturalHeight;
-				sizeCache.set(imgSrc, { width: existingImg.naturalWidth, height: existingImg.naturalHeight });
-			} else {
-
-				itemData.width = 512;
-				itemData.height = 512;
-
-				const img = new Image();
-				img.onload = () => {
-					sizeCache.set(imgSrc, {
-						width: img.naturalWidth,
-						height: img.naturalHeight
-					});
-
-					if (lightbox?.pswp && lightbox.pswp.currSlide?.index === index) {
-						lightbox.pswp.updateSize(true);
-					}
-				};
-				img.src = imgSrc;
-			}
-
-			return itemData;
-		});
-
-		lightbox.init();
-	});
-};
-
 watchEffect(() => {
 	if (item.value.nameRu) {
 		updateMetaTags(item.value);
@@ -181,8 +114,6 @@ onMounted(async () => {
 			}
 		}
 	});
-
-	initLightbox();
 });
 
 const splittedScreenshots = computed(() => {
@@ -242,17 +173,6 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	});
 
 	return items;
-});
-
-watch(() => item.value.mainImage, () => {
-	initLightbox();
-});
-
-onBeforeUnmount(() => {
-	if (lightbox) {
-		lightbox.destroy();
-		lightbox = null;
-	}
 });
 
 const showTeleport = ref(true);
