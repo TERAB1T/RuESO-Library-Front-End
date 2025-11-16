@@ -181,9 +181,7 @@ onMounted(async () => {
 		}
 	});
 
-	nextTick(() => {
-		teleportDisabled = computed(() => !(width.value <= 991));
-	});
+	teleportDisabled = computed(() => !(width.value <= 991));
 
 	initLightbox();
 });
@@ -331,7 +329,7 @@ onBeforeRouteLeave(() => {
 				</div>
 
 				<div class="col-lg-4">
-					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="teleportDisabled">
+					<Teleport v-if="showTeleport" to="#info-pane" :disabled="teleportDisabled">
 						<template v-if="item.nameRu">
 							<div class="p-3 card-wrapper book-info-card-sticky">
 								<div class="card">
