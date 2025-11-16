@@ -17,6 +17,8 @@ import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbIte
 
 const route = useRoute();
 
+let lightbox: PhotoSwipeLightbox | null = null;
+
 const currentItemFormId = computed(() => (route.params.itemFormId || '') as string);
 
 const { data: itemData, suspense: itemSuspense, isSuccess: isItemFetched, isError: isItemError } = useFetchAtomicShopItem(currentItemFormId);
@@ -76,6 +78,69 @@ const updateMetaTags = (itemData: AtomicShopItem) => {
 		]
 	});
 }
+
+const initLightbox = () => {
+	if (import.meta.env.SSR) return;
+
+	if (lightbox) {
+		lightbox.destroy();
+		lightbox = null;
+	}
+
+	nextTick(() => {
+		const galleryElement = document.querySelector('#main-item-container');
+		if (!galleryElement) return;
+
+		const sizeCache = new Map();
+
+		lightbox = new PhotoSwipeLightbox({
+			gallery: '#main-item-container',
+			children: '.screenshot-link',
+			pswpModule: () => import('photoswipe'),
+		});
+
+		lightbox.addFilter('itemData', (itemData, index) => {
+			const imgSrc = itemData.src || itemData.element?.href || '';
+
+			if (sizeCache.has(imgSrc)) {
+				const cached = sizeCache.get(imgSrc);
+				itemData.width = cached.width;
+				itemData.height = cached.height;
+				return itemData;
+			}
+
+
+			const existingImg = itemData.element?.querySelector('img');
+			if (existingImg?.complete && existingImg.naturalWidth && existingImg.naturalHeight) {
+				itemData.width = existingImg.naturalWidth;
+				itemData.height = existingImg.naturalHeight;
+				sizeCache.set(imgSrc, { width: existingImg.naturalWidth, height: existingImg.naturalHeight });
+			} else {
+
+				itemData.width = 512;
+				itemData.height = 512;
+
+				const img = new Image();
+				img.onload = () => {
+					sizeCache.set(imgSrc, {
+						width: img.naturalWidth,
+						height: img.naturalHeight
+					});
+
+					if (lightbox?.pswp && lightbox.pswp.currSlide?.index === index) {
+						lightbox.pswp.updateSize(true);
+					}
+				};
+				img.src = imgSrc;
+			}
+
+			return itemData;
+		});
+
+		lightbox.init();
+	});
+};
+
 watchEffect(() => {
 	if (item.value.nameRu) {
 		updateMetaTags(item.value);
@@ -95,7 +160,7 @@ const prefetchCategory = (categoryFormId: string | undefined) => usePrefetchAtom
 const prefetchSubcategory = (subcategoryFormId: string | undefined) => usePrefetchAtomicShopSubcategory(queryClient, subcategoryFormId);
 
 const { width } = useWindowSize();
-const isMobile = computed(() => width.value <= 991);
+const isMobile = ref(false);
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
 onMounted(async () => {
@@ -113,6 +178,8 @@ onMounted(async () => {
 			}
 		}
 	});
+
+	initLightbox();
 });
 
 const splittedScreenshots = computed(() => {
@@ -174,6 +241,17 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	return items;
 });
 
+watch(() => item.value.mainImage, () => {
+	initLightbox();
+});
+
+onBeforeUnmount(() => {
+	if (lightbox) {
+		lightbox.destroy();
+		lightbox = null;
+	}
+});
+
 const showTeleport = ref(true);
 
 onBeforeRouteLeave(() => {
@@ -202,7 +280,7 @@ onBeforeRouteLeave(() => {
 			<Breadcrumb :items="breadcrumbItems" />
 
 			<div class="row" id="main-item-container">
-				<div class="col-lg-8 order-2 order-lg-1">
+				<div class="col-lg-8">
 					<ul class="nav nav-tabs" id="bookTab" role="tablist">
 						<li class="nav-item" role="presentation">
 							<button class="nav-link active" id="russian-tab" data-bs-toggle="tab" data-bs-target="#russian-pane" type="button" role="tab" aria-controls="russian-pane" aria-selected="true">Русская<span class="hide-mobile"> версия</span></button>
@@ -215,7 +293,7 @@ onBeforeRouteLeave(() => {
 						</li>
 					</ul>
 
-					<div class="tab-content" id="categoriesTabContent">
+					<div class="tab-content" :class="splittedScreenshots.length > 0 || isMobile ? 'with-screenshots' : ''" id="categoriesTabContent">
 						<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
 							<h1 class="book-title">{{ item.nameRu }}</h1>
 							<div class="book-main" v-html="parsedTextRu"></div>
@@ -229,9 +307,24 @@ onBeforeRouteLeave(() => {
 						<div class="tab-pane p-3" id="info-pane" role="tabpanel" aria-labelledby="info-pane" tabindex="2">
 						</div>
 					</div>
+
+					<div v-if="isMobile || splittedScreenshots.length > 0" class="screenshots">
+						<div class="row g-3">
+							<div v-if="isMobile" class="col-12 col-md-4">
+								<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
+									<img :src="prepareAtomicShopImage(item.mainImage)" class="img-fluid screenshot-img" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
+								</a>
+							</div>
+							<div v-for="(screenshot, index) in splittedScreenshots" :key="index" class="col-12 col-md-4">
+								<a :href="screenshot" class="screenshot-link">
+									<img :src="screenshot" class="img-fluid screenshot-img" :alt="`${item.nameRu || item.nameEn} - скриншот ${index + 1}`" @error="atomicShopHandleImageError">
+								</a>
+							</div>
+						</div>
+					</div>
 				</div>
 
-				<div class="col-lg-4 order-2 order-lg-2">
+				<div class="col-lg-4">
 					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
 						<template v-if="item.nameRu">
 							<div class="p-3 card-wrapper book-info-card-sticky">
