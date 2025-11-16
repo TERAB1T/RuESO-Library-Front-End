@@ -327,7 +327,29 @@ onBeforeRouteLeave(() => {
 				<div class="col-lg-4">
 					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
 						<template v-if="item.nameRu">
-							Тест
+							<div class="p-3 card-wrapper book-info-card-sticky">
+								<div class="card">
+									<div class="card-element book-icon">
+										<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
+											<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
+										</a>
+									</div>
+									<div class="card-element">
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Оригинальное название</div>
+										{{ item.nameEn || '—' }}
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Form ID</div>
+										{{ item.formId }}
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Editor ID</div>
+										{{ item.editorId }}
+									</div>
+								</div>
+							</div>
 						</template>
 					</Teleport>
 				</div>
