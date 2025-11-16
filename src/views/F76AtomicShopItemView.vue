@@ -329,11 +329,6 @@ onBeforeRouteLeave(() => {
 						<template v-if="item.nameRu">
 							<div class="p-3 card-wrapper book-info-card-sticky">
 								<div class="card">
-									<div class="card-element book-icon">
-										<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
-											<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
-										</a>
-									</div>
 									<div class="card-element">
 									</div>
 									<div class="card-element">
