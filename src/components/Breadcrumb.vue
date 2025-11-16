@@ -38,7 +38,7 @@ defineProps<{
 
 .breadcrumb-custom {
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	align-items: center;
 	padding: 0.75rem 1rem;
 	margin: 0;
@@ -46,11 +46,25 @@ defineProps<{
 	background-color: transparent;
 	border-radius: 8px;
 	font-size: 0.9rem;
+
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
+}
+
+.breadcrumb-custom::-webkit-scrollbar {
+	height: 6px;
+}
+
+.breadcrumb-custom::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 3px;
 }
 
 .breadcrumb-custom-item {
 	display: flex;
 	align-items: center;
+	flex: 0 0 auto;
 }
 
 .breadcrumb-separator {

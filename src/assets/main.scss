@@ -73,8 +73,8 @@ a {
 	border: none;
 	color: #a1a1aa;
 	padding: 15px 25px;
-    font-size: 0.95rem;
-    font-weight: 400;
+	font-size: 0.95rem;
+	font-weight: 400;
 
 	&:hover {
 		color: var(--bs-body-color);
@@ -377,7 +377,9 @@ table.dataTable pre {
 	border-color: var(--bs-primary);
 	color: black;
 
-	&:hover, &:focus, &:active {
+	&:hover,
+	&:focus,
+	&:active {
 		background: var(--bs-primary-hover) !important;
 		border-color: var(--bs-primary-hover) !important;
 		color: black !important;
@@ -412,7 +414,7 @@ table.dataTable pre {
 	background: transparent;
 	border-bottom: none;
 	padding: 0.75rem 1rem;
-    border-radius: 6px;
+	border-radius: 6px;
 
 	&.active {
 		background: var(--bs-primary) !important;
@@ -483,5 +485,9 @@ table.dataTable pre {
 	#main:not(.flex-center) .game-checks label.btn {
 		padding-left: 7px;
 		padding-right: 6px;
+	}
+
+	.navbar {
+		padding: 0.5rem 0;
 	}
 }

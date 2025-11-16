@@ -434,20 +434,33 @@ onBeforeRouteLeave(() => {
 		display: flex;
 	}
 
+	.prev-next-container {
+		gap: 0;
+	}
+
+	.book-title {
+		font-size: 1.6rem;
+	}
+}
+
+@media (max-width: 575.98px) {
+	.nav-tabs {
+		justify-content: space-between;
+		flex-wrap: nowrap;
+	}
+
 	.nav-tabs .nav-item {
-		width: 33.33%;
+		flex: 0 1 auto;
+		min-width: 0;
 	}
 
 	.nav-tabs .nav-link {
-		width: 100%;
+		min-width: 0;
+		white-space: normal;
 	}
 
 	.hide-mobile {
 		display: none;
-	}
-
-	.prev-next-container {
-		gap: 0;
 	}
 }
 </style>
