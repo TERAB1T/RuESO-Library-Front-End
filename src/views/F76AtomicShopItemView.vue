@@ -204,20 +204,6 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 		{ label: 'Атомная лавка Fallout 76', to: '/f76-atomic-shop' }
 	];
 
-	if (categoryInfo.value) {
-		items.push({
-			label: categoryInfo.value.nameRu as string,
-			to: `/f76-atomic-shop/category/${categoryInfo.value.formId}-${categoryInfo.value.slug}`
-		});
-	}
-
-	if (subcategoryInfo.value) {
-		items.push({
-			label: subcategoryInfo.value.nameRu as string,
-			to: `/f76-atomic-shop/subcategory/${subcategoryInfo.value.formId}-${subcategoryInfo.value.slug}`
-		});
-	}
-
 	items.push({
 		label: item.value.nameRu || 'Загрузка...'
 	});
