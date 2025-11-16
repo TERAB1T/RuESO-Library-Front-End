@@ -163,6 +163,10 @@ const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
 let teleportDisabled = ref(true);
 
+watch(isMobile, (newVal) => {
+	teleportDisabled.value = !newVal;
+}, { immediate: true });
+
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
 onMounted(async () => {
@@ -180,10 +184,6 @@ onMounted(async () => {
 			}
 		}
 	});
-
-	watch(isMobile, (newVal) => {
-		teleportDisabled.value = !newVal;
-	}, { immediate: true });
 
 	initLightbox();
 });
