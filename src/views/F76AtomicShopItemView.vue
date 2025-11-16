@@ -326,12 +326,9 @@ onBeforeRouteLeave(() => {
 
 				<div class="col-lg-4">
 					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
-						<template v-if="item.nameRu">
+						<template v-if="item">
 							<div class="p-3 card-wrapper book-info-card-sticky">
 								<div class="card">
-									<div class="card-element">
-										<div class="card-subtitle">Категория</div>
-									</div>
 									<div class="card-element">
 										<div class="card-subtitle">Оригинальное название</div>
 										{{ item.nameEn || '—' }}
