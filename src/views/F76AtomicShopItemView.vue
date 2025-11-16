@@ -26,7 +26,6 @@ const { data: itemData, suspense: itemSuspense, isSuccess: isItemFetched, isErro
 const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchAtomicShopCategories();
 
 const item = computed(() => itemData.value ?? {} as AtomicShopItem);
-const categories = computed(() => categoriesData.value ?? [] as AtomicShopCategoryWithSubcategories[]);
 
 const isNotFound = computed(() =>
 	isItemFetched.value && !item.value.nameRu
