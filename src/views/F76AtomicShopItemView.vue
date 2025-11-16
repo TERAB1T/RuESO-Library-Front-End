@@ -182,7 +182,7 @@ onMounted(async () => {
 	});
 
 	nextTick(() => {
-		teleportDisabled = computed(() => width.value <= 991);
+		teleportDisabled = computed(() => !(width.value <= 991));
 	});
 
 	initLightbox();
