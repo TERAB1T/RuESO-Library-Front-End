@@ -163,10 +163,6 @@ const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
 let teleportDisabled = ref(true);
 
-watch(isMobile, (newVal) => {
-	teleportDisabled.value = !newVal;
-}, { immediate: true });
-
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
 onMounted(async () => {
@@ -184,6 +180,10 @@ onMounted(async () => {
 			}
 		}
 	});
+
+watch(isMobile, (newVal) => {
+	teleportDisabled.value = !newVal;
+}, { immediate: true });
 
 	initLightbox();
 });
@@ -331,7 +331,7 @@ onBeforeRouteLeave(() => {
 				</div>
 
 				<div class="col-lg-4">
-					<Teleport v-if="showTeleport" to="#info-pane" :disabled="teleportDisabled">
+					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="teleportDisabled || !isMobile">
 						<template v-if="item.nameRu">
 							<div class="p-3 card-wrapper book-info-card-sticky">
 								<div class="card">
