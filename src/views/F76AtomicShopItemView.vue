@@ -326,9 +326,7 @@ onBeforeRouteLeave(() => {
 
 				<div class="col-lg-4">
 					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="!isMobile">
-						<template v-if="item.nameRu">
-							<div>Тест тест тест</div>
-						</template>
+						<div>Тест тест тест</div>
 					</Teleport>
 				</div>
 			</div>
