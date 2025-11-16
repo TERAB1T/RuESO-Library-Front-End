@@ -159,10 +159,10 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 const showTeleport = ref(true);
 
 onBeforeRouteLeave(() => {
-  showTeleport.value = false;
-  return new Promise(resolve => {
-    nextTick(() => resolve(true));
-  });
+	showTeleport.value = false;
+	return new Promise(resolve => {
+		nextTick(() => resolve(true));
+	});
 });
 </script>
 
