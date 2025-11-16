@@ -329,10 +329,23 @@ onBeforeRouteLeave(() => {
 						<template v-if="item.nameRu">
 							<div class="p-3 card-wrapper book-info-card-sticky">
 								<div class="card">
-									<div v-if="!isMobile" class="card-element book-icon">
-										<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
-											<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
-										</a>
+									<div class="card-element">
+										<div class="card-subtitle">Категория</div>
+										<RouterLink :to="`/f76-atomic-shop/category/${categoryInfo.formId}-${categoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchCategory(categoryInfo.formId)">
+											{{ categoryInfo.nameRu }}
+										</RouterLink>
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Оригинальное название</div>
+										{{ item.nameEn || '—' }}
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Form ID</div>
+										{{ item.formId }}
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Editor ID</div>
+										{{ item.editorId }}
 									</div>
 								</div>
 							</div>
