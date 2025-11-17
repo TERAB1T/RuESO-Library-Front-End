@@ -52,9 +52,9 @@ export const useFetchBooks = (categoryId: ComputedRef<number>, patchVersion: Com
 	return useQuery({
 		queryKey: ['books', categoryId, patchVersion, { currentPage, pageSize, filter }],
 		queryFn: () => {
-			if (categoryId.value !== -1) return fetchApi(prepareURL(`/api/library/categories/${categoryId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}`));
-			else if (patchVersion.value !== '-1') return fetchApi(prepareURL(`/api/library/patches/${patchVersion.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}`));
-			else return fetchApi(prepareURL(`/api/library/books?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}`));
+			if (categoryId.value !== -1) return fetchApi(prepareURL(`/api/library/categories/${categoryId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}`));
+			else if (patchVersion.value !== '-1') return fetchApi(prepareURL(`/api/library/patches/${patchVersion.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}`));
+			else return fetchApi(prepareURL(`/api/library/books?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}`));
 		},
 		staleTime: DEFAULT_STALE_TIME,
 		placeholderData: keepPreviousData
@@ -90,9 +90,9 @@ export const useFetchAtomicShopItems = (categoryFormId: ComputedRef<string>, sub
 	return useQuery({
 		queryKey: ['f76_atx_items', categoryFormId, subcategoryFormId, { currentPage, pageSize, filter, sortOrder }],
 		queryFn: () => {
-			if (subcategoryFormId.value !== '-1') return fetchApi(prepareURL(`/api/f76/atomicshop/subcategories/${subcategoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}&sort_order=${sortOrder.value}`));
-			else if (categoryFormId.value !== '-1') return fetchApi(prepareURL(`/api/f76/atomicshop/categories/${categoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}&sort_order=${sortOrder.value}`));
-			else return fetchApi(prepareURL(`/api/f76/atomicshop/items?page=${currentPage.value}&page_size=${pageSize}&filter=${filter.value}&sort_order=${sortOrder.value}`));
+			if (subcategoryFormId.value !== '-1') return fetchApi(prepareURL(`/api/f76/atomicshop/subcategories/${subcategoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`));
+			else if (categoryFormId.value !== '-1') return fetchApi(prepareURL(`/api/f76/atomicshop/categories/${categoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`));
+			else return fetchApi(prepareURL(`/api/f76/atomicshop/items?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`));
 		},
 		staleTime: DEFAULT_STALE_TIME,
 		placeholderData: keepPreviousData
