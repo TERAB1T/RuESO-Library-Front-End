@@ -32,11 +32,62 @@ const isNotFound = computed(() =>
 	isItemFetched.value && !item.value.nameRu
 );
 
+const categoryInfo = computed(() => {
+	if (!item.value.categoryFormId) return null;
+	return categories.value.find(cat => cat.formId === item.value.categoryFormId);
+});
+
+const subcategoryInfo = computed(() => {
+	if (!item.value.subcategoryFormId) return null;
+	for (const category of categories.value) {
+		const subcategory = category.subcategories.find(sub => sub.formId === item.value.subcategoryFormId);
+		if (subcategory) return subcategory;
+	}
+	return null;
+});
+
+const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+	const items: BreadcrumbItem[] = [
+		{ label: 'Атомная лавка Fallout 76', to: '/f76-atomic-shop' }
+	];
+
+	if (categoryInfo.value) {
+		items.push({
+			label: categoryInfo.value.nameRu as string,
+			to: `/f76-atomic-shop/category/${categoryInfo.value.formId}-${categoryInfo.value.slug}`
+		});
+	}
+
+	if (subcategoryInfo.value) {
+		items.push({
+			label: subcategoryInfo.value.nameRu as string,
+			to: `/f76-atomic-shop/subcategory/${subcategoryInfo.value.formId}-${subcategoryInfo.value.slug}`
+		});
+	}
+
+	items.push({
+		label: item.value.nameRu || 'Загрузка...'
+	});
+
+	return items;
+});
+
 const updateMetaTags = (itemData: AtomicShopItem) => {
 	let metaTitle = `${itemData.nameRu} | Fallout 76`;
 	let metaDescription = generateMetaDescriptionAtomicShop(itemData.descriptionRu as string);
 	let metaLink = `https://rueso.ru/f76-atomic-shop/${itemData.formId}-${itemData.slug}`;
 	let metaIcon = `https://rueso.ru${prepareAtomicShopImage(itemData.mainImage?.replace(".avif", ".webp"))}`;
+
+	const breadcrumbSchema = {
+		'@context': 'https://schema.org',
+		'@type': 'BreadcrumbList',
+		itemListElement: breadcrumbItems.value.map((item, index) => ({
+			'@type': 'ListItem',
+			position: index + 1,
+			name: item.label,
+			...(item.to && { item: `https://rueso.ru${item.to}` })
+		}))
+	};
 
 	useHead({
 		title: metaTitle,
@@ -74,6 +125,10 @@ const updateMetaTags = (itemData: AtomicShopItem) => {
 					"inLanguage": "ru",
 					"url": metaLink
 				})
+			},
+			{
+				type: 'application/ld+json',
+				children: JSON.stringify(breadcrumbSchema)
 			}
 		]
 	});
@@ -197,20 +252,6 @@ const splittedScreenshots = computed(() => {
 	return screenshotsArray.map(s => prepareAtomicShopImage(s));
 });
 
-const categoryInfo = computed(() => {
-	if (!item.value.categoryFormId) return null;
-	return categories.value.find(cat => cat.formId === item.value.categoryFormId);
-});
-
-const subcategoryInfo = computed(() => {
-	if (!item.value.subcategoryFormId) return null;
-	for (const category of categories.value) {
-		const subcategory = category.subcategories.find(sub => sub.formId === item.value.subcategoryFormId);
-		if (subcategory) return subcategory;
-	}
-	return null;
-});
-
 const parsedTextRu = computed(() =>
 	(item.value.descriptionRu ?? '').replace(/\n/g, '<br>')
 );
@@ -218,32 +259,6 @@ const parsedTextRu = computed(() =>
 const parsedTextEn = computed(() =>
 	(item.value.descriptionEn ?? '').replace(/\n/g, '<br>')
 );
-
-const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
-	const items: BreadcrumbItem[] = [
-		{ label: 'Атомная лавка Fallout 76', to: '/f76-atomic-shop' }
-	];
-
-	if (categoryInfo.value) {
-		items.push({
-			label: categoryInfo.value.nameRu as string,
-			to: `/f76-atomic-shop/category/${categoryInfo.value.formId}-${categoryInfo.value.slug}`
-		});
-	}
-
-	if (subcategoryInfo.value) {
-		items.push({
-			label: subcategoryInfo.value.nameRu as string,
-			to: `/f76-atomic-shop/subcategory/${subcategoryInfo.value.formId}-${subcategoryInfo.value.slug}`
-		});
-	}
-
-	items.push({
-		label: item.value.nameRu || 'Загрузка...'
-	});
-
-	return items;
-});
 
 watch(() => item.value.mainImage, () => {
 	initLightbox();

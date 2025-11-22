@@ -41,11 +41,41 @@ const isNotFound = computed(() =>
 	isBookFetched.value && !book.value.titleRu
 );
 
+const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+	const items: BreadcrumbItem[] = [
+		{ label: 'Библиотека ESO', to: '/library/eso' }
+	];
+
+	if (book.value.category) {
+		items.push({
+			label: book.value.category.titleRu as string,
+			to: `/library/eso/category/${book.value.category.id}-${book.value.category.slug}`
+		});
+	}
+
+	items.push({
+		label: book.value.titleRu || 'Загрузка...'
+	});
+
+	return items;
+});
+
 const updateMetaTags = (bookData: Book) => {
 	const metaTitle = `${bookData.titleRu} | Библиотека ESO`;
 	const metaDescription = generateMetaDescription(bookData.textRu);
 	const metaLink = `https://rueso.ru/library/eso/${bookData.id}-${bookData.slug}`;
 	const metaIcon = `https://rueso.ru${prepareIcon(bookData.icon)}`;
+
+	const breadcrumbSchema = {
+		'@context': 'https://schema.org',
+		'@type': 'BreadcrumbList',
+		itemListElement: breadcrumbItems.value.map((item, index) => ({
+			'@type': 'ListItem',
+			position: index + 1,
+			name: item.label,
+			...(item.to && { item: `https://rueso.ru${item.to}` })
+		}))
+	};
 
 	useHead({
 		title: metaTitle,
@@ -85,6 +115,10 @@ const updateMetaTags = (bookData: Book) => {
 					"inLanguage": "ru",
 					"url": metaLink
 				})
+			},
+			{
+				type: 'application/ld+json',
+				children: JSON.stringify(breadcrumbSchema)
 			}
 		]
 	});
@@ -136,25 +170,6 @@ const parsedTextRu = computed(() =>
 const parsedTextEn = computed(() =>
 	parsePseudoCode((book.value.textEn ?? '').replace(/\n/g, '<br>'))
 );
-
-const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
-	const items: BreadcrumbItem[] = [
-		{ label: 'Библиотека TES Online', to: '/library/eso' }
-	];
-
-	if (book.value.category) {
-		items.push({
-			label: book.value.category.titleRu as string,
-			to: `/library/eso/category/${book.value.category.id}-${book.value.category.slug}`
-		});
-	}
-
-	items.push({
-		label: book.value.titleRu || 'Загрузка...'
-	});
-
-	return items;
-});
 
 const showTeleport = ref(true);
 
