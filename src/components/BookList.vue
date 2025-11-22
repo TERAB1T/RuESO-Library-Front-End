@@ -132,7 +132,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 
 <template>
 	<template v-if="state.currentCategory.id > 0 && categoryInfo?.titleRu">
-		<h2 class="mt-3">{{ categoryInfo?.titleRu }}</h2>
+		<h2>{{ categoryInfo?.titleRu }}<div class="h2-subtitle">{{ categoryInfo?.titleEn }}</div></h2>
 
 		<div class="alert alert-dark" role="alert">
 			{{ categoryInfo?.descRu }}
@@ -140,7 +140,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 	</template>
 
 	<template v-else-if="state.currentPatch.version !== '-1' && patchInfo?.nameRu">
-		<h2 class="mt-3">Патч {{ state.currentPatch.version }} ({{ patchInfo?.nameRu }})</h2>
+		<h2>Патч {{ state.currentPatch.version }} ({{ patchInfo?.nameRu }})</h2>
 
 		<div class="alert alert-dark" role="alert">
 			Книги, добавленные в игру с патчем {{ state.currentPatch.version }}, который {{ formatDateToMonthYear(patchInfo?.date) }}.
@@ -183,9 +183,15 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 	<Pagination :currentPage="currentPage" :totalPages="state.totalPages" @changePage="changePage" />
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 h2 {
 	margin-bottom: 30px;
+
+	& .h2-subtitle {
+		color: #ffffff79;
+		font-size: 1.3rem;
+		margin-top:10px;
+	}
 }
 
 h4 {
