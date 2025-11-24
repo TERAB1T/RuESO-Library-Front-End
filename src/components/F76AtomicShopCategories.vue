@@ -117,39 +117,41 @@ const hasSubcategories = (category: AtomicShopCategoryWithSubcategories) => {
 </script>
 
 <template>
-	<div>
-		<div class="library-updated text-muted small">
-			Последнее обновление:
-			<time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">
-				{{ state.lastUpdated }}
-			</time>
-		</div>
+	<div class="book-categories-container">
+		<div class="p-3">
+			<div class="library-updated text-muted small">
+				Последнее обновление:
+				<time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">
+					{{ state.lastUpdated }}
+				</time>
+			</div>
 
-		<div class="list-group list-group-flush mb-3">
-			<h5 class="list-group-item h5-list-group-item">Категории</h5>
-			<div v-for="category in props.categories" :key="category.formId" class="category-wrapper">
-				<div class="d-flex align-items-stretch category-item">
-					<button v-if="hasSubcategories(category)" @click="toggleCategory(category.formId, $event)" class="btn btn-sm category-toggle" :class="{
-						'active': state.currentCategoryFormId === category.formId && state.currentSubcategoryFormId === '-1'
-					}" :aria-expanded="isCategoryExpanded(category.formId)" :aria-label="isCategoryExpanded(category.formId) ? 'Свернуть' : 'Развернуть'">
-						<FontAwesomeIcon :icon="isCategoryExpanded(category.formId) ? faChevronDown : faChevronRight" class="text-muted category-toggle-icon" size="sm" />
-					</button>
+			<div class="list-group list-group-flush mb-3">
+				<h5 class="list-group-item h5-list-group-item">Категории</h5>
+				<div v-for="category in props.categories" :key="category.formId" class="category-wrapper">
+					<div class="d-flex align-items-stretch category-item">
+						<button v-if="hasSubcategories(category)" @click="toggleCategory(category.formId, $event)" class="btn btn-sm category-toggle" :class="{
+							'active': state.currentCategoryFormId === category.formId && state.currentSubcategoryFormId === '-1'
+						}" :aria-expanded="isCategoryExpanded(category.formId)" :aria-label="isCategoryExpanded(category.formId) ? 'Свернуть' : 'Развернуть'">
+							<FontAwesomeIcon :icon="isCategoryExpanded(category.formId) ? faChevronDown : faChevronRight" class="text-muted category-toggle-icon" size="sm" />
+						</button>
 
-					<RouterLink :to="state.currentCategoryFormId === category.formId ? '/f76-atomic-shop' : `/f76-atomic-shop/category/${category.formId}-${category.slug}`" class="list-group-item list-group-item-action flex-grow-1" :class="{
-						'active': state.currentCategoryFormId === category.formId && state.currentSubcategoryFormId === '-1',
-						'has-subcategories': hasSubcategories(category)
-					}" @mouseenter="prefetchCategory(category.formId)">
-						{{ category.nameRu }}
-					</RouterLink>
-				</div>
-
-				<Transition name="expand">
-					<div v-if="hasSubcategories(category) && isCategoryExpanded(category.formId)" class="subcategories-list">
-						<RouterLink v-for="subcategory in category.subcategories" :key="subcategory.formId" :to="state.currentSubcategoryFormId === subcategory.formId ? '/f76-atomic-shop' : `/f76-atomic-shop/subcategory/${subcategory.formId}-${subcategory.slug}`" class="list-group-item list-group-item-action subcategory-item" :class="{ 'active': state.currentSubcategoryFormId === subcategory.formId }" @mouseenter="prefetchSubcategory(subcategory.formId)">
-							{{ subcategory.nameRu }}
+						<RouterLink :to="state.currentCategoryFormId === category.formId ? '/f76-atomic-shop' : `/f76-atomic-shop/category/${category.formId}-${category.slug}`" class="list-group-item list-group-item-action flex-grow-1" :class="{
+							'active': state.currentCategoryFormId === category.formId && state.currentSubcategoryFormId === '-1',
+							'has-subcategories': hasSubcategories(category)
+						}" @mouseenter="prefetchCategory(category.formId)">
+							{{ category.nameRu }}
 						</RouterLink>
 					</div>
-				</Transition>
+
+					<Transition name="expand">
+						<div v-if="hasSubcategories(category) && isCategoryExpanded(category.formId)" class="subcategories-list">
+							<RouterLink v-for="subcategory in category.subcategories" :key="subcategory.formId" :to="state.currentSubcategoryFormId === subcategory.formId ? '/f76-atomic-shop' : `/f76-atomic-shop/subcategory/${subcategory.formId}-${subcategory.slug}`" class="list-group-item list-group-item-action subcategory-item" :class="{ 'active': state.currentSubcategoryFormId === subcategory.formId }" @mouseenter="prefetchSubcategory(subcategory.formId)">
+								{{ subcategory.nameRu }}
+							</RouterLink>
+						</div>
+					</Transition>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -157,13 +159,13 @@ const hasSubcategories = (category: AtomicShopCategoryWithSubcategories) => {
 
 <style scoped lang="scss">
 .library-updated {
-	margin-top: 20px;
+	margin-top: 5px;
 }
 
 .list-group {
 	background: var(--bs-block-bg);
 	border-radius: var(--bs-block-border-radius) !important;
-	padding: 1rem 1.2rem;
+	padding: 0 1.2rem 1rem;
 	margin-top: 11px;
 }
 
@@ -269,13 +271,14 @@ const hasSubcategories = (category: AtomicShopCategoryWithSubcategories) => {
 }
 
 .h5-list-group-item {
-	padding: 0;
-	padding-left: 0 !important;
+	padding: 20px 0 !important;
 	font-size: 1.125rem;
 	text-align: center;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-	padding-bottom: 20px;
-	background: none;
+	background: var(--bs-block-bg) !important;
+	position: sticky;
+	top: 0;
+	z-index: 3;
 }
 
 .category-toggle.active {
@@ -285,5 +288,58 @@ const hasSubcategories = (category: AtomicShopCategoryWithSubcategories) => {
 
 .category-toggle.active .category-toggle-icon {
 	color: black !important;
+}
+
+/* Sidebar */
+
+.book-categories-container {
+	height: calc(100vh - 67px);
+
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-gutter: stable;
+
+	scrollbar-width: thin;
+	scrollbar-color: transparent transparent;
+}
+
+.book-categories-container::-webkit-scrollbar {
+	width: 6px;
+}
+
+.book-categories-container::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.book-categories-container::-webkit-scrollbar-thumb {
+	background: transparent;
+	border-radius: 3px;
+	transition: background-color 0.2s ease;
+}
+
+.book-categories-container:hover::-webkit-scrollbar-thumb,
+.book-categories-container:focus-within::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+.book-categories-container::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.4);
+}
+
+.book-categories-container:hover,
+.book-categories-container:focus-within {
+	scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+@media (max-width: 991.98px) {
+	.book-categories-container {
+		height: auto;
+		position: static;
+		overflow: visible;
+	}
+
+	.h5-list-group-item {
+		position: static;
+	}
 }
 </style>

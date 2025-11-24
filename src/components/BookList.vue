@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch, ref } from 'vue';
-import { prepareIcon, formatDateToMonthYear } from '@/utils';
+import { prepareIcon, formatDateToMonthYear, lowercaseFirstLetter } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchBooks, usePrefetchBook } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -132,7 +132,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 
 <template>
 	<template v-if="state.currentCategory.id > 0 && categoryInfo?.titleRu">
-		<h2>{{ categoryInfo?.titleRu }}<div class="h2-subtitle">{{ categoryInfo?.titleEn }}</div></h2>
+		<h2>Библиотека ESO: {{ lowercaseFirstLetter(categoryInfo?.titleRu) }}<div class="h2-subtitle">{{ categoryInfo?.titleEn }}</div></h2>
 
 		<div class="alert alert-dark" role="alert">
 			{{ categoryInfo?.descRu }}
@@ -140,10 +140,18 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 	</template>
 
 	<template v-else-if="state.currentPatch.version !== '-1' && patchInfo?.nameRu">
-		<h2>Патч {{ state.currentPatch.version }} ({{ patchInfo?.nameRu }})</h2>
+		<h2>Библиотека ESO: {{ patchInfo?.nameRu }}</h2>
 
 		<div class="alert alert-dark" role="alert">
 			Книги, добавленные в игру с патчем {{ state.currentPatch.version }}, который {{ formatDateToMonthYear(patchInfo?.date) }}.
+		</div>
+	</template>
+
+	<template v-else>
+		<h2>Библиотека The Elder Scrolls Online</h2>
+
+		<div class="alert alert-dark" role="alert">
+			Полное собрание книг из игры The Elder Scrolls Online.
 		</div>
 	</template>
 

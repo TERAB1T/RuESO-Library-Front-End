@@ -6,7 +6,7 @@ import BookList from '@/components/BookList.vue';
 import { useHead } from '@unhead/vue';
 import { prepareIcon } from '@/utils';
 import { useFetchCategories, useFetchPatches } from '@/composables/useApi';
-import { formatDateToMonthYear, capitalizeFirstLetter } from '@/utils';
+import { formatDateToMonthYear, uppercaseFirstLetter } from '@/utils';
 
 import type { Category, Patch } from '@/types';
 
@@ -38,7 +38,7 @@ const updateHead = () => {
 	if (state.currentPatchVersion !== '-1') {
 		const patch = state.patches.find(p => p.version === state.currentPatchVersion);
 		if (patch) {
-			metaTitle = `${capitalizeFirstLetter(patch.nameRu)} | Библиотека ESO`;
+			metaTitle = `${uppercaseFirstLetter(patch.nameRu)} | Библиотека ESO`;
 			metaDescription = `Книги, добавленные в игру с патчем ${patch.version}, который ${formatDateToMonthYear(patch.date)}.`;
 			metaLink = `${metaLink}patch/${patch.version}-${patch.slug}`;
 		}
@@ -116,17 +116,32 @@ onServerPrefetch(async () => {
 
 <template>
 	<div class="container-xl">
-		<div class="row">
+		<div class="row" style="position: relative;">
 			<div class="col-lg-8 order-2 order-lg-1">
 				<div class="p-3">
 					<BookList :categories="state.categories" :patches="state.patches" />
 				</div>
 			</div>
 
-			<div class="col-lg-4 order-1 order-lg-2">
+			<div class="col-lg-4 order-1 order-lg-2 book-categories-column">
 				<BookCategories :categories="state.categories" :patches="state.patches" />
 			</div>
 		</div>
 	</div>
 
 </template>
+
+<style scoped lang="scss">
+.book-categories-column {
+	position: sticky;
+	top: 67px;
+	height: calc(100vh - 67px);
+}
+
+@media (max-width: 991.98px) {
+	.book-categories-column {
+		height: auto;
+		position: static;
+	}
+}
+</style>

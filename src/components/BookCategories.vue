@@ -85,7 +85,7 @@ onMounted(async () => {
 		Показать категории
 	</button>
 
-	<div id="collapse-categories" class="collapse d-lg-block">
+	<div id="collapse-categories" class="collapse d-lg-block book-categories-container">
 		<div class="p-3">
 			<div class="d-flex justify-content-between gap-3 flex-nowrap">
 				<a href="/files/eso-library.fb2" role="button" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center download-button">
@@ -126,7 +126,7 @@ onMounted(async () => {
 	</div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .download-button {
 	height: 48px;
 	margin-bottom: 20px;
@@ -135,5 +135,61 @@ onMounted(async () => {
 .fa-dwnld-icon {
 	height: 1em;
 	margin-right: 10px;
+}
+
+.book-categories-container {
+	height: calc(100vh - 67px);
+
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-gutter: stable;
+
+	scrollbar-width: thin;
+	scrollbar-color: transparent transparent;
+}
+
+.nav-tabs {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+}
+
+.book-categories-container::-webkit-scrollbar {
+	width: 6px;
+}
+
+.book-categories-container::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.book-categories-container::-webkit-scrollbar-thumb {
+	background: transparent;
+	border-radius: 3px;
+	transition: background-color 0.2s ease;
+}
+
+.book-categories-container:hover::-webkit-scrollbar-thumb,
+.book-categories-container:focus-within::-webkit-scrollbar-thumb {
+	background: rgba(255,255,255,0.3);
+}
+
+.book-categories-container::-webkit-scrollbar-thumb:hover {
+	background: rgba(255,255,255,0.4);
+}
+
+.book-categories-container:hover,
+.book-categories-container:focus-within {
+	scrollbar-color: rgba(255,255,255,0.3) transparent;
+}
+
+@media (max-width: 991.98px) {
+	.book-categories-container {
+		height: auto;
+		position: static;
+		overflow: visible;
+	}
+	.nav-tabs {
+		position: static;
+	}
 }
 </style>

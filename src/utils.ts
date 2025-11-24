@@ -23,12 +23,21 @@ export const prepareURL = (url: string) => {
 }
 
 /**
- * Capitalizes the first letter of the given string.
- * @param str The string to capitalize the first letter of.
- * @returns The string with the first letter capitalized, or an empty string if the input string is empty or null.
+ * Converts the first letter of a string to uppercase.
+ * @param str The string to convert the first letter of to uppercase.
+ * @returns The string with the first letter converted to uppercase, or an empty string if the input string is empty or null.
  */
-export const capitalizeFirstLetter = (str: string) =>
+export const uppercaseFirstLetter = (str: string) =>
   str ? str[0].toUpperCase() + str.slice(1) : '';
+
+
+/**
+ * Converts the first letter of a string to lowercase.
+ * @param str The string to convert the first letter of to lowercase.
+ * @returns The string with the first letter converted to lowercase, or an empty string if the input string is empty or null.
+ */
+export const lowercaseFirstLetter = (str: string) =>
+  str ? str[0].toLowerCase() + str.slice(1) : '';
 
 /**
  * Replaces the ESO UI icon URL with a PNG image URL.

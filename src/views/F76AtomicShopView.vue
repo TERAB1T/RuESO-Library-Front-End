@@ -104,17 +104,30 @@ onServerPrefetch(async () => {
 <template>
 	<div class="container-xl">
 		<div class="row">
-			<div class="col-lg-9 order-2 order-lg-1">
+			<div class="col-lg-9 order-1 order-lg-1">
 				<div class="p-3">
 					<F76AtomicShopItemList :categories="state.categories" />
 				</div>
 			</div>
 
-			<div class="col-lg-3 order-1 order-lg-2">
-				<div class="p-3">
-					<F76AtomicShopCategories :categories="state.categories" />
-				</div>
+			<div class="col-lg-3 order-2 order-lg-2 book-categories-column">
+				<F76AtomicShopCategories :categories="state.categories" />
 			</div>
 		</div>
 	</div>
 </template>
+
+<style scoped lang="scss">
+.book-categories-column {
+	position: sticky;
+	top: 67px;
+	height: calc(100vh - 67px);
+}
+
+@media (max-width: 991.98px) {
+	.book-categories-column {
+		height: auto;
+		position: static;
+	}
+}
+</style>

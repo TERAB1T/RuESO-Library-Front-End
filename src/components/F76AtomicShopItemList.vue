@@ -148,22 +148,22 @@ const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
 
 <template>
 	<template v-if="state.currentSubcategory.formId !== '-1' && subcategoryInfo?.nameRu">
-		<h2 class="mt-3 mb-4">Атомная лавка: {{ subcategoryInfo?.nameRu === 'S.P.E.C.I.A.L.' ? subcategoryInfo?.nameRu : subcategoryInfo?.nameRu.toLowerCase() }}</h2>
+		<h2 class="mb-4">Атомная лавка: {{ subcategoryInfo?.nameRu === 'S.P.E.C.I.A.L.' ? subcategoryInfo?.nameRu : subcategoryInfo?.nameRu.toLowerCase() }}</h2>
 	</template>
 
 	<template v-else-if="state.currentCategory.formId !== '-1' && categoryInfo?.nameRu">
-		<h2 class="mt-3 mb-4">Атомная лавка: {{ categoryInfo?.nameRu === 'C.A.M.P.' ? categoryInfo?.nameRu : categoryInfo?.nameRu.toLowerCase() }}</h2>
+		<h2 class="mb-4">Атомная лавка: {{ categoryInfo?.nameRu === 'C.A.M.P.' ? categoryInfo?.nameRu : categoryInfo?.nameRu.toLowerCase() }}</h2>
 	</template>
 
 	<template v-else>
-		<h2 class="mt-3 mb-4">Атомная лавка Fallout 76</h2>
+		<h2 class="mb-4">Атомная лавка Fallout 76</h2>
 	</template>
 
 	<div class="row g-4 mb-2">
 		<div class="col-12 col-md-8">
 			<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter(($event.target as HTMLInputElement).value)">
 		</div>
-		<div class="col-12 col-md-4">
+		<div class="col-12 col-md-4 select-order-wrapper">
 			<select v-model="state.sortOrder" class="form-select form-select-lg" aria-label="Сортировка" @change="changePage(1)">
 				<option value="date_desc">Сортировка: сначала новые</option>
 				<option value="date_asc">Сортировка: сначала старые</option>
@@ -190,7 +190,7 @@ const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
 		</div>
 	</div>
 
-	<div v-if="state.items.length === 0" class="alert alert-info">
+	<div v-if="isItemsFetched && state.items.length === 0" class="alert alert-info">
 		Предметы не найдены
 	</div>
 
@@ -270,5 +270,12 @@ const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
 	font-size: 1rem !important;
 	line-height: 1.85rem;
 	cursor: pointer;
+}
+
+@media (max-width: 767.98px) {
+	.select-order-wrapper {
+		margin-top: 0;
+		margin-bottom: 0.8rem;
+	}
 }
 </style>
