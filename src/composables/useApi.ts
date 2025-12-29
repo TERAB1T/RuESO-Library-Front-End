@@ -86,13 +86,20 @@ export const useFetchAtomicShopItem = (itemFormId: ComputedRef<string>): UseQuer
 	});
 }
 
-export const useFetchAtomicShopItems = (categoryFormId: ComputedRef<string>, subcategoryFormId: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>): UseQueryReturnType<AtomicShopItemsResponse, Error> => {
+export const useFetchAtomicShopItems = (categoryFormId: ComputedRef<string>, subcategoryFormId: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>, isPTS: ComputedRef<boolean>, hasSupport: ComputedRef<boolean>): UseQueryReturnType<AtomicShopItemsResponse, Error> => {
 	return useQuery({
-		queryKey: ['f76_atx_items', categoryFormId, subcategoryFormId, { currentPage, pageSize, filter, sortOrder }],
+		queryKey: ['f76_atx_items', categoryFormId, subcategoryFormId, { currentPage, pageSize, filter, sortOrder, isPTS, hasSupport }],
 		queryFn: () => {
-			if (subcategoryFormId.value !== '-1') return fetchApi(prepareURL(`/api/f76/atomicshop/subcategories/${subcategoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`));
-			else if (categoryFormId.value !== '-1') return fetchApi(prepareURL(`/api/f76/atomicshop/categories/${categoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`));
-			else return fetchApi(prepareURL(`/api/f76/atomicshop/items?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`));
+			let url = '';
+
+			if (subcategoryFormId.value !== '-1') url = `/api/f76/atomicshop/subcategories/${subcategoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`;
+			else if (categoryFormId.value !== '-1') url = `/api/f76/atomicshop/categories/${categoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`;
+			else url = `/api/f76/atomicshop/items?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`;
+
+			if (isPTS.value === true) url += `&is_pts=1`;
+			if (hasSupport.value === true) url += `&has_support=1`;
+
+			return fetchApi(prepareURL(url));
 		},
 		staleTime: DEFAULT_STALE_TIME,
 		placeholderData: keepPreviousData

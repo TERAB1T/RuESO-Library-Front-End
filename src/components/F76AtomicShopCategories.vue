@@ -1,100 +1,56 @@
 <script setup lang="ts">
-import { RouterLink, useRoute } from 'vue-router';
-import { reactive, watch, watchEffect, onServerPrefetch } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { reactive, watch, watchEffect, onServerPrefetch, computed } from 'vue';
 import { useFetchAtomicShopUpdated, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { formatDateTime } from '@/utils';
 
-import type { AtomicShopCategoryWithSubcategories } from '@/types';
+import type { AtomicShopSubcategory, AtomicShopCategoryWithSubcategories } from '@/types';
 
 const route = useRoute();
+const router = useRouter();
 
 const props = defineProps<{
 	categories: AtomicShopCategoryWithSubcategories[]
 }>();
 
 const state = reactive({
-	currentCategoryFormId: route.params.categoryFormId ?? '-1',
-	currentSubcategoryFormId: route.params.subcategoryFormId ?? '-1',
-	lastUpdated: "",
-	expandedCategories: new Set<string>()
+    expandedCategories: new Set<string>(),
+    lastUpdated: ""
 });
+
+const isPTS = computed(() => route.query.isPTS === '1');
+const hasSupport = computed(() => route.query.hasSupport === '1');
+const currentCatId = computed(() => (route.params.categoryFormId as string) || '-1');
+const currentSubCatId = computed(() => (route.params.subcategoryFormId as string) || '-1');
 
 const { data: atomicShopUpdatedData, suspense: atomicShopUpdatedSuspense, isSuccess: isAtomicShopUpdatedFetched } = useFetchAtomicShopUpdated();
 
-watch(
-	() => route.params.categoryFormId,
-	(newCategoryFormId) => {
-		state.currentCategoryFormId = newCategoryFormId ?? '-1';
-
-		if (newCategoryFormId && newCategoryFormId !== '-1') {
-			state.expandedCategories.add(newCategoryFormId as string);
-		}
-	},
-	{ immediate: true }
-);
-
-watch(
-	() => route.params.subcategoryFormId,
-	(newSubcategoryFormId) => {
-		state.currentSubcategoryFormId = newSubcategoryFormId ?? '-1';
-
-		if (newSubcategoryFormId && newSubcategoryFormId !== '-1') {
-			const parentCategory = props.categories.find(cat =>
-				cat.subcategories.some(sub => sub.formId === newSubcategoryFormId)
-			);
-			if (parentCategory) {
-				state.expandedCategories.add(parentCategory.formId);
-			}
-		}
-	},
-	{ immediate: true }
-);
-
-watch(
-	() => props.categories.length,
-	() => {
-		const subcategoryFormId = state.currentSubcategoryFormId;
-		if (subcategoryFormId && subcategoryFormId !== '-1' && props.categories.length > 0) {
-			const parentCategory = props.categories.find(cat =>
-				cat.subcategories.some(sub => sub.formId === subcategoryFormId)
-			);
-			if (parentCategory) {
-				state.expandedCategories.add(parentCategory.formId);
-			}
-		}
-	},
-	{ immediate: true }
-);
-
-const queryClient = useQueryClient();
-const prefetchCategory = (categoryFormId: string) => usePrefetchAtomicShopCategory(queryClient, categoryFormId);
-const prefetchSubcategory = (subcategoryFormId: string) => usePrefetchAtomicShopSubcategory(queryClient, subcategoryFormId);
-
 watchEffect(() => {
-	if (atomicShopUpdatedData.value) {
-		state.lastUpdated = atomicShopUpdatedData.value.lastModified;
-	}
+    const catId = currentCatId.value;
+    const subId = currentSubCatId.value;
+
+    if (catId !== '-1') state.expandedCategories.add(catId);
+
+    if (subId !== '-1' && props.categories.length > 0) {
+        const parent = props.categories.find(c => c.subcategories.some(s => s.formId === subId));
+        if (parent) state.expandedCategories.add(parent.formId);
+    }
+
+    if (atomicShopUpdatedData.value) {
+        state.lastUpdated = atomicShopUpdatedData.value.lastModified;
+    }
 });
 
 onServerPrefetch(async () => {
 	await atomicShopUpdatedSuspense();
-	if (atomicShopUpdatedData.value) {
-		state.lastUpdated = atomicShopUpdatedData.value.lastModified;
-	}
-
-	const subcategoryFormId = state.currentSubcategoryFormId;
-	if (subcategoryFormId && subcategoryFormId !== '-1' && props.categories.length > 0) {
-		const parentCategory = props.categories.find(cat =>
-			cat.subcategories.some(sub => sub.formId === subcategoryFormId)
-		);
-		if (parentCategory) {
-			state.expandedCategories.add(parentCategory.formId);
-		}
-	}
 });
+
+const queryClient = useQueryClient();
+const prefetchCategory = (categoryFormId: string) => usePrefetchAtomicShopCategory(queryClient, categoryFormId);
+const prefetchSubcategory = (subcategoryFormId: string) => usePrefetchAtomicShopSubcategory(queryClient, subcategoryFormId);
 
 const toggleCategory = (categoryFormId: string, event: Event) => {
 	event.preventDefault();
@@ -114,6 +70,34 @@ const isCategoryExpanded = (categoryFormId: string) => {
 const hasSubcategories = (category: AtomicShopCategoryWithSubcategories) => {
 	return category.subcategories && category.subcategories.length > 0;
 };
+
+const buildUrl = (type: 'category' | 'subcategory', item: any) => {
+    const isCurrent = type === 'category'
+        ? currentCatId.value === item.formId && currentSubCatId.value === '-1'
+        : currentSubCatId.value === item.formId;
+
+    const path = isCurrent
+        ? '/f76-atomic-shop'
+        : `/f76-atomic-shop/${type}/${item.formId}-${item.slug}`;
+
+    return {
+        path,
+        query: {
+            ...(isPTS.value && { isPTS: '1' }),
+            ...(hasSupport.value && { hasSupport: '1' })
+        }
+    };
+};
+
+const updateFilters = (updates: Record<string, string | undefined>) => {
+	const query = { ...route.query, ...updates, page: undefined } as Record<string, any>;
+
+	Object.keys(query).forEach(key => !query[key] && delete query[key]);
+	router.push({ path: route.path, query });
+};
+
+const togglePTS = () => updateFilters({ isPTS: !isPTS.value ? '1' : undefined, hasSupport: undefined });
+const toggleSupport = () => updateFilters({ hasSupport: !hasSupport.value ? '1' : undefined, isPTS: undefined });
 </script>
 
 <template>
@@ -131,13 +115,13 @@ const hasSubcategories = (category: AtomicShopCategoryWithSubcategories) => {
 				<div v-for="category in props.categories" :key="category.formId" class="category-wrapper">
 					<div class="d-flex align-items-stretch category-item">
 						<button v-if="hasSubcategories(category)" @click="toggleCategory(category.formId, $event)" class="btn btn-sm category-toggle" :class="{
-							'active': state.currentCategoryFormId === category.formId && state.currentSubcategoryFormId === '-1'
+							'active': currentCatId === category.formId && currentSubCatId === '-1'
 						}" :aria-expanded="isCategoryExpanded(category.formId)" :aria-label="isCategoryExpanded(category.formId) ? 'Свернуть' : 'Развернуть'">
 							<FontAwesomeIcon :icon="isCategoryExpanded(category.formId) ? faChevronDown : faChevronRight" class="text-muted category-toggle-icon" size="sm" />
 						</button>
 
-						<RouterLink :to="state.currentCategoryFormId === category.formId ? '/f76-atomic-shop' : `/f76-atomic-shop/category/${category.formId}-${category.slug}`" class="list-group-item list-group-item-action flex-grow-1" :class="{
-							'active': state.currentCategoryFormId === category.formId && state.currentSubcategoryFormId === '-1',
+						<RouterLink :to="buildUrl('category', category)" class="list-group-item list-group-item-action flex-grow-1" :class="{
+							'active': currentCatId === category.formId && currentSubCatId === '-1',
 							'has-subcategories': hasSubcategories(category)
 						}" @mouseenter="prefetchCategory(category.formId)">
 							{{ category.nameRu }}
@@ -146,11 +130,24 @@ const hasSubcategories = (category: AtomicShopCategoryWithSubcategories) => {
 
 					<Transition name="expand">
 						<div v-if="hasSubcategories(category) && isCategoryExpanded(category.formId)" class="subcategories-list">
-							<RouterLink v-for="subcategory in category.subcategories" :key="subcategory.formId" :to="state.currentSubcategoryFormId === subcategory.formId ? '/f76-atomic-shop' : `/f76-atomic-shop/subcategory/${subcategory.formId}-${subcategory.slug}`" class="list-group-item list-group-item-action subcategory-item" :class="{ 'active': state.currentSubcategoryFormId === subcategory.formId }" @mouseenter="prefetchSubcategory(subcategory.formId)">
+							<RouterLink v-for="subcategory in category.subcategories" :key="subcategory.formId" :to="buildUrl('subcategory', subcategory)" class="list-group-item list-group-item-action subcategory-item" :class="{ 'active': currentSubCatId === subcategory.formId }" @mouseenter="prefetchSubcategory(subcategory.formId)">
 								{{ subcategory.nameRu }}
 							</RouterLink>
 						</div>
 					</Transition>
+				</div>
+				<hr>
+				<div class="category-wrapper category-additional">
+					<div class="d-flex align-items-stretch category-item">
+						<a href="#" class="list-group-item list-group-item-action flex-grow-1" :class="{ active: isPTS }" @click.prevent="togglePTS">
+							Тестовый сервер (PTS)
+						</a>
+					</div>
+					<div class="d-flex align-items-stretch category-item">
+						<a href="#" class="list-group-item list-group-item-action flex-grow-1" :class="{ active: hasSupport }" @click.prevent="toggleSupport">
+							Продается в поддержке
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>

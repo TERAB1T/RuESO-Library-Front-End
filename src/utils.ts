@@ -236,3 +236,10 @@ export const atomicShopHandleImageError = (event: Event) => {
 	const target = event.target as HTMLImageElement;
 	target.src = '/public/img/f76/atx/notfound.webp';
 };
+
+
+export const joinWithAnd = (arr: string[], separator?: string): string => {
+  if (arr.length === 0) return '';
+  if (arr.length === 1) return arr[0] || '';
+  return arr.slice(0, -1).join(', ') + (separator ? ` ${separator} ` : ' и ') + arr[arr.length - 1];
+}

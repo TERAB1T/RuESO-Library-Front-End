@@ -2,7 +2,7 @@
 import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick, onBeforeUnmount } from 'vue';
 import { useHead } from '@unhead/vue';
-import { prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
+import { prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError, joinWithAnd } from '@/utils';
 import { useFetchAtomicShopItem, useFetchAtomicShopCategories, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory } from '@/composables/useApi';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
@@ -221,7 +221,7 @@ let teleportDisabled = ref(true);
 const infoTabTrigger = ref<HTMLElement | null>(null);
 
 onMounted(async () => {
-	const { Tab } = await import("bootstrap");
+	const { Tab, Modal } = await import("bootstrap");
 
 	watch(isMobile, (newValue) => {
 		if (!newValue) {
@@ -280,6 +280,45 @@ onBeforeRouteLeave(() => {
 		nextTick(() => resolve(true));
 	});
 });
+
+const generateSupportText = computed<string>(() => {
+	if (item.value.supportItem && !item.value.supportBundles) {
+		return `Этот предмет можно приобрести за атомы, написав в службу поддержки Bethesda. Он доступен для покупки напрямую под названием <span class="support-item-name">${item.value.supportItem}</span>.`;
+	} else if (!item.value.supportItem && item.value.supportBundles) {
+		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
+		return `Этот предмет можно приобрести за атомы, написав в службу поддержки Bethesda. Он доступен в составе ${supportBundles.length === 1 ? 'набора' : 'наборов'} ${joinWithAnd(supportBundles, ' и ')}.`;
+	} else if (item.value.supportItem && item.value.supportBundles) {
+		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
+		return `Этот предмет можно приобрести за атомы, написав в службу поддержки Bethesda. Он доступен для покупки напрямую под названием <span class="support-item-name">${item.value.supportItem}</span>, а также в составе ${supportBundles.length === 1 ? 'набора' : 'наборов'} ${joinWithAnd(supportBundles)}.`;
+	}
+	return '';
+});
+
+const generateSupportListText = computed<string>(() => {
+	if (item.value.supportItem && !item.value.supportBundles) {
+		return `В поле «Список предметов» вставьте название предмета: <span class="support-item-name">${item.value.supportItem}</span>.`;
+	} else if (!item.value.supportItem && item.value.supportBundles) {
+		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
+		return `В поле «Список предметов» вставьте название набора: ${joinWithAnd(supportBundles, ' или ')}.`;
+	} else if (item.value.supportItem && item.value.supportBundles) {
+		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
+		return `В поле «Список предметов» вставьте название предмета: <span class="support-item-name">${item.value.supportItem}</span>.<ul><li>Если вы хотите приобрести его в составе набора, вставьте название набора: ${joinWithAnd(supportBundles, ' или ')}.</li></ul>`;
+	}
+	return '';
+});
+
+const generateSupportUrlText = computed<string>(() => {
+	if (item.value.supportItem && !item.value.supportBundles) {
+		return `Да — напрямую`;
+	} else if (!item.value.supportItem && item.value.supportBundles) {
+		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
+		return `Да — в ${supportBundles.length === 1 ? 'наборе' : 'наборах'}`;
+	} else if (item.value.supportItem && item.value.supportBundles) {
+		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
+		return `Да — напрямую и в ${supportBundles.length === 1 ? 'наборе' : 'наборах'}`;
+	}
+	return '';
+});
 </script>
 
 <template>
@@ -296,6 +335,42 @@ onBeforeRouteLeave(() => {
 		<NotFoundView v-else-if="isNotFound" />
 
 		<template v-else>
+			<div class="modal fade" id="supportModal" tabindex="-1" aria-labelledby="supportModal" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered modal-lg">
+					<div class="modal-content">
+						<div class="modal-header" style="padding:20px 30px 20px;">
+							<h1 class="modal-title fs-5" id="staticBackdropLabel">
+								<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
+									<path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5" />
+								</svg>
+								<span style="margin-left: 15px;">Покупка предмета в службе поддержки</span>
+							</h1>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body" style="padding:30px 30px 20px;">
+							<p v-html="generateSupportText"></p>
+							<ol>
+								<li>Перейдите на страницу <a href="https://help.bethesda.net/#ru/home/product/1129/category/14" target="_blank" rel="noopener noreferrer">службы поддержки Bethesda</a>.</li>
+								<li>Выберите свою платформу (например, Steam).</li>
+								<li>Выберите подкатегорию «Мне нужна помощь с Атомной лавкой».</li>
+								<li>Выберите «Да».</li>
+								<li>Выберите «Я хочу приобрести себе предмет из Атомной лавки».<ul>
+										<li>Если вы не были авторизованы, на этом этапе вам будет предложено войти в учетную запись Bethesda.</li>
+									</ul>
+								</li>
+								<li>В поле «Платформа» снова выберите свою платформу (например, Steam).</li>
+								<li v-html="generateSupportListText"></li>
+								<li>Нажмите «Отправить».</li>
+								<li>В течение нескольких минут на вашу электронную почту придет письмо. Следуйте инструкциям в нем, чтобы завершить покупку.</li>
+							</ol>
+							<div class="alert alert-info" role="alert">
+								<strong>Внимание!</strong> На сайте возможны неточности. Тщательно проверяйте все названия во время оформления покупки.
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<Breadcrumb :items="breadcrumbItems" />
 
 			<div class="row" id="main-item-container">
@@ -315,11 +390,23 @@ onBeforeRouteLeave(() => {
 					<div class="tab-content" :class="splittedScreenshots.length > 0 || isMobile ? 'with-screenshots' : ''" id="categoriesTabContent">
 						<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
 							<h1 class="book-title">{{ item.nameRu }}</h1>
+							<div v-if="item.isPTS" class="alert alert-info atomic-shop-card" role="alert">
+								<div class="pts-badge-wrapper" style="top:calc(50% - 20px);">
+									<div class="pts-badge">PTS</div>
+								</div>
+								<div style="margin-left:55px;">В данный момент этот предмет доступен только на публичном тестовом сервере.</div>
+							</div>
 							<div class="book-main" v-html="parsedTextRu"></div>
 						</div>
 
 						<div class="tab-pane p-3" id="english-pane" role="tabpanel" aria-labelledby="english-pane" tabindex="1">
 							<h1 class="book-title">{{ item.nameEn }}</h1>
+							<div v-if="item.isPTS" class="alert alert-info atomic-shop-card" role="alert">
+								<div class="pts-badge-wrapper" style="top:calc(50% - 20px);">
+									<div class="pts-badge">PTS</div>
+								</div>
+								<div style="margin-left:55px;">This item is currently available only on the Public Test Server.</div>
+							</div>
 							<div class="book-main" v-html="parsedTextEn"></div>
 						</div>
 
@@ -370,6 +457,15 @@ onBeforeRouteLeave(() => {
 									<div class="card-element">
 										<div class="card-subtitle">Оригинальное название</div>
 										{{ item.nameEn || '—' }}
+									</div>
+									<div class="card-element">
+										<div class="card-subtitle">Продается в службе поддержки</div>
+										<div v-if="!item.supportItem && !item.supportBundles">
+											Нет
+										</div>
+										<div v-else>
+											<a href="#" data-bs-toggle="modal" data-bs-target="#supportModal" v-html="generateSupportUrlText"></a>
+										</div>
 									</div>
 									<div class="card-element">
 										<div class="card-subtitle">Form ID</div>
@@ -498,6 +594,11 @@ onBeforeRouteLeave(() => {
 	&:hover {
 		transform: scale(1.02);
 	}
+}
+
+:deep(.support-item-name) {
+	font-weight: 500;
+	color: rgb(252, 244, 179);
 }
 
 @media (max-width: 991.98px) {

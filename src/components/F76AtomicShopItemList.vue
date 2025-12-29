@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { reactive, watch, computed, watchEffect, onServerPrefetch, ref } from 'vue';
+import { reactive, watch, computed, watchEffect, onServerPrefetch, ref, onMounted, onBeforeUnmount } from 'vue';
 import { prepareAtomicShopImage, getAtomicShopSortOrder, setAtomicShopSortOrder, atomicShopHandleImageError } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchAtomicShopItems, usePrefetchAtomicShopItem } from '@/composables/useApi';
@@ -45,7 +45,9 @@ const state = reactive({
 	pageSize: 15,
 	totalPages: 1,
 	filter: '',
-	sortOrder: getAtomicShopSortOrder()
+	sortOrder: getAtomicShopSortOrder(),
+	isPTS: false,
+	hasSupport: false
 });
 
 const currentPage = computed(() => Number(route.query.page) || 1);
@@ -62,7 +64,9 @@ const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched } = 
 	currentPage,
 	state.pageSize,
 	computed(() => state.filter),
-	computed(() => state.sortOrder)
+	computed(() => state.sortOrder),
+	computed(() => state.isPTS),
+	computed(() => state.hasSupport)
 );
 
 watchEffect(async () => {
@@ -87,10 +91,14 @@ onServerPrefetch(async () => {
 });
 
 watch(
-	() => [route.params.categoryFormId, route.params.subcategoryFormId, route.query.page],
-	([newCategoryFormId, newSubcategoryFormId]) => {
+	() => [route.params.categoryFormId, route.params.subcategoryFormId, route.query.page, route.query.isPTS, route.query.hasSupport],
+	([newCategoryFormId, newSubcategoryFormId, newPage, newIsPTS, newHasSupport]) => {
 		state.currentCategory.formId = (newCategoryFormId ?? '-1') as string;
 		state.currentSubcategory.formId = (newSubcategoryFormId ?? '-1') as string;
+
+		state.isPTS = (newIsPTS === '1') ? true : false;
+		state.hasSupport = (newHasSupport === '1') ? true : false;
+
 		if (!import.meta.env.SSR)
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 	},
@@ -120,16 +128,22 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 	}
 }, 300);
 
-const getBreadcrumb = (item: AtomicShopItem): string => {
-	const category = item.categoryFormId ? getCategoryByFormId(item.categoryFormId) : null;
-	const subcategory = item.subcategoryFormId ? getSubcategoryByFormId(item.subcategoryFormId) : null;
+const categoriesIndex = computed(() => {
+  const index: Record<string, { nameRu: string }> = {};
+  props.categories.forEach(cat => {
+	index[cat.formId] = { nameRu: cat.nameRu ?? '' };
+	cat.subcategories.forEach(sub => {
+	  index[sub.formId] = { nameRu: sub.nameRu ?? '' };
+	});
+  });
+  return index;
+});
 
-	if (category && subcategory) {
-		return `${category.nameRu} → ${subcategory.nameRu}`;
-	} else if (category) {
-		return category.nameRu || '';
-	}
-	return '';
+const getBreadcrumb = (item: AtomicShopItem) => {
+  const catName = categoriesIndex.value[item.categoryFormId || '']?.nameRu;
+  const subName = categoriesIndex.value[item.subcategoryFormId || '']?.nameRu;
+  if (catName && subName) return `${catName} → ${subName}`;
+  return catName || '';
 };
 
 const hoveredItem = ref<string | null>(null);
@@ -144,6 +158,28 @@ const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
 	const format = isHovered ? '.avif' : '.webp';
 	return prepareAtomicShopImage(item.mainImage?.replace(/\.(avif|webp)$/, format));
 };
+
+let tooltipInstance: any = null;
+
+const enableTooltips = async () => {
+	const { Tooltip } = await import("bootstrap");
+	const container = document.body;
+	tooltipInstance = new Tooltip(container, {
+		selector: '[data-bs-toggle="tooltip"]'
+	});
+};
+
+onMounted(async () => {
+	await enableTooltips();
+});
+
+onBeforeUnmount(() => {
+	if (tooltipInstance) {
+		tooltipInstance.dispose();
+	}
+
+	document.querySelectorAll('.tooltip').forEach(el => el.remove());
+});
 </script>
 
 <template>
@@ -176,6 +212,16 @@ const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
 	<div class="row g-4 mb-4">
 		<div v-for="item in state.items" :key="item.formId" class="col-12 col-md-6 col-lg-4">
 			<RouterLink :to="`/f76-atomic-shop/${item.formId}-${item.slug}`" class="card h-100 text-decoration-none atomic-shop-card" @mouseenter="hoveredItem = item.formId; prefetchAtomicShopItem(item.formId)" @mouseleave="hoveredItem = null">
+				<div v-if="item.isPTS" class="pts-badge-wrapper" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Доступно только на публичном тестовом сервере.">
+					<div class="pts-badge">PTS</div>
+				</div>
+				<div v-if="item.supportItem || item.supportBundles" class="support-badge-wrapper" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Можно купить в службе поддержки Bethesda.">
+					<div class="support-badge">
+						<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
+							<path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5" />
+						</svg>
+					</div>
+				</div>
 				<div class="card-img-wrapper">
 					<img :src="getImageSrc(item, hoveredItem === item.formId)" class="card-img-top" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
 				</div>
@@ -199,13 +245,14 @@ const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
 
 <style scoped>
 .atomic-shop-card {
+	position: relative;
 	transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-	overflow: hidden;
 	border: 1px solid rgba(0, 0, 0, 0.125);
 	background: var(--bs-block-bg);
 	will-change: transform;
 	backface-visibility: hidden;
 	-webkit-backface-visibility: hidden;
+	overflow: visible;
 }
 
 .atomic-shop-card:hover {
@@ -223,6 +270,8 @@ const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
 	background: linear-gradient(135deg, #4e4e4e 0%, #383838 100%);
 	line-height: 0;
 	will-change: transform;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
 }
 
 .card-img-top {
