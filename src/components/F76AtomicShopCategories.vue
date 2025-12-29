@@ -49,8 +49,8 @@ onServerPrefetch(async () => {
 });
 
 const queryClient = useQueryClient();
-const prefetchCategory = (categoryFormId: string) => usePrefetchAtomicShopCategory(queryClient, categoryFormId);
-const prefetchSubcategory = (subcategoryFormId: string) => usePrefetchAtomicShopSubcategory(queryClient, subcategoryFormId);
+const prefetchCategory = (categoryFormId: string) => usePrefetchAtomicShopCategory(queryClient, categoryFormId, isPTS, hasSupport);
+const prefetchSubcategory = (subcategoryFormId: string) => usePrefetchAtomicShopSubcategory(queryClient, subcategoryFormId, isPTS, hasSupport);
 
 const toggleCategory = (categoryFormId: string, event: Event) => {
 	event.preventDefault();

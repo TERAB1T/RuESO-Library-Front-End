@@ -179,24 +179,50 @@ export const usePrefetchAtomicShopItem = useDebounceFn((queryClient: any, itemFo
 	});
 }, DEBOUNCE_DELAY);
 
-export const usePrefetchAtomicShopCategory = useDebounceFn((queryClient: any, categoryFormId: string | undefined) => {
+export const usePrefetchAtomicShopCategory = useDebounceFn((queryClient: any, categoryFormId: string | undefined, isPTS?: ComputedRef<boolean> | boolean | undefined, hasSupport?: ComputedRef<boolean> | boolean | undefined) => {
 	if (categoryFormId === undefined || categoryFormId === '-1') return;
 	const sortOrder = getAtomicShopSortOrder();
 
+	if (isPTS === undefined) isPTS = false;
+	if (hasSupport === undefined) hasSupport = false;
+
+	const isPTSValue = typeof isPTS === 'object' ? isPTS.value : isPTS;
+	const hasSupportValue = typeof hasSupport === 'object' ? hasSupport.value : hasSupport;
+
 	queryClient.prefetchQuery({
-		queryKey: ['f76_atx_items', categoryFormId, '-1', { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder }],
-		queryFn: () => fetchApi(prepareURL(`/api/f76/atomicshop/categories/${categoryFormId}?page=1&page_size=${ATX_PAGE_SIZE}&sort_order=${sortOrder}`)),
+		queryKey: ['f76_atx_items', categoryFormId, '-1', { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS, hasSupport }],
+		queryFn: () => {
+			let url = `/api/f76/atomicshop/categories/${categoryFormId}?page=1&page_size=${ATX_PAGE_SIZE}&sort_order=${sortOrder}`;
+
+			if (isPTSValue === true) url += `&is_pts=1`;
+			if (hasSupportValue === true) url += `&has_support=1`;
+
+			return fetchApi(prepareURL(url));
+		},
 		staleTime: DEFAULT_STALE_TIME
 	});
 }, DEBOUNCE_DELAY);
 
-export const usePrefetchAtomicShopSubcategory = useDebounceFn((queryClient: any, subcategoryFormId: string | undefined) => {
+export const usePrefetchAtomicShopSubcategory = useDebounceFn((queryClient: any, subcategoryFormId: string | undefined, isPTS?: ComputedRef<boolean> | boolean | undefined, hasSupport?: ComputedRef<boolean> | boolean | undefined) => {
 	if (subcategoryFormId === undefined || subcategoryFormId === '-1') return;
 	const sortOrder = getAtomicShopSortOrder();
 
+	if (isPTS === undefined) isPTS = false;
+	if (hasSupport === undefined) hasSupport = false;
+
+	const isPTSValue = typeof isPTS === 'object' ? isPTS.value : isPTS;
+	const hasSupportValue = typeof hasSupport === 'object' ? hasSupport.value : hasSupport;
+
 	queryClient.prefetchQuery({
-		queryKey: ['f76_atx_items', '-1', subcategoryFormId, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder }],
-		queryFn: () => fetchApi(prepareURL(`/api/f76/atomicshop/subcategories/${subcategoryFormId}?page=1&page_size=${ATX_PAGE_SIZE}&sort_order=${sortOrder}`)),
+		queryKey: ['f76_atx_items', '-1', subcategoryFormId, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS, hasSupport }],
+		queryFn: () => {
+			let url = `/api/f76/atomicshop/subcategories/${subcategoryFormId}?page=1&page_size=${ATX_PAGE_SIZE}&sort_order=${sortOrder}`;
+
+			if (isPTSValue === true) url += `&is_pts=1`;
+			if (hasSupportValue === true) url += `&has_support=1`;
+
+			return fetchApi(prepareURL(url));
+		},
 		staleTime: DEFAULT_STALE_TIME
 	});
 }, DEBOUNCE_DELAY);
