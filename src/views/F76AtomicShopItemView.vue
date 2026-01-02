@@ -345,7 +345,7 @@ const generateSupportUrlText = computed<string>(() => {
 								</svg>
 								<span style="margin-left: 15px;">Покупка предмета в службе поддержки</span>
 							</h1>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
 						</div>
 						<div class="modal-body" style="padding:30px 30px 20px;">
 							<p v-html="generateSupportText"></p>
@@ -394,7 +394,7 @@ const generateSupportUrlText = computed<string>(() => {
 								<div class="pts-badge-wrapper" style="top:calc(50% - 20px);">
 									<div class="pts-badge">PTS</div>
 								</div>
-								<div style="margin-left:55px;">В данный момент этот предмет доступен только на публичном тестовом сервере.</div>
+								<div style="margin-left:55px;">Сейчас этот предмет доступен только на публичном тестовом сервере.</div>
 							</div>
 							<div class="book-main" v-html="parsedTextRu"></div>
 						</div>
@@ -464,7 +464,7 @@ const generateSupportUrlText = computed<string>(() => {
 											Нет
 										</div>
 										<div v-else>
-											<a href="#" data-bs-toggle="modal" data-bs-target="#supportModal" v-html="generateSupportUrlText"></a>
+											<button type="button" class="btn btn-link modal-trigger" data-bs-toggle="modal" data-bs-target="#supportModal" aria-haspopup="dialog" v-html="generateSupportUrlText"></button>
 										</div>
 									</div>
 									<div class="card-element">
@@ -594,6 +594,17 @@ const generateSupportUrlText = computed<string>(() => {
 	&:hover {
 		transform: scale(1.02);
 	}
+}
+
+.modal-trigger {
+	text-decoration: underline dotted;
+	text-decoration-color: currentColor;
+	text-underline-offset: 4px;
+	text-decoration-thickness: 0.5px;
+
+	padding: 0;
+	border: none;
+	margin-top: -4px;
 }
 
 :deep(.support-item-name) {

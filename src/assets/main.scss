@@ -10,11 +10,12 @@
 	--bs-primary-rgb: 249, 189, 70;
 
 	--bs-primary-hover: #fcd34d;
+	--bs-primary-hover-rgb: 252, 211, 77;
 
 	--bs-link-color: var(--bs-primary);
 	--bs-link-color-rgb: var(--bs-primary-rgb);
-	--bs-link-hover-color: #fb923c;
-	--bs-link-hover-color-rgb: 251, 146, 60;
+	--bs-link-hover-color: var(--bs-primary-hover); // #fb923c;
+	--bs-link-hover-color-rgb: var(--bs-primary-hover-rgb); // 251, 146, 60;
 
 	--bs-block-bg: #18181b;
 	--bs-block-border-radius: 12px;
