@@ -10,6 +10,7 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { useSupportText } from '@/composables/useSupportText';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import 'photoswipe/style.css';
 
@@ -27,6 +28,8 @@ const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategor
 
 const item = computed(() => itemData.value ?? {} as AtomicShopItem);
 const categories = computed(() => categoriesData.value ?? [] as AtomicShopCategoryWithSubcategories[]);
+
+const { generateSupportText, generateSupportListText, generateSupportUrlText } = useSupportText(item);
 
 const isNotFound = computed(() =>
 	isItemFetched.value && !item.value.nameRu
@@ -279,45 +282,6 @@ onBeforeRouteLeave(() => {
 	return new Promise(resolve => {
 		nextTick(() => resolve(true));
 	});
-});
-
-const generateSupportText = computed<string>(() => {
-	if (item.value.supportItem && !item.value.supportBundles) {
-		return `Этот предмет можно приобрести за атомы, написав в службу поддержки Bethesda. Он доступен для покупки напрямую под названием <span class="support-item-name">${item.value.supportItem}</span>.`;
-	} else if (!item.value.supportItem && item.value.supportBundles) {
-		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
-		return `Этот предмет можно приобрести за атомы, написав в службу поддержки Bethesda. Он доступен в составе ${supportBundles.length === 1 ? 'набора' : 'наборов'} ${joinWithAnd(supportBundles, ' и ')}.`;
-	} else if (item.value.supportItem && item.value.supportBundles) {
-		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
-		return `Этот предмет можно приобрести за атомы, написав в службу поддержки Bethesda. Он доступен для покупки напрямую под названием <span class="support-item-name">${item.value.supportItem}</span>, а также в составе ${supportBundles.length === 1 ? 'набора' : 'наборов'} ${joinWithAnd(supportBundles)}.`;
-	}
-	return '';
-});
-
-const generateSupportListText = computed<string>(() => {
-	if (item.value.supportItem && !item.value.supportBundles) {
-		return `В поле «Список предметов» вставьте название предмета: <span class="support-item-name">${item.value.supportItem}</span>.`;
-	} else if (!item.value.supportItem && item.value.supportBundles) {
-		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
-		return `В поле «Список предметов» вставьте название набора: ${joinWithAnd(supportBundles, ' или ')}.`;
-	} else if (item.value.supportItem && item.value.supportBundles) {
-		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
-		return `В поле «Список предметов» вставьте название предмета: <span class="support-item-name">${item.value.supportItem}</span>.<ul><li>Если вы хотите приобрести его в составе набора, вставьте название набора: ${joinWithAnd(supportBundles, ' или ')}.</li></ul>`;
-	}
-	return '';
-});
-
-const generateSupportUrlText = computed<string>(() => {
-	if (item.value.supportItem && !item.value.supportBundles) {
-		return `Да — напрямую`;
-	} else if (!item.value.supportItem && item.value.supportBundles) {
-		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
-		return `Да — в ${supportBundles.length === 1 ? 'наборе' : 'наборах'}`;
-	} else if (item.value.supportItem && item.value.supportBundles) {
-		const supportBundles = item.value.supportBundles.split('|').map(b => `<span class="support-item-name">${b}</span>`);
-		return `Да — напрямую и в ${supportBundles.length === 1 ? 'наборе' : 'наборах'}`;
-	}
-	return '';
 });
 </script>
 
@@ -609,7 +573,7 @@ const generateSupportUrlText = computed<string>(() => {
 
 :deep(.support-item-name) {
 	font-weight: 500;
-	color: rgb(252, 244, 179);
+	color: #fefeca;
 }
 
 @media (max-width: 991.98px) {
