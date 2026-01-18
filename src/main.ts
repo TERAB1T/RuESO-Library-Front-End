@@ -1,6 +1,6 @@
 import { createSSRApp } from 'vue';
 import App from './App.vue';
-import router from "./router";
+import createAppRouter from "./router";
 import {
 	QueryClient,
 	VueQueryPlugin,
@@ -14,6 +14,7 @@ export function createApp(initialState = {}) {
 	const head = createHead();
 	setHeadInjectionHandler(() => head);
 
+	const router = createAppRouter();
 	app.use(router);
 
 	const queryClient = new QueryClient();
