@@ -1,32 +1,30 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { reactive, watch, watchEffect, onServerPrefetch, computed } from 'vue';
-import { useFetchAtomicShopUpdated, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory } from '@/composables/useApi';
+import { reactive, watchEffect, computed } from 'vue';
+import { usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { formatDateTime } from '@/utils';
 
-import type { AtomicShopSubcategory, AtomicShopCategoryWithSubcategories } from '@/types';
+import type { AtomicShopCategoryWithSubcategories } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
 
 const props = defineProps<{
-	categories: AtomicShopCategoryWithSubcategories[]
+	categories: AtomicShopCategoryWithSubcategories[],
+	lastUpdated: string
 }>();
 
 const state = reactive({
-    expandedCategories: new Set<string>(),
-    lastUpdated: ""
+    expandedCategories: new Set<string>()
 });
 
 const isPTS = computed(() => route.query.isPTS === '1');
 const hasSupport = computed(() => route.query.hasSupport === '1');
 const currentCatId = computed(() => (route.params.categoryFormId as string) || '-1');
 const currentSubCatId = computed(() => (route.params.subcategoryFormId as string) || '-1');
-
-const { data: atomicShopUpdatedData, suspense: atomicShopUpdatedSuspense, isSuccess: isAtomicShopUpdatedFetched } = useFetchAtomicShopUpdated();
 
 watchEffect(() => {
     const catId = currentCatId.value;
@@ -38,14 +36,6 @@ watchEffect(() => {
         const parent = props.categories.find(c => c.subcategories.some(s => s.formId === subId));
         if (parent) state.expandedCategories.add(parent.formId);
     }
-
-    if (atomicShopUpdatedData.value) {
-        state.lastUpdated = atomicShopUpdatedData.value.lastModified;
-    }
-});
-
-onServerPrefetch(async () => {
-	await atomicShopUpdatedSuspense();
 });
 
 const queryClient = useQueryClient();
@@ -105,8 +95,8 @@ const toggleSupport = () => updateFilters({ hasSupport: !hasSupport.value ? '1' 
 		<div class="p-3">
 			<div class="library-updated text-muted small">
 				Последнее обновление:
-				<time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">
-					{{ state.lastUpdated }}
+				<time v-if="props.lastUpdated" :datetime="formatDateTime(props.lastUpdated)">
+					{{ props.lastUpdated }}
 				</time>
 			</div>
 
@@ -326,6 +316,15 @@ const toggleSupport = () => updateFilters({ hasSupport: !hasSupport.value ? '1' 
 .book-categories-container:hover,
 .book-categories-container:focus-within {
 	scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+/* Icons */
+
+.svg-inline--fa {
+    height: 1em;
+    width: var(--fa-width, 1.25em);
+    font-size: calc(14 / 16 * 1em);
+    line-height: calc(1 / 14 * 1em);
 }
 
 @media (max-width: 991.98px) {

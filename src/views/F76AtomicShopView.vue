@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 import F76AtomicShopCategories from '@/components/F76AtomicShopCategories.vue';
 import F76AtomicShopItemList from '@/components/F76AtomicShopItemList.vue';
 import { useHead } from '@unhead/vue';
-import { useFetchAtomicShopCategories } from '@/composables/useApi';
+import { useFetchAtomicShopCategories, useFetchAtomicShopUpdated } from '@/composables/useApi';
 
 import type { AtomicShopCategoryWithSubcategories } from '@/types';
 
@@ -13,7 +13,8 @@ const route = useRoute();
 const state = reactive({
 	currentCategoryFormId: route.params.categoryFormId ?? '-1',
 	currentSubcategoryFormId: route.params.subcategoryFormId ?? '-1',
-	categories: [] as AtomicShopCategoryWithSubcategories[]
+	categories: [] as AtomicShopCategoryWithSubcategories[],
+	lastUpdated: ''
 });
 
 const updateHead = () => {
@@ -66,11 +67,16 @@ const updateHead = () => {
 };
 
 const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchAtomicShopCategories();
+const { data: atomicShopUpdatedData, suspense: atomicShopUpdatedSuspense, isSuccess: isAtomicShopUpdatedFetched } = useFetchAtomicShopUpdated();
 
 watchEffect(() => {
 	if (categoriesData.value) {
 		state.categories = categoriesData.value;
 	}
+
+	if (atomicShopUpdatedData.value) {
+        state.lastUpdated = atomicShopUpdatedData.value.lastModified;
+    }
 
 	updateHead();
 });
@@ -92,10 +98,14 @@ watch(
 );
 
 onServerPrefetch(async () => {
-	await categoriesSuspense();
+	await categoriesSuspense(), atomicShopUpdatedSuspense();
 	if (categoriesData.value) {
 		state.categories = categoriesData.value;
 	}
+
+	if (atomicShopUpdatedData.value) {
+        state.lastUpdated = atomicShopUpdatedData.value.lastModified;
+    }
 
 	updateHead();
 });
@@ -111,7 +121,7 @@ onServerPrefetch(async () => {
 			</div>
 
 			<div class="col-lg-3 order-2 order-lg-2 book-categories-column">
-				<F76AtomicShopCategories :categories="state.categories" />
+				<F76AtomicShopCategories :categories="state.categories" :lastUpdated="state.lastUpdated" />
 			</div>
 		</div>
 	</div>
