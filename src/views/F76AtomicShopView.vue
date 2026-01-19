@@ -75,8 +75,8 @@ watchEffect(() => {
 	}
 
 	if (atomicShopUpdatedData.value) {
-        state.lastUpdated = atomicShopUpdatedData.value.lastModified;
-    }
+		state.lastUpdated = atomicShopUpdatedData.value.lastModified;
+	}
 
 	updateHead();
 });
@@ -98,14 +98,17 @@ watch(
 );
 
 onServerPrefetch(async () => {
-	await categoriesSuspense(), atomicShopUpdatedSuspense();
+	await Promise.all([
+		categoriesSuspense(),
+		atomicShopUpdatedSuspense(),
+	]);
 	if (categoriesData.value) {
 		state.categories = categoriesData.value;
 	}
 
 	if (atomicShopUpdatedData.value) {
-        state.lastUpdated = atomicShopUpdatedData.value.lastModified;
-    }
+		state.lastUpdated = atomicShopUpdatedData.value.lastModified;
+	}
 
 	updateHead();
 });
