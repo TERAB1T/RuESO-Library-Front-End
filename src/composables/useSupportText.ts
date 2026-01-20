@@ -21,9 +21,9 @@ const parseItemWithPrice = (itemString: string): ParsedItem => {
 
 const formatItem = (parsed: ParsedItem, withPrice: boolean = true): string => {
 	const priceHtml = parsed.price && withPrice
-		? ` <span class="support-item-price">(<span>${parsed.price}</span>)</span>`
+		? ` (<span class="support-item-price">${parsed.price}</span>)`
 		: '';
-	return `<span class="support-item-name">${parsed.name}${priceHtml}</span>`;
+	return `<span class="support-item-name">${parsed.name}</span>${priceHtml}`;
 };
 
 const parseBundles = (bundlesString: string): ParsedItem[] => {

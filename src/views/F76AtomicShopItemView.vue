@@ -11,6 +11,7 @@ import { useWindowSize } from '@vueuse/core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { useSupportText } from '@/composables/useSupportText';
+import { useCopyOnClick } from '@/composables/useCopyOnClick';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import 'photoswipe/style.css';
 
@@ -283,6 +284,9 @@ onBeforeRouteLeave(() => {
 		nextTick(() => resolve(true));
 	});
 });
+
+const copyContainerRef = ref<HTMLElement | null>(null);
+useCopyOnClick(copyContainerRef);
 </script>
 
 <template>
@@ -311,7 +315,7 @@ onBeforeRouteLeave(() => {
 							</h1>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
 						</div>
-						<div class="modal-body" style="padding:30px 30px 20px;">
+						<div class="modal-body" style="padding:30px 30px 20px;" ref="copyContainerRef">
 							<p v-html="generateSupportText"></p>
 							<ol>
 								<li>Перейдите на страницу <a href="https://help.bethesda.net/#ru/home/product/1129/category/14" target="_blank" rel="noopener noreferrer">службы поддержки Bethesda</a>.</li>
@@ -572,8 +576,18 @@ onBeforeRouteLeave(() => {
 }
 
 :deep(.support-item-name) {
-	font-weight: 500;
-	color: #fefeca;
+	background-color: hsl(from #4cb6eb h s l / 10%);
+	border: 1px solid hsl(from #4cb6eb h s l / 30%);
+	border-radius: 4px;
+	padding: 0px 4px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	user-select: none;
+	white-space: nowrap;
+
+	&:hover {
+		background-color: hsl(from #4cb6eb h s l / 18%);
+	}
 }
 
 @media (max-width: 991.98px) {
