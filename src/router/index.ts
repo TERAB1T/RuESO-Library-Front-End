@@ -86,7 +86,7 @@ export default function createAppRouter() {
 				],
 			},
 			{
-				path: '/f76-atomic-shop/:itemFormId([a-f0-9]{8}):slug?',
+				path: '/f76-atomic-shop/:itemFormId([a-fA-F0-9]{8}):slug?',
 				name: 'atomic-shop-item',
 				component: F76AtomicShopItemView,
 			},

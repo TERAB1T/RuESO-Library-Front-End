@@ -21,7 +21,7 @@ const route = useRoute();
 
 let lightbox: PhotoSwipeLightbox | null = null;
 
-const currentItemFormId = computed(() => (route.params.itemFormId || '') as string);
+const currentItemFormId = computed(() => ((route.params.itemFormId || '') as string).toLowerCase());
 
 const { data: itemData, suspense: itemSuspense, isSuccess: isItemFetched, isError: isItemError } = useFetchAtomicShopItem(currentItemFormId);
 
