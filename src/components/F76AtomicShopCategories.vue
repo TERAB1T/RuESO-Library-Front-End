@@ -73,6 +73,7 @@ const buildUrl = (type: 'category' | 'subcategory', item: any) => {
     return {
         path,
         query: {
+			...(route.query.filter && { filter: route.query.filter }),
             ...(isPTS.value && { isPTS: '1' }),
             ...(hasSupport.value && { hasSupport: '1' })
         }

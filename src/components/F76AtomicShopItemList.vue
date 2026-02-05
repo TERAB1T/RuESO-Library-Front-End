@@ -44,7 +44,7 @@ const state = reactive({
 	},
 	pageSize: 15,
 	totalPages: 1,
-	filter: '',
+	filter: (route.query.filter as string | undefined) || '',
 	sortOrder: getAtomicShopSortOrder(),
 	isPTS: false,
 	hasSupport: false
@@ -105,9 +105,30 @@ watch(
 	{ immediate: true }
 );
 
+watch(
+	() => route.query.filter,
+	(newFilter) => {
+		state.filter = (newFilter as string | undefined) || '';
+
+		const filterInput = document.getElementById('library-filter') as HTMLInputElement;
+		if (filterInput) {
+			filterInput.value = state.filter ? decodeURI(state.filter) : '';
+		}
+	},
+	{ immediate: true }
+);
+
 const changePage = (newPage: number) => {
 	if (newPage > 0 && newPage <= state.totalPages) {
-		router.push({ query: { ...route.query, page: newPage } });
+		const newQuery: Record<string, any> = { ...route.query };
+
+		if (newPage === 1) {
+			delete newQuery.page;
+		} else {
+			newQuery.page = newPage;
+		}
+
+		router.push({ query: newQuery });
 		if (!import.meta.env.SSR)
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
@@ -117,33 +138,36 @@ const queryClient = useQueryClient();
 const prefetchAtomicShopItem = (itemFormId: string) => usePrefetchAtomicShopItem(queryClient, itemFormId);
 
 const onChangeFilter = useDebounceFn((textFilter: string) => {
+	const newQuery: Record<string, any> = { ...route.query };
+	delete newQuery.page;
+
 	if (!textFilter || textFilter.length < 3) {
 		state.filter = '';
+		delete newQuery.filter;
 	} else {
 		state.filter = encodeURI(textFilter);
+		newQuery.filter = state.filter;
 	}
 
-	if (currentPage.value !== 1) {
-		router.push({ query: { ...route.query, page: 1 } });
-	}
+	router.push({ query: newQuery });
 }, 300);
 
 const categoriesIndex = computed(() => {
-  const index: Record<string, { nameRu: string }> = {};
-  props.categories.forEach(cat => {
-	index[cat.formId] = { nameRu: cat.nameRu ?? '' };
-	cat.subcategories.forEach(sub => {
-	  index[sub.formId] = { nameRu: sub.nameRu ?? '' };
+	const index: Record<string, { nameRu: string }> = {};
+	props.categories.forEach(cat => {
+		index[cat.formId] = { nameRu: cat.nameRu ?? '' };
+		cat.subcategories.forEach(sub => {
+			index[sub.formId] = { nameRu: sub.nameRu ?? '' };
+		});
 	});
-  });
-  return index;
+	return index;
 });
 
 const getBreadcrumb = (item: AtomicShopItem) => {
-  const catName = categoriesIndex.value[item.categoryFormId || '']?.nameRu;
-  const subName = categoriesIndex.value[item.subcategoryFormId || '']?.nameRu;
-  if (catName && subName) return `${catName} → ${subName}`;
-  return catName || '';
+	const catName = categoriesIndex.value[item.categoryFormId || '']?.nameRu;
+	const subName = categoriesIndex.value[item.subcategoryFormId || '']?.nameRu;
+	if (catName && subName) return `${catName} → ${subName}`;
+	return catName || '';
 };
 
 const hoveredItem = ref<string | null>(null);
@@ -170,6 +194,11 @@ const enableTooltips = async () => {
 };
 
 onMounted(async () => {
+	const filterInput = document.getElementById('library-filter') as HTMLInputElement;
+	if (filterInput && state.filter) {
+		filterInput.value = decodeURI(state.filter);
+	}
+
 	await enableTooltips();
 });
 
