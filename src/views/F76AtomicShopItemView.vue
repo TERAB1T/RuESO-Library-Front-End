@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router';
-import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick, onBeforeUnmount } from 'vue';
+import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
 import { useHead } from '@unhead/vue';
-import { prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError, joinWithAnd } from '@/utils';
+import { prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
 import { useFetchAtomicShopItem, useFetchAtomicShopCategories, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory } from '@/composables/useApi';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { useSupportText } from '@/composables/useSupportText';
 import { useCopyOnClick } from '@/composables/useCopyOnClick';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
@@ -20,6 +18,7 @@ import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbIte
 const route = useRoute();
 
 let lightbox: PhotoSwipeLightbox | null = null;
+let BootstrapModal: any = null;
 
 const currentItemFormId = computed(() => ((route.params.itemFormId || '') as string).toLowerCase());
 
@@ -226,6 +225,7 @@ const infoTabTrigger = ref<HTMLElement | null>(null);
 
 onMounted(async () => {
 	const { Tab, Modal } = await import("bootstrap");
+	BootstrapModal = Modal;
 
 	watch(isMobile, (newValue) => {
 		if (!newValue) {
@@ -268,16 +268,20 @@ watch(() => item.value.mainImage, () => {
 	initLightbox();
 });
 
-onBeforeUnmount(() => {
+const showTeleport = ref(true);
+
+onBeforeRouteLeave(async () => {
+	if (BootstrapModal) {
+		const modalEl = document.getElementById('supportModal');
+		const modal = modalEl ? BootstrapModal.getInstance(modalEl) : null;
+		modal?.hide();
+	}
+
 	if (lightbox) {
 		lightbox.destroy();
 		lightbox = null;
 	}
-});
 
-const showTeleport = ref(true);
-
-onBeforeRouteLeave(() => {
 	showTeleport.value = false;
 
 	return new Promise(resolve => {
