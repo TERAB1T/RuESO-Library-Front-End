@@ -246,6 +246,7 @@ table.dataTable td {
 
 table.dataTable td:nth-child(n+3) {
 	word-break: break-word;
+	white-space: pre-wrap;
 }
 
 table.dataTable pre {
