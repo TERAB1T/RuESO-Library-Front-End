@@ -6,7 +6,7 @@ import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
 import { useFetchBook, useFetchCategories, useFetchPatches, usePrefetchBook } from '@/composables/useApi';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
-import BookInfo from '@/components/BookInfo.vue';
+import BookInfo from '@/components/ESOBookInfo.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
 

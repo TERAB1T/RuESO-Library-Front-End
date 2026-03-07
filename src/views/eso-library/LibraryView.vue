@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { reactive, watch, watchEffect, onServerPrefetch } from 'vue';
 import { useRoute } from 'vue-router';
-import BookCategories from '@/components/BookCategories.vue';
-import BookList from '@/components/BookList.vue';
+import BookCategories from '@/components/ESOBookCategories.vue';
+import BookList from '@/components/ESOBookList.vue';
 import { useHead } from '@unhead/vue';
 import { prepareIcon } from '@/utils';
 import { useFetchCategories, useFetchPatches } from '@/composables/useApi';
