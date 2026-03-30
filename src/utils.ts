@@ -116,6 +116,7 @@ export const parsePseudoCode = (text: string): string => {
 		.replace(/\[H3\](.*?)\[\/H3\]/gi, '<h5>$1</h5>')
 		.replace(/\[FLAVOR\](.*?)\[\/FLAVOR\]/gi, '<div class="alert alert-dark">$1</div>')
 		.replace(/\[S\](.*?)\[\/S\]/gi, '<s>$1</s>')
+		.replace(/\[U\](.*?)\[\/U\]/gi, '<u>$1</u>')
 		.replace(/\[C=([0-9a-f]{6})\](.*?)\[\/C\]/gi, replaceColor)
 		.replace(/\[ANTIQUITY=(.*?)\](.*?)\[\/ANTIQUITY\]/gi, replaceAntiquity)
 		.replace(/\[HIRELING=(.*?)\](.*?)\[\/HIRELING\]/gi, replaceHireling)
