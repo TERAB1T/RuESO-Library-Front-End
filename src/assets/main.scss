@@ -456,7 +456,7 @@ table.dataTable pre {
 	text-transform: uppercase;
 	clip-path: polygon(0 10%, 100% 0, 85% 100%, 10% 90%);
 	font-family: "Roboto Condensed", "Arial Narrow", "Helvetica Condensed", "Liberation Sans Narrow", sans-serif-condensed, sans-serif;
-	width: 70px;
+	min-width: 70px;
 	text-align: center;
 	text-shadow: 2px 1px 3px rgba(0, 0, 0, 0.7);
 }
