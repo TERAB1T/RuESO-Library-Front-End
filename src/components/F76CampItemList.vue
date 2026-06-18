@@ -169,8 +169,8 @@ const getBreadcrumb = (item: CampItem) => {
 
 const hoveredItem = ref<string | null>(null);
 
-const getImageSrc = (item: CampItem, isHovered: boolean) => {
-	return prepareCampImage(item.mainImage);
+const getImageSrc = (item: CampItem, isHovered: boolean, thumbSize?: number) => {
+	return prepareCampImage(item.mainImage, thumbSize);
 };
 
 let tooltipInstance: any = null;
@@ -214,6 +214,13 @@ onBeforeUnmount(() => {
 		<h2 class="mb-4">Предметы C.A.M.P. Fallout 76</h2>
 	</template>
 
+	<div class="alert alert-danger camp-wip-card" role="alert">
+		<div class="pts-badge-wrapper" style="top:calc(50% - 20px);">
+			<div class="pts-badge">WIP</div>
+		</div>
+		<div style="margin-left:55px;">Раздел находится в разработке. Подробная информация о каждом предмете будет добавлена позже.</div>
+	</div>
+
 	<div class="row g-4 mb-2">
 		<div class="col-12 col-md-8">
 			<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter(($event.target as HTMLInputElement).value)">
@@ -235,7 +242,7 @@ onBeforeUnmount(() => {
 					<div class="pts-badge">PTS</div>
 				</div>
 				<div class="card-img-wrapper">
-					<img :src="getImageSrc(item, hoveredItem === item.formId)" class="card-img-top" :alt="item.nameRu || item.nameEn || 'C.A.M.P. Item'" loading="lazy" @error="atomicShopHandleImageError">
+					<img :src="getImageSrc(item, hoveredItem === item.formId, 512)" class="card-img-top" :alt="item.nameRu || item.nameEn || 'C.A.M.P. Item'" loading="lazy" @error="atomicShopHandleImageError">
 				</div>
 				<div class="card-body d-flex flex-column">
 					<h5 class="card-title mb-2">{{ item.nameRu || item.nameEn || 'Без названия' }}</h5>

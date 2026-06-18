@@ -54,8 +54,15 @@ export const prepareAtomicShopImage = (icon: any) => {
 	return `/public/img/f76/atx/${icon}`;
 }
 
-export const prepareCampImage = (icon: any) => {
+export const prepareCampImage = (icon: any, thumbSize?: number) => {
 	if (!icon) return `/public/img/f76/atx/notfound.webp`;
+
+	if (thumbSize) {
+		const ext = icon.split('.').pop();
+		const baseName = icon.slice(0, -(ext.length + 1));
+		return `/public/img/f76/camp/${baseName}-${thumbSize}px.${ext}`;
+	}
+
 	return `/public/img/f76/camp/${icon}`;
 }
 

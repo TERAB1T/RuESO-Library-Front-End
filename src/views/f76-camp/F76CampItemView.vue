@@ -163,30 +163,21 @@ const initLightbox = () => {
 				return itemData;
 			}
 
+			itemData.width = 1440;
+			itemData.height = 1440;
 
-			const existingImg = itemData.element?.querySelector('img');
-			if (existingImg?.complete && existingImg.naturalWidth && existingImg.naturalHeight) {
-				itemData.width = existingImg.naturalWidth;
-				itemData.height = existingImg.naturalHeight;
-				sizeCache.set(imgSrc, { width: existingImg.naturalWidth, height: existingImg.naturalHeight });
-			} else {
+			const img = new Image();
+			img.onload = () => {
+				sizeCache.set(imgSrc, {
+					width: img.naturalWidth,
+					height: img.naturalHeight
+				});
 
-				itemData.width = 1000;
-				itemData.height = 1000;
-
-				const img = new Image();
-				img.onload = () => {
-					sizeCache.set(imgSrc, {
-						width: img.naturalWidth,
-						height: img.naturalHeight
-					});
-
-					if (lightbox?.pswp && lightbox.pswp.currSlide?.index === index) {
-						lightbox.pswp.updateSize(true);
-					}
-				};
-				img.src = imgSrc;
-			}
+				if (lightbox?.pswp && lightbox.pswp.currSlide?.index === index) {
+					lightbox.pswp.updateSize(true);
+				}
+			};
+			img.src = imgSrc;
 
 			return itemData;
 		});
@@ -347,7 +338,7 @@ onBeforeRouteLeave(async () => {
 						<div class="row g-3">
 							<div v-if="isMobile" class="col-12 col-md-4">
 								<a :href="prepareCampImage(item.mainImage)" class="screenshot-link">
-									<img :src="prepareCampImage(item.mainImage)" class="img-fluid screenshot-img" :alt="item.nameRu || item.nameEn || 'C.A.M.P. Item'" loading="lazy" @error="atomicShopHandleImageError">
+									<img :src="prepareCampImage(item.mainImage, 512)" class="img-fluid screenshot-img" :alt="item.nameRu || item.nameEn || 'C.A.M.P. Item'" loading="lazy" @error="atomicShopHandleImageError">
 								</a>
 							</div>
 							<div v-for="(screenshot, index) in splittedScreenshots" :key="index" class="col-12 col-md-4">
@@ -366,7 +357,7 @@ onBeforeRouteLeave(async () => {
 								<div class="card">
 									<div v-if="!isMobile" class="card-element book-icon">
 										<a :href="prepareCampImage(item.mainImage)" class="screenshot-link">
-											<img :src="prepareCampImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'C.A.M.P. Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
+											<img :src="prepareCampImage(item.mainImage, 512)" :alt="item.nameRu || item.nameEn || 'C.A.M.P. Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
 										</a>
 									</div>
 									<div v-if="categoryInfo" class="card-element">
