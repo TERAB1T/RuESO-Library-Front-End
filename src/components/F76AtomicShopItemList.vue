@@ -111,7 +111,7 @@ watch(
 		state.filter = (newFilter as string | undefined) || '';
 
 		const filterInput = document.getElementById('library-filter') as HTMLInputElement;
-		if (filterInput) {
+		if (filterInput && document.activeElement !== filterInput) {
 			filterInput.value = state.filter ? decodeURI(state.filter) : '';
 		}
 	},
