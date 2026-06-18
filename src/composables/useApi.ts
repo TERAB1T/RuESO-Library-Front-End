@@ -1,5 +1,5 @@
 import { useQuery, keepPreviousData } from '@tanstack/vue-query';
-import { prepareURL, getAtomicShopSortOrder } from '@/utils';
+import { prepareURL, getAtomicShopSortOrder, getCampSortOrder } from '@/utils';
 import { useDebounceFn } from '@vueuse/core';
 
 import type {
@@ -9,7 +9,10 @@ import type {
 	LastModified,
 	AtomicShopCategoryWithSubcategories,
 	AtomicShopItem,
-	AtomicShopItemsResponse
+	AtomicShopItemsResponse,
+	CampCategoryWithSubcategories,
+	CampItem,
+	CampItemsResponse
 } from '@/types';
 import type { UseQueryReturnType } from '@tanstack/vue-query'
 import type { ComputedRef, Ref } from 'vue';
@@ -114,6 +117,42 @@ export const useFetchAtomicShopCategories = (): UseQueryReturnType<AtomicShopCat
 	});
 }
 
+
+export const useFetchCampItem = (itemFormId: ComputedRef<string>): UseQueryReturnType<CampItem, Error> => {
+	return useQuery({
+		queryKey: ['f76_camp_item', itemFormId],
+		queryFn: () => fetchApi(prepareURL(`/api/f76/camp/items/${itemFormId.value}`)),
+		staleTime: DEFAULT_STALE_TIME,
+	});
+}
+
+export const useFetchCampItems = (categoryFormId: ComputedRef<string>, subcategoryFormId: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>, isPTS: ComputedRef<boolean>): UseQueryReturnType<CampItemsResponse, Error> => {
+	return useQuery({
+		queryKey: ['f76_camp_items', categoryFormId, subcategoryFormId, { currentPage, pageSize, filter, sortOrder, isPTS }],
+		queryFn: () => {
+			let url = '';
+
+			if (subcategoryFormId.value !== '-1') url = `/api/f76/camp/subcategories/${subcategoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`;
+			else if (categoryFormId.value !== '-1') url = `/api/f76/camp/categories/${categoryFormId.value}?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`;
+			else url = `/api/f76/camp/items?page=${currentPage.value}&page_size=${pageSize}&filter=${encodeURIComponent(filter.value)}&sort_order=${sortOrder.value}`;
+
+			if (isPTS.value === true) url += `&is_pts=1`;
+
+			return fetchApi(prepareURL(url));
+		},
+		staleTime: DEFAULT_STALE_TIME,
+		placeholderData: keepPreviousData
+	});
+}
+
+export const useFetchCampCategories = (): UseQueryReturnType<CampCategoryWithSubcategories[], Error> => {
+	return useQuery({
+		queryKey: ['f76_camp_categories'],
+		queryFn: () => fetchApi(prepareURL('/api/f76/camp/categories')),
+		staleTime: Infinity,
+	});
+}
+
 // Updates
 
 export const useFetchLibraryUpdated = (): UseQueryReturnType<LastModified, Error> => {
@@ -136,6 +175,14 @@ export const useFetchAtomicShopUpdated = (): UseQueryReturnType<LastModified, Er
 	return useQuery({
 		queryKey: ['f76_atx', 'updated'],
 		queryFn: () => fetchApi(prepareURL('/api/f76/atomicshop/updated')),
+		staleTime: Infinity,
+	});
+}
+
+export const useFetchCampUpdated = (): UseQueryReturnType<LastModified, Error> => {
+	return useQuery({
+		queryKey: ['f76_camp', 'updated'],
+		queryFn: () => fetchApi(prepareURL('/api/f76/camp/updated')),
 		staleTime: Infinity,
 	});
 }
@@ -220,6 +267,57 @@ export const usePrefetchAtomicShopSubcategory = useDebounceFn((queryClient: any,
 
 			if (isPTSValue === true) url += `&is_pts=1`;
 			if (hasSupportValue === true) url += `&has_support=1`;
+
+			return fetchApi(prepareURL(url));
+		},
+		staleTime: DEFAULT_STALE_TIME
+	});
+}, DEBOUNCE_DELAY);
+
+
+export const usePrefetchCampItem = useDebounceFn((queryClient: any, itemFormId: string) => {
+	queryClient.prefetchQuery({
+		queryKey: ['f76_camp_item', itemFormId],
+		queryFn: () => fetchApi(prepareURL(`/api/f76/camp/items/${itemFormId}`)),
+		staleTime: DEFAULT_STALE_TIME,
+	});
+}, DEBOUNCE_DELAY);
+
+export const usePrefetchCampCategory = useDebounceFn((queryClient: any, categoryFormId: string | undefined, isPTS?: ComputedRef<boolean> | boolean | undefined) => {
+	if (categoryFormId === undefined || categoryFormId === '-1') return;
+	const sortOrder = getCampSortOrder();
+
+	if (isPTS === undefined) isPTS = false;
+
+	const isPTSValue = typeof isPTS === 'object' ? isPTS.value : isPTS;
+
+	queryClient.prefetchQuery({
+		queryKey: ['f76_camp_items', categoryFormId, '-1', { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS }],
+		queryFn: () => {
+			let url = `/api/f76/camp/categories/${categoryFormId}?page=1&page_size=${ATX_PAGE_SIZE}&sort_order=${sortOrder}`;
+
+			if (isPTSValue === true) url += `&is_pts=1`;
+
+			return fetchApi(prepareURL(url));
+		},
+		staleTime: DEFAULT_STALE_TIME
+	});
+}, DEBOUNCE_DELAY);
+
+export const usePrefetchCampSubcategory = useDebounceFn((queryClient: any, subcategoryFormId: string | undefined, isPTS?: ComputedRef<boolean> | boolean | undefined) => {
+	if (subcategoryFormId === undefined || subcategoryFormId === '-1') return;
+	const sortOrder = getCampSortOrder();
+
+	if (isPTS === undefined) isPTS = false;
+
+	const isPTSValue = typeof isPTS === 'object' ? isPTS.value : isPTS;
+
+	queryClient.prefetchQuery({
+		queryKey: ['f76_camp_items', '-1', subcategoryFormId, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS }],
+		queryFn: () => {
+			let url = `/api/f76/camp/subcategories/${subcategoryFormId}?page=1&page_size=${ATX_PAGE_SIZE}&sort_order=${sortOrder}`;
+
+			if (isPTSValue === true) url += `&is_pts=1`;
 
 			return fetchApi(prepareURL(url));
 		},

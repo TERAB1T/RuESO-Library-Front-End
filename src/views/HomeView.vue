@@ -78,7 +78,7 @@ useHead({
 					</div>
 				</a></div>
 
-			<div class="col-12 col-md-6 col-lg-4">
+			<div class="col-12 col-md-6 col-lg-3">
 				<RouterLink to="/glossary-tes" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
 						<img src="/public/img/main-card-glossary.jpg" class="card-img-top" alt="База текстов TES">
@@ -90,7 +90,7 @@ useHead({
 				</RouterLink>
 			</div>
 
-			<div class="col-12 col-md-6 col-lg-4">
+			<div class="col-12 col-md-6 col-lg-3">
 				<RouterLink to="/glossary-fallout" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
 						<img src="/public/img/main-card-fallout.jpg" class="card-img-top" alt="База текстов Fallout">
@@ -102,7 +102,7 @@ useHead({
 				</RouterLink>
 			</div>
 
-			<div class="col-12 col-md-6 col-lg-4">
+			<div class="col-12 col-md-6 col-lg-3">
 				<RouterLink to="/f76-atomic-shop" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
 						<img src="/public/img/main-card-atomic-shop.jpg" class="card-img-top" alt="Атомная лавка Fallout 76">
@@ -114,6 +114,17 @@ useHead({
 				</RouterLink>
 			</div>
 
+			<div class="col-12 col-md-6 col-lg-3">
+				<RouterLink to="/f76-camp" class="card h-100 text-decoration-none main-page-card">
+					<div class="card-img-wrapper">
+						<img src="/public/img/main-card-camp.jpg" class="card-img-top" alt="База предметов C.A.M.P. Fallout 76">
+					</div>
+					<div class="card-body">
+						<h5 class="card-title">Предметы C.A.M.P. Fallout 76</h5>
+						<p class="card-text">Полный перечень предметов, которые можно разместить в C.A.M.P. Fallout 76.</p>
+					</div>
+				</RouterLink>
+			</div>
 		</div>
 	</main>
 </template>

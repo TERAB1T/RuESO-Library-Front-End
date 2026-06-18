@@ -438,7 +438,8 @@ table.dataTable pre {
 	position: relative;
 }
 
-.atomic-shop-card .pts-badge-wrapper {
+.atomic-shop-card .pts-badge-wrapper,
+.camp-wip-card .pts-badge-wrapper {
 	position: absolute;
 	top: 10px;
 	left: -8px;
@@ -446,7 +447,8 @@ table.dataTable pre {
 	z-index: 1;
 }
 
-.atomic-shop-card .pts-badge {
+.atomic-shop-card .pts-badge,
+.camp-wip-card .pts-badge {
 	position: relative;
 	background: #a2295f;
 	color: white;
@@ -459,6 +461,10 @@ table.dataTable pre {
 	min-width: 70px;
 	text-align: center;
 	text-shadow: 2px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.camp-wip-card .pts-badge {
+	background: #a22929;
 }
 
 .atomic-shop-card .support-badge-wrapper {

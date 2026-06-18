@@ -69,6 +69,13 @@ export interface GlossaryConfig {
 	dividerIndex: number;
 }
 
+export interface BreadcrumbItem {
+	label: string;
+	to?: string;
+}
+
+// F76 Atomic Shop
+
 export interface AtomicShopCategory {
 	formId: string;
 	editorId: string;
@@ -125,7 +132,57 @@ export interface AtomicShopItemsResponse {
 	}
 }
 
-export interface BreadcrumbItem {
-	label: string;
-	to?: string;
+// F76 C.A.M.P.
+
+export interface CampCategory {
+	formId: string;
+	editorId: string;
+	nameEn: string | null;
+	nameRu: string | null;
+	slug: string | null;
+	orderId: number;
+}
+
+export interface CampSubcategory {
+	formId: string;
+	editorId: string;
+	nameEn: string | null;
+	nameRu: string | null;
+	slug: string | null;
+	parentCategoryFormId: string | null;
+	parentCategoryEditorId: string | null;
+	orderId: number;
+}
+
+export interface CampCategoryWithSubcategories extends CampCategory {
+	subcategories: CampSubcategory[];
+}
+
+export interface CampItem {
+	formId: string;
+	editorId: string;
+	nameEn: string | null;
+	nameRu: string | null;
+	descriptionEn: string | null;
+	descriptionRu: string | null;
+	mainImage: string | null;
+	screenshots: string | string[] | null;
+	categoryFormId: string | null;
+	subcategoryFormId: string | null;
+	isPTS: boolean | null;
+	slug: string | null;
+	orderByName: number;
+	orderByFormId: number;
+}
+
+export interface CampItemsResponse {
+	category?: CampCategory;
+	subcategory?: CampSubcategory;
+	items: CampItem[];
+	pagination?: {
+		page: number;
+		pageSize: number;
+		total_books: number;
+		total_pages: number;
+	}
 }

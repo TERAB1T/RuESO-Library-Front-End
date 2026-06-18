@@ -54,6 +54,18 @@ export const prepareAtomicShopImage = (icon: any) => {
 	return `/public/img/f76/atx/${icon}`;
 }
 
+export const prepareCampImage = (icon: any, thumbSize?: number) => {
+	if (!icon) return `/public/img/f76/atx/notfound.webp`;
+
+	if (thumbSize) {
+		const ext = icon.split('.').pop();
+		const baseName = icon.slice(0, -(ext.length + 1));
+		return `/public/img/f76/camp/${baseName}-${thumbSize}px.${ext}`;
+	}
+
+	return `/public/img/f76/camp/${icon}`;
+}
+
 /**
  * Returns a debounced version of the given function. The function will be
  * invoked after `timeout` milliseconds have passed since the last time it was
@@ -230,6 +242,42 @@ export const getAtomicShopSortOrder = (): string => {
 export const setAtomicShopSortOrder = (order: string) => {
 	if (!import.meta.env.SSR) {
 		localStorage.setItem(atomicShopLocalStorageKey, order);
+	}
+}
+
+
+const campLocalStorageKey = 'camp-sort-order';
+
+/**
+ * Returns the saved sort order for the C.A.M.P. list. If no saved sort order
+ * is found, sets the default sort order to "date_desc" and returns it.
+ *
+ * @returns The saved sort order, or "date_desc" if no saved sort order is found.
+ */
+export const getCampSortOrder = (): string => {
+	const validSortOrders = ['date_desc', 'date_asc', 'name_desc', 'name_asc'];
+
+	if (!import.meta.env.SSR) {
+		let saved = localStorage.getItem(campLocalStorageKey);
+
+		if (!saved || !validSortOrders.includes(saved)) {
+			saved = "date_desc";
+			setCampSortOrder(saved);
+		}
+
+		return saved;
+	} else {
+		return "date_desc";
+	}
+}
+
+/**
+ * Saves the given sort order to local storage.
+ * @param order The sort order to save.
+ */
+export const setCampSortOrder = (order: string) => {
+	if (!import.meta.env.SSR) {
+		localStorage.setItem(campLocalStorageKey, order);
 	}
 }
 
