@@ -46,8 +46,8 @@ const state = reactive({
 	totalPages: 1,
 	filter: (route.query.filter as string | undefined) || '',
 	sortOrder: getAtomicShopSortOrder(),
-	isPTS: false,
-	hasSupport: false
+	isPTS: route.query.isPTS === '1',
+	hasSupport: route.query.hasSupport === '1'
 });
 
 const currentPage = computed(() => Number(route.query.page) || 1);

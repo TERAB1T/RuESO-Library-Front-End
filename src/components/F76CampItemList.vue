@@ -46,7 +46,7 @@ const state = reactive({
 	totalPages: 1,
 	filter: (route.query.filter as string | undefined) || '',
 	sortOrder: getCampSortOrder(),
-	isPTS: false
+	isPTS: route.query.isPTS === '1'
 });
 
 const currentPage = computed(() => Number(route.query.page) || 1);
