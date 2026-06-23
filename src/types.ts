@@ -100,6 +100,16 @@ export interface AtomicShopCategoryWithSubcategories extends AtomicShopCategory 
 	subcategories: AtomicShopSubcategory[];
 }
 
+export interface CampUnlockedItem {
+	formId: string;
+	nameEn: string | null;
+	nameRu: string | null;
+	mainImage: string | null;
+	slug: string | null;
+	category: Pick<CampCategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> | null;
+	subcategory: Pick<CampSubcategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> | null;
+}
+
 export interface AtomicShopItem {
 	formId: string;
 	editorId: string;
@@ -118,6 +128,7 @@ export interface AtomicShopItem {
 	slug: string | null;
 	orderByName: number;
 	orderByFormId: number;
+	campUnlockedItems: CampUnlockedItem[] | null;
 }
 
 export interface AtomicShopItemsResponse {
