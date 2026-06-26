@@ -197,3 +197,81 @@ export interface CampItemsResponse {
 		total_pages: number;
 	}
 }
+
+export interface LearnConditionFoodOrPlan {
+	type: 'food' | 'plan';
+	formId: string;
+	editorId: string | null;
+	en: string | null;
+	ru: string | null;
+}
+
+export interface LearnConditionChallenge {
+	type: 'challenge';
+	formId: string;
+	editorId: string | null;
+	en: string | null;
+	ru: string | null;
+	category: string | null;
+}
+
+export interface LearnConditionEntitlement {
+	type: 'entitlement';
+	formId: string;
+	editorId: string | null;
+}
+
+export interface LearnConditionWorkshop {
+	type: 'workshop';
+}
+
+export interface LearnConditionLevel {
+	type: 'level';
+	level: number | null;
+}
+
+export interface LearnConditionQuest {
+	type: 'quest';
+	en: string | null;
+	ru: string | null;
+}
+
+export interface LearnConditionMisc {
+	type: 'misc';
+	formId: string;
+	en: string | null;
+	ru: string | null;
+}
+
+export type LearnConditionLeaf =
+	| LearnConditionFoodOrPlan
+	| LearnConditionChallenge
+	| LearnConditionEntitlement
+	| LearnConditionWorkshop
+	| LearnConditionLevel
+	| LearnConditionQuest
+	| LearnConditionMisc;
+
+export type LearnConditionOrMember = LearnConditionLeaf | LearnConditionGroup;
+export type LearnConditionOrGroup = LearnConditionOrMember[];
+export type LearnConditionGroup = LearnConditionOrGroup[];
+
+export interface UnlockedByEntitlement {
+	formId: string;
+	nameEn: string | null;
+	nameRu: string | null;
+	mainImage: string | null;
+	screenshots: string[] | null;
+	slug: string | null;
+}
+
+export interface CampItemWithRelations extends CampItem {
+	category: Pick<CampCategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> | null;
+	subcategory: Pick<CampSubcategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> | null;
+	camp: boolean;
+	shelter: boolean;
+	workshop: boolean;
+	campOwned: boolean;
+	learnConditions: string | null;
+	unlockedByEntitlements: UnlockedByEntitlement[] | null;
+}

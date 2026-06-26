@@ -12,6 +12,7 @@ import type {
 	AtomicShopItemsResponse,
 	CampCategoryWithSubcategories,
 	CampItem,
+	CampItemWithRelations,
 	CampItemsResponse
 } from '@/types';
 import type { UseQueryReturnType } from '@tanstack/vue-query'
@@ -118,7 +119,7 @@ export const useFetchAtomicShopCategories = (): UseQueryReturnType<AtomicShopCat
 }
 
 
-export const useFetchCampItem = (itemFormId: ComputedRef<string>): UseQueryReturnType<CampItem, Error> => {
+export const useFetchCampItem = (itemFormId: ComputedRef<string>): UseQueryReturnType<CampItemWithRelations, Error> => {
 	return useQuery({
 		queryKey: ['f76_camp_item', itemFormId],
 		queryFn: () => fetchApi(prepareURL(`/api/f76/camp/items/${itemFormId.value}`)),

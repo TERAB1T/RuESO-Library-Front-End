@@ -2,7 +2,7 @@
 import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
 import { useHead } from '@unhead/vue';
-import { prepareCampImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
+import { prepareCampImage, prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
 import { useFetchCampItem, useFetchCampCategories, usePrefetchCampCategory, usePrefetchCampSubcategory } from '@/composables/useApi';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
@@ -11,7 +11,7 @@ import { useWindowSize } from '@vueuse/core';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import 'photoswipe/style.css';
 
-import type { CampItem, CampCategoryWithSubcategories, BreadcrumbItem } from '@/types';
+import type { CampItem, CampItemWithRelations, CampCategoryWithSubcategories, BreadcrumbItem, LearnConditionLeaf, LearnConditionGroup, LearnConditionOrGroup } from '@/types';
 
 const route = useRoute();
 
@@ -24,7 +24,7 @@ const { data: itemData, suspense: itemSuspense, isSuccess: isItemFetched, isErro
 
 const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCampCategories();
 
-const item = computed(() => itemData.value ?? {} as CampItem);
+const item = computed(() => itemData.value ?? {} as CampItemWithRelations);
 const categories = computed(() => categoriesData.value ?? [] as CampCategoryWithSubcategories[]);
 
 const isNotFound = computed(() =>
@@ -251,6 +251,153 @@ const parsedTextEn = computed(() =>
 	(item.value.descriptionEn ?? '').replace(/\n/g, '<br>')
 );
 
+
+
+const conditionIcons: Record<string, string> = {
+	plan: '/public/img/f76/camp/004e4881-100px.webp',
+	challenge: '/public/img/f76/atx/notfound.webp',
+	workshop: '/public/img/f76/atx/notfound.webp',
+	level: '/public/img/f76/atx/notfound.webp',
+	quest: '/public/img/f76/atx/notfound.webp',
+	misc: '/public/img/f76/atx/notfound.webp'
+};
+
+const conditionLabels: Record<string, string> = {
+	food: 'Собрать',
+	plan: 'Изучить',
+	challenge: 'Выполнить испытание',
+	entitlement: 'Получить',
+	workshop: 'Захватить',
+	level: 'Достичь',
+	quest: 'Выполнить задание',
+	misc: 'Условие'
+};
+
+interface ResolvedConditionLeaf {
+	type: string;
+	label: string;
+	content: string;
+	image: string | null;
+	link: string | null;
+}
+
+const resolveConditionLeaf = (leaf: LearnConditionLeaf): ResolvedConditionLeaf => {
+	if (leaf.type === 'entitlement') {
+		const normalizedFormId = leaf.formId.replace(/^0x/i, '');
+		const entItem = item.value.unlockedByEntitlements?.find(e => e.formId === normalizedFormId);
+		return {
+			type: 'entitlement',
+			label: conditionLabels.entitlement ?? 'Получить',
+			content: entItem?.nameRu || entItem?.nameEn || leaf.editorId || 'Неизвестный предмет',
+			image: entItem?.mainImage ? prepareAtomicShopImage(entItem.mainImage) : null,
+			link: entItem?.slug ? `/f76-atomic-shop/${entItem.formId}-${entItem.slug}` : null
+		};
+	}
+
+	if (leaf.type === 'food') {
+		return {
+			type: 'food',
+			label: conditionLabels.food ?? 'Собрать',
+			content: leaf.ru || leaf.en || leaf.editorId || '—',
+			image: prepareCampImage(formIdToImageFilename(leaf.formId), 100),
+			link: null
+		};
+	}
+
+	if (leaf.type === 'workshop') {
+		return {
+			type: 'workshop',
+			label: conditionLabels.workshop ?? 'Захватить',
+			content: 'Любая мастерская',
+			image: null,
+			link: null
+		};
+	}
+
+	if (leaf.type === 'level') {
+		return {
+			type: 'level',
+			label: conditionLabels.level ?? 'Достичь',
+			content: leaf.level != null ? `${leaf.level}-й уровень` : '0-й уровень',
+			image: null,
+			link: null
+		};
+	}
+
+	return {
+		type: leaf.type,
+		label: conditionLabels[leaf.type] ?? 'Условие',
+		content: leaf.ru || leaf.en
+			|| ('editorId' in leaf ? leaf.editorId : null)
+			|| ('formId' in leaf ? leaf.formId : null)
+			|| '—',
+		image: null,
+		link: null
+	};
+};
+
+const formIdToImageFilename = (formId: string) => {
+	const numeric = parseInt(formId.replace(/^0x/i, ''), 16) & 0x00FFFFFF;
+	return numeric.toString(16).padStart(8, '0') + '.webp';
+};
+
+type ConditionSlot =
+	| { kind: 'leaf'; item: ResolvedConditionLeaf }
+	| { kind: 'nestedAnd'; items: ResolvedConditionLeaf[] };
+
+const resolveOrMember = (member: LearnConditionLeaf | LearnConditionGroup): ConditionSlot => {
+	if (!Array.isArray(member)) {
+		return { kind: 'leaf', item: resolveConditionLeaf(member) };
+	}
+
+	if (member.length !== 1) {
+		console.warn('Условия получения: неожиданная вложенная AND-группа из нескольких OR-групп, отображается только первая', member);
+	}
+
+	const innerOrGroup: LearnConditionOrGroup = member[0] ?? [];
+
+	const leaves = innerOrGroup
+		.map(inner => {
+			if (Array.isArray(inner)) {
+				console.warn('Условия получения: вложенность глубже одного уровня не поддерживается отображением, элемент пропущен', inner);
+				return null;
+			}
+			return resolveConditionLeaf(inner);
+		})
+		.filter((x): x is ResolvedConditionLeaf => x !== null);
+
+	return { kind: 'nestedAnd', items: leaves };
+};
+
+const conditionAndGroups = computed<ConditionSlot[][]>(() => {
+	if (!item.value.learnConditions) return [];
+
+	let parsed: LearnConditionGroup;
+	try {
+		parsed = JSON.parse(item.value.learnConditions);
+	} catch {
+		return [];
+	}
+
+	return parsed.map(orGroup => orGroup.map(resolveOrMember));
+});
+
+const hasUnlockConditions = computed(() => conditionAndGroups.value.length > 0);
+
+const hasOrCondition = computed(() => conditionAndGroups.value.some(g => g.length > 1));
+
+const flattenedAndSlots = computed<ConditionSlot[]>(() =>
+	conditionAndGroups.value.map(g => g[0]).filter((s): s is ConditionSlot => !!s)
+);
+
+
+
+const placementBadges = computed(() => [
+	{ key: 'camp', label: 'C.A.M.P.', available: !!item.value.camp },
+	{ key: 'shelter', label: 'Укрытия', available: !!item.value.shelter },
+	{ key: 'workshop', label: 'Мастерские', available: !!item.value.workshop },
+]);
+
 watch(() => item.value.mainImage, () => {
 	initLightbox();
 });
@@ -307,7 +454,7 @@ onBeforeRouteLeave(async () => {
 						</li>
 					</ul>
 
-					<div class="tab-content" :class="splittedScreenshots.length > 0 || isMobile ? 'with-screenshots' : ''" id="categoriesTabContent">
+					<div class="tab-content" :class="splittedScreenshots.length > 0 || isMobile || hasUnlockConditions ? 'with-screenshots' : ''" id="categoriesTabContent">
 						<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
 							<h1 class="book-title">{{ item.nameRu }}</h1>
 							<div v-if="item.isPTS" class="alert alert-info atomic-shop-card" role="alert">
@@ -334,7 +481,79 @@ onBeforeRouteLeave(async () => {
 						</div>
 					</div>
 
+
+					<div v-if="hasUnlockConditions" class="unlock-conditions-block" :class="{ 'unlock-conditions-block-last': !(isMobile || splittedScreenshots.length > 0) }">
+						<div class="fo-sect-h">
+							<span class="fo-bar"></span>
+							<h3 class="fo-h3">Условия разблокировки</h3>
+						</div>
+
+						<template v-if="hasOrCondition">
+							<template v-for="(orGroup, gi) in conditionAndGroups" :key="gi">
+								<div v-if="gi > 0" class="unlock-and-divider"><span class="unlock-and-badge">И</span></div>
+
+								<div class="unlock-or-row">
+									<template v-for="(slot, si) in orGroup" :key="si">
+										<div v-if="si > 0" class="unlock-or-label">ИЛИ</div>
+
+										<component v-if="slot.kind === 'leaf'" :is="slot.item.link ? RouterLink : 'div'" :to="slot.item.link || undefined" class="unlock-card" :class="{ 'unlock-card-link': !!slot.item.link }">
+											<img v-if="slot.item.image" :src="slot.item.image" class="unlock-card-icon" :alt="slot.item.content" loading="lazy" @error="atomicShopHandleImageError">
+											<img v-else :src="conditionIcons[slot.item.type]" class="unlock-card-icon" :alt="slot.item.label">
+											<div class="unlock-card-text">
+												<div class="unlock-card-label">{{ slot.item.label }}:</div>
+												<div class="unlock-card-content">{{ slot.item.content }}</div>
+											</div>
+										</component>
+
+										<div v-else class="unlock-nested-and">
+											<component v-for="(leaf, li) in slot.items" :key="li" :is="leaf.link ? RouterLink : 'div'" :to="leaf.link || undefined" class="unlock-card unlock-card-small" :class="{ 'unlock-card-link': !!leaf.link }">
+												<img v-if="leaf.image" :src="leaf.image" class="unlock-card-icon" :alt="leaf.content" loading="lazy" @error="atomicShopHandleImageError">
+												<img v-else :src="conditionIcons[leaf.type]" class="unlock-card-icon" :alt="leaf.label">
+												<div class="unlock-card-text">
+													<div class="unlock-card-label">{{ leaf.label }}:</div>
+													<div class="unlock-card-content">{{ leaf.content }}</div>
+												</div>
+											</component>
+										</div>
+									</template>
+								</div>
+							</template>
+						</template>
+
+						<template v-else>
+							<div class="unlock-or-row" :class="{ 'unlock-or-row-single': flattenedAndSlots.length === 1 }">
+								<template v-for="(slot, si) in flattenedAndSlots" :key="si">
+									<div v-if="si > 0" class="unlock-or-label">И</div>
+
+									<component v-if="slot.kind === 'leaf'" :is="slot.item.link ? RouterLink : 'div'" :to="slot.item.link || undefined" class="unlock-card" :class="{ 'unlock-card-link': !!slot.item.link }">
+										<img v-if="slot.item.image" :src="slot.item.image" class="unlock-card-icon" :alt="slot.item.content" loading="lazy" @error="atomicShopHandleImageError">
+										<img v-else :src="conditionIcons[slot.item.type]" class="unlock-card-icon" :alt="slot.item.label">
+										<div class="unlock-card-text">
+											<div class="unlock-card-label">{{ slot.item.label }}:</div>
+											<div class="unlock-card-content">{{ slot.item.content }}</div>
+										</div>
+									</component>
+
+									<div v-else class="unlock-nested-and">
+										<component v-for="(leaf, li) in slot.items" :key="li" :is="leaf.link ? RouterLink : 'div'" :to="leaf.link || undefined" class="unlock-card unlock-card-small" :class="{ 'unlock-card-link': !!leaf.link }">
+											<img v-if="leaf.image" :src="leaf.image" class="unlock-card-icon" :alt="leaf.content" loading="lazy" @error="atomicShopHandleImageError">
+											<img v-else :src="conditionIcons[leaf.type]" class="unlock-card-icon" :alt="leaf.label">
+											<div class="unlock-card-text">
+												<div class="unlock-card-label">{{ leaf.label }}:</div>
+												<div class="unlock-card-content">{{ leaf.content }}</div>
+											</div>
+										</component>
+									</div>
+								</template>
+							</div>
+						</template>
+					</div>
+
 					<div v-if="isMobile || splittedScreenshots.length > 0" class="screenshots">
+						<div class="fo-sect-h">
+							<span class="fo-bar"></span>
+							<h3 class="fo-h3">Галерея</h3>
+						</div>
 						<div class="row g-3">
 							<div v-if="isMobile" class="col-12 col-md-4">
 								<a :href="prepareCampImage(item.mainImage)" class="screenshot-link">
@@ -377,6 +596,19 @@ onBeforeRouteLeave(async () => {
 									<div class="card-element">
 										<div class="card-subtitle">Оригинальное название</div>
 										{{ item.nameEn || '—' }}
+									</div>
+
+									<div class="card-element">
+										<div class="card-subtitle">Доступно для постройки</div>
+										<div class="camp-placement-badges">
+											<span v-for="badge in placementBadges" :key="badge.key" class="camp-placement-badge" :class="{ 'is-available': badge.available }">
+												<svg class="camp-placement-icon" viewBox="0 0 448 512" fill="currentColor">
+													<path v-if="badge.available" d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z" />
+													<path v-else d="M376.6 84.5c11.3-13.6 9.4-33.9-4.2-45.3s-33.9-9.4-45.3 4.2L192 206 56.6 43.5C45.3 29.9 25 27.9 11.4 39.3S-4.5 73.2 6.9 86.5L150.3 256 6.9 425.5c-11.3 13.6-9.4 33.9 4.2 45.3s33.9 9.4 45.3-4.2L192 306 327.4 468.5c11.3 13.6 31.6 15.6 45.3 4.2s15.6-31.6 4.2-45.3L233.7 256 376.6 84.5z" />
+												</svg>
+												{{ badge.label }}
+											</span>
+										</div>
 									</div>
 									<div class="card-element">
 										<div class="card-subtitle">Form ID</div>
@@ -466,6 +698,35 @@ onBeforeRouteLeave(async () => {
 	font-weight: 500;
 }
 
+.camp-placement-badges {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.4rem;
+}
+
+.camp-placement-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.3rem 0.65rem;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	background: rgba(255, 255, 255, 0.04);
+	color: #71717a;
+
+	&.is-available {
+		background: rgba(38, 149, 73, 0.15);
+		color: #4ade80;
+	}
+}
+
+.camp-placement-icon {
+	width: 0.65rem;
+	height: 0.65rem;
+	flex-shrink: 0;
+}
+
 .book-icon {
 	border: none;
 }
@@ -533,6 +794,131 @@ onBeforeRouteLeave(async () => {
 	}
 }
 
+.unlock-conditions-block {
+	background: var(--bs-block-bg);
+	padding: 0 2.25rem 2.25rem;
+}
+
+.unlock-conditions-block-last {
+	border-bottom-left-radius: 12px;
+	border-bottom-right-radius: 12px;
+}
+
+.unlock-and-divider {
+	position: relative;
+	height: 1px;
+	background: rgba(255, 255, 255, 0.1);
+	margin: 0.85rem 0;
+}
+
+.unlock-and-badge {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	background: var(--bs-block-bg);
+	padding: 0.15rem 0.55rem;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: #a1a1aa;
+	white-space: nowrap;
+}
+
+.unlock-or-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	gap: 0.6rem;
+	margin-bottom: 0.6rem;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+
+.unlock-or-row-single .unlock-card,
+.unlock-or-row-single .unlock-nested-and {
+	flex: 0 1 50%;
+}
+
+.unlock-or-label {
+	flex: 0 0 auto;
+	align-self: center;
+	font-size: 0.7rem;
+	font-weight: 700;
+	color: #a1a1aa;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.unlock-card,
+.unlock-nested-and {
+	flex: 1 1 32%;
+	min-width: 0;
+}
+
+.unlock-card {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	padding: 0.5rem 0.85rem 0.5rem 0.5rem;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.07);
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.unlock-card-link {
+	color: inherit;
+	text-decoration: none;
+
+	&:hover {
+		border-color: #6c757d;
+		background: rgba(255, 255, 255, 0.05);
+	}
+}
+
+.unlock-card-icon {
+	width: 44px;
+	height: 44px;
+	object-fit: contain;
+	flex-shrink: 0;
+	border-radius: 6px;
+}
+
+.unlock-card-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	gap: 0.1rem;
+}
+
+.unlock-card-label {
+	font-size: 0.7rem;
+	color: #a1a1aa;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.unlock-card-content {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--bs-body-color);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.unlock-card-small {
+	padding: 0.3rem 0.5rem;
+}
+
+.unlock-nested-and {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
 @media (max-width: 991.98px) {
 	.card-wrapper {
 		margin-top: 0;
@@ -547,6 +933,15 @@ onBeforeRouteLeave(async () => {
 
 	.screenshots {
 		padding: 0 1.2rem 1.25rem;
+	}
+
+	.unlock-conditions-block {
+		padding: 0 1.2rem 2.25rem;
+	}
+
+	.unlock-or-row-single .unlock-card,
+	.unlock-or-row-single .unlock-nested-and {
+		flex-basis: 100%;
 	}
 
 	.hide-tab {
@@ -565,6 +960,16 @@ onBeforeRouteLeave(async () => {
 
 	.book-title {
 		font-size: 1.6rem;
+	}
+
+	.unlock-card,
+	.unlock-nested-and {
+		flex-basis: 100%;
+	}
+
+	.unlock-or-label {
+		flex-basis: 100%;
+		text-align: center;
 	}
 }
 

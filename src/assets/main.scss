@@ -19,6 +19,34 @@
 
 	--bs-block-bg: #18181b;
 	--bs-block-border-radius: 12px;
+
+	--fo-amber: var(--bs-primary); /* #f0a93c;   акцент */
+	--fo-text2: #a3a8b0;   /* приглушённый текст */
+}
+
+.fo-sect-h {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.fo-bar {
+  width: 3px;
+  height: 17px;
+  background: var(--fo-amber);
+  border-radius: 2px;
+  flex: none;
+}
+
+.fo-h3 {
+  margin: 0;
+  font-family: 'Onest', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--fo-text2);
 }
 
 .dropdown-menu {

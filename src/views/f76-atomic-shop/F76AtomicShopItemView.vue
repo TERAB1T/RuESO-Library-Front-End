@@ -391,9 +391,12 @@ useCopyOnClick(copyContainerRef);
 					</div>
 
 					<div v-if="hasCampUnlocked" class="camp-unlocked-block" :class="{ 'camp-unlocked-block-last': !(isMobile || splittedScreenshots.length > 0) }">
-						<div class="section-heading">Позволяет строить в C.A.M.P.:</div>
+						<div class="fo-sect-h">
+							<span class="fo-bar"></span>
+							<h3 class="fo-h3">Позволяет строить в C.A.M.P.:</h3>
+						</div>
 						<div class="row g-3">
-							<div v-for="campItem in item.campUnlockedItems" :key="campItem.formId" class="col-12 col-md-4">
+							<div v-for="campItem in item.campUnlockedItems" :key="campItem.formId" class="col-12 col-md-6">
 								<RouterLink :to="`/f76-camp/${campItem.formId}-${campItem.slug}`" class="camp-unlocked-card">
 									<img :src="prepareCampImage(campItem.mainImage, 100)" :alt="campItem.nameRu || campItem.nameEn || 'CAMP Item'" class="camp-unlocked-image" loading="lazy" @error="atomicShopHandleImageError">
 									<div class="camp-unlocked-info">
@@ -412,6 +415,10 @@ useCopyOnClick(copyContainerRef);
 					</div>
 
 					<div v-if="isMobile || splittedScreenshots.length > 0" class="screenshots">
+						<div class="fo-sect-h">
+							<span class="fo-bar"></span>
+							<h3 class="fo-h3">Галерея</h3>
+						</div>
 						<div class="row g-3">
 							<div v-if="isMobile" class="col-12 col-md-4">
 								<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
@@ -530,7 +537,6 @@ useCopyOnClick(copyContainerRef);
 .camp-unlocked-block {
 	background: var(--bs-block-bg);
 	padding: 0 2.25rem 2.25rem;
-	margin-top: -10px;
 }
 
 .camp-unlocked-block-last {
@@ -540,11 +546,11 @@ useCopyOnClick(copyContainerRef);
 
 .section-heading {
 	font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--bs-body-color);
-    margin: 0 0 1rem 0;
-    padding-top: 0;
-    text-align: left;
+	font-weight: 600;
+	color: var(--bs-body-color);
+	margin: 0 0 1rem 0;
+	padding-top: 0;
+	text-align: left;
 }
 
 .camp-unlocked-card {
@@ -718,7 +724,7 @@ useCopyOnClick(copyContainerRef);
 	}
 
 	.camp-unlocked-block {
-		padding: 0 1.2rem 1.25rem;
+		padding: 0 1.2rem 2.25rem;
 	}
 
 	.hide-tab {
