@@ -398,6 +398,15 @@ const placementBadges = computed(() => [
 	{ key: 'workshop', label: 'Мастерские', available: !!item.value.workshop },
 ]);
 
+const maximumEntries = computed(() => {
+	const entries: { key: string; label: string; value: number | null }[] = [];
+
+	if (item.value.camp) entries.push({ key: 'camp', label: 'C.A.M.P.', value: item.value.campMaxValue });
+	if (item.value.workshop) entries.push({ key: 'workshop', label: 'Мастерские', value: item.value.workshopMaxValue });
+
+	return entries;
+});
+
 watch(() => item.value.mainImage, () => {
 	initLightbox();
 });
@@ -610,6 +619,14 @@ onBeforeRouteLeave(async () => {
 											</span>
 										</div>
 									</div>
+									<div v-if="maximumEntries.length > 0" class="card-element">
+										<div class="card-subtitle">Лимиты постройки</div>
+										<div class="camp-maximum-entries">
+											<span v-for="entry in maximumEntries" :key="entry.key" class="camp-maximum-entry">
+												{{ entry.label }}: <strong>{{ entry.value != null ? entry.value : '∞' }}</strong>
+											</span>
+										</div>
+									</div>
 									<div class="card-element">
 										<div class="card-subtitle">Form ID</div>
 										{{ item.formId }}
@@ -725,6 +742,29 @@ onBeforeRouteLeave(async () => {
 	width: 0.65rem;
 	height: 0.65rem;
 	flex-shrink: 0;
+}
+
+.camp-maximum-entries {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.3rem 1rem;
+	font-size: 0.85rem;
+	color: var(--bs-body-color);
+}
+
+.camp-maximum-entry {
+	font-size: 0.85rem;
+}
+
+.camp-maximum-label {
+	color: #a1a1aa;
+}
+
+.camp-maximum-value {
+	color: var(--bs-body-color);
+	font-weight: 600;
+	margin-left: 0.3rem;
 }
 
 .book-icon {
