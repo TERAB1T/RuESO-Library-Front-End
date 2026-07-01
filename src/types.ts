@@ -265,6 +265,45 @@ export interface UnlockedByEntitlement {
 	slug: string | null;
 }
 
+export interface ProducesAvailabilityNote {
+	en: string | null;
+	ru: string | null;
+}
+
+export interface ProducesItemNode {
+	kind: 'item';
+	formId: string;
+	editorId: string | null;
+	en: string | null;
+	ru: string | null;
+	type: string | null;
+	count: number;
+	probability: number;
+	availabilityNote: ProducesAvailabilityNote | null;
+}
+
+export interface ProducesListNode {
+	kind: 'list';
+	formId: string;
+	editorId: string | null;
+	en: string | null;
+	ru: string | null;
+	probability: number;
+	availabilityNote: ProducesAvailabilityNote | null;
+	entries: ProducesNode[];
+}
+
+export type ProducesNode = ProducesItemNode | ProducesListNode;
+
+export interface ProducesMode {
+	en: string | null;
+	ru: string | null;
+	intervalHours: number | null;
+	outcomes: ProducesNode[];
+	modeEn?: string;
+	modeRu?: string;
+}
+
 export interface CampItemWithRelations extends CampItem {
 	category: Pick<CampCategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> | null;
 	subcategory: Pick<CampSubcategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> | null;
@@ -276,6 +315,7 @@ export interface CampItemWithRelations extends CampItem {
 	campMaxValue: number | null;
 	workshopMaxFormId: string | null;
 	workshopMaxValue: number | null;
-	learnConditions: string | null;
+	learnConditions: LearnConditionGroup | null;
+	produces: ProducesMode[] | null;
 	unlockedByEntitlements: UnlockedByEntitlement[] | null;
 }

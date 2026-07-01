@@ -292,3 +292,19 @@ export const joinWithAnd = (arr: string[], separator?: string): string => {
   if (arr.length === 1) return arr[0] || '';
   return arr.slice(0, -1).join(', ') + (separator ? ` ${separator} ` : ' и ') + arr[arr.length - 1];
 }
+
+/**
+ * Returns the correct Russian plural form for a given count.
+ * @param count The number
+ * @param forms Three forms: [1 item, 2-4 items, 5-20 items] — e.g. ['минута', 'минуты', 'минут']
+ */
+export const pluralizeRu = (count: number, forms: [string, string, string]): string => {
+	const n = Math.abs(count) % 100;
+	const n1 = n % 10;
+
+	if (n > 10 && n < 20) return forms[2];
+	if (n1 > 1 && n1 < 5) return forms[1];
+	if (n1 === 1) return forms[0];
+
+	return forms[2];
+};
