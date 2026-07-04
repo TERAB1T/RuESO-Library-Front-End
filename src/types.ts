@@ -302,6 +302,7 @@ export interface ProducesMode {
 	outcomes: ProducesNode[];
 	modeEn?: string;
 	modeRu?: string;
+	cost?: number;
 }
 
 export interface CampItemWithRelations extends CampItem {

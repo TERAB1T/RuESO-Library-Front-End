@@ -135,20 +135,26 @@ const formatPercent = (probability: number) => {
 	return `${Math.round(percent * 100) / 100}%`;
 };
 
-const formatInterval = (intervalHours: number | null): string | null => {
-	if (intervalHours == null || intervalHours <= 0) return null;
-
+const formatTimeSpan = (intervalHours: number): string => {
 	const totalSeconds = Math.round(intervalHours * 3600);
 	const minutes = Math.floor(totalSeconds / 60);
 	const seconds = totalSeconds % 60;
 
-	const timeStr = props.lang === 'ru'
-		? (minutes > 0
-			? (seconds > 0 ? `${minutes} мин. ${seconds} сек.` : `${minutes} мин.`)
-			: `${seconds} сек.`)
-		: (minutes > 0
-			? (seconds > 0 ? `${minutes} min ${seconds} sec` : `${minutes} min`)
-			: `${seconds} sec`);
+	if (props.lang === 'ru') {
+		if (minutes > 0)
+			return seconds > 0 ? `${minutes} мин. ${seconds} сек.` : `${minutes} мин.`;
+		return `${seconds} сек.`;
+	}
+
+	if (minutes > 0)
+		return seconds > 0 ? `${minutes} min ${seconds} sec` : `${minutes} min`;
+	return `${seconds} sec`;
+};
+
+const formatInterval = (intervalHours: number | null): string | null => {
+	if (intervalHours == null || intervalHours <= 0) return null;
+
+	const timeStr = formatTimeSpan(intervalHours);
 
 	if (intervalHours < 1) {
 		const perHour = Math.round(1 / intervalHours);
@@ -159,8 +165,18 @@ const formatInterval = (intervalHours: number | null): string | null => {
 
 	const hours = Math.round(intervalHours);
 	return props.lang === 'ru'
-		? `раз в ${hours} ч. (раз в ${timeStr})`
+		? `раз в ${hours} ч. (раз в ${timeStr})`
 		: `every ${hours}h (every ${timeStr})`;
+};
+
+const formatVendingSummary = (mode: ProducesMode): string | null => {
+	if (mode.cost == null || mode.intervalHours == null || mode.intervalHours <= 0) return null;
+
+	const timeStr = formatTimeSpan(mode.intervalHours);
+
+	return props.lang === 'ru'
+		? `При взаимодействии с автоматом игрок получает случайный предмет из списка ниже. Можно использовать не чаще чем раз в ${timeStr} Стоимость: ${mode.cost} ${pluralizeRu(mode.cost, ['крышка', 'крышки', 'крышек'])}.`
+		: `Interacting with this machine gives the player a random item from the list below. Can be used once every ${timeStr}. Cost: ${mode.cost} cap${mode.cost === 1 ? '' : 's'}.`;
 };
 
 const t = computed(() => props.lang === 'ru'
@@ -186,10 +202,15 @@ const t = computed(() => props.lang === 'ru'
 		</ul>
 
 		<div v-if="activeMode" class="produces-summary">
-			<span class="produces-summary-name">{{ pick(activeMode.ru, activeMode.en) }}:</span>
-			<span v-if="formatInterval(activeMode.intervalHours)" class="produces-summary-interval">
-				{{ formatInterval(activeMode.intervalHours) }}
-			</span>
+			<template v-if="formatVendingSummary(activeMode)">
+				<span class="produces-summary-vending">{{ formatVendingSummary(activeMode) }}</span>
+			</template>
+			<template v-else>
+				<span class="produces-summary-name">{{ pick(activeMode.ru, activeMode.en) }}:</span>
+				<span v-if="formatInterval(activeMode.intervalHours)" class="produces-summary-interval">
+					{{ formatInterval(activeMode.intervalHours) }}
+				</span>
+			</template>
 		</div>
 
 		<table class="produces-table">
@@ -257,7 +278,8 @@ const t = computed(() => props.lang === 'ru'
 	align-items: baseline;
 	gap: 0.5rem;
 	margin-bottom: 1rem;
-	font-size: 0.95rem;
+	font-size: 1.0325rem;
+    line-height: 1.6;
 }
 
 .produces-summary-name {
@@ -402,6 +424,11 @@ const t = computed(() => props.lang === 'ru'
 	font-size: 0.875rem;
 	color: #a1a1aa;
 	display: inline-block;
+}
+
+.produces-summary-vending {
+	font-size: 1.0325rem;
+    line-height: 1.6;
 }
 
 @media (max-width: 767.98px) {
