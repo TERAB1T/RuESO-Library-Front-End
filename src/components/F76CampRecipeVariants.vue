@@ -148,7 +148,6 @@ const prefetchItem = (formId: string) => usePrefetchCampItem(queryClient, formId
 
 .recipe-variant-name {
 	font-size: .875rem;
-    font-weight: 500;
 	color: var(--bs-body-color);
 	line-height: 1.25;
 	display: -webkit-box;
