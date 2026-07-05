@@ -258,6 +258,7 @@ export type LearnConditionGroup = LearnConditionOrGroup[];
 
 export interface UnlockedByEntitlement {
 	formId: string;
+	editorId: string;
 	nameEn: string | null;
 	nameRu: string | null;
 	mainImage: string | null;
@@ -305,6 +306,31 @@ export interface ProducesMode {
 	cost?: number;
 }
 
+export interface RecipeComponent {
+	formId: string;
+	editorId: string | null;
+	nameEn: string | null;
+	nameRu: string | null;
+	count: number;
+}
+
+export interface RecipeInfo {
+	formId: string;
+	editorId: string;
+	nameEn: string | null;
+	nameRu: string | null;
+	descriptionEn: string | null;
+	descriptionRu: string | null;
+	components: RecipeComponent[];
+}
+
+export interface RecipeSiblingItem {
+	formId: string;
+	nameEn: string | null;
+	nameRu: string | null;
+	slug: string | null;
+}
+
 export interface CampItemWithRelations extends CampItem {
 	category: Pick<CampCategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> | null;
 	subcategory: Pick<CampSubcategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> | null;
@@ -319,4 +345,6 @@ export interface CampItemWithRelations extends CampItem {
 	learnConditions: LearnConditionGroup | null;
 	produces: ProducesMode[] | null;
 	unlockedByEntitlements: UnlockedByEntitlement[] | null;
+	recipe: RecipeInfo | null;
+	recipeItems: RecipeSiblingItem[];
 }

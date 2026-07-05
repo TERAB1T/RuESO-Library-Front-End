@@ -6,7 +6,6 @@ import type { ProducesMode, ProducesNode, ProducesItemNode, ProducesListNode } f
 const props = defineProps<{
 	produces: ProducesMode[] | null;
 	lang: 'ru' | 'en';
-	isLastBlock?: boolean;
 }>();
 
 const hasProduces = computed(() => !!props.produces && props.produces.length > 0);
@@ -187,7 +186,7 @@ const t = computed(() => props.lang === 'ru'
 </script>
 
 <template>
-	<div v-if="hasProduces" class="produces-block" :class="{ 'produces-block-last': isLastBlock }">
+	<div v-if="hasProduces" class="produces-block">
 		<div class="fo-sect-h">
 			<span class="fo-bar"></span>
 			<h3 class="fo-h3">{{ t.title }}</h3>
@@ -260,13 +259,7 @@ const t = computed(() => props.lang === 'ru'
 
 <style scoped lang="scss">
 .produces-block {
-	background: var(--bs-block-bg);
-	padding: 0 0 1.5rem;
-}
-
-.produces-block-last {
-	border-bottom-left-radius: 12px;
-	border-bottom-right-radius: 12px;
+	margin-top: 2.25rem;
 }
 
 .produces-mode-tabs {
@@ -432,10 +425,6 @@ const t = computed(() => props.lang === 'ru'
 }
 
 @media (max-width: 767.98px) {
-	.produces-block {
-		padding: 0 0 1.25rem;
-	}
-
 	.produces-name {
 		white-space: normal;
 	}

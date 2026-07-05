@@ -2,8 +2,9 @@
 import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
 import { useHead } from '@unhead/vue';
-import { prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError, prepareCampImage } from '@/utils';
+import { prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
 import { useFetchAtomicShopItem, useFetchAtomicShopCategories, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory } from '@/composables/useApi';
+import F76AtomicShopCampUnlocked from '@/components/F76AtomicShopCampUnlocked.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -76,7 +77,7 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 });
 
 const updateMetaTags = (itemData: AtomicShopItem) => {
-	let metaTitle = `${itemData.nameRu} | Fallout 76`;
+	let metaTitle = `${itemData.nameRu} | Атомная лавка F76`;
 	let metaDescription = generateMetaDescriptionAtomicShop(itemData.descriptionRu as string);
 	let metaLink = `https://rueso.ru/f76-atomic-shop/${itemData.formId}-${itemData.slug}`;
 	let metaIcon = `https://rueso.ru${prepareAtomicShopImage(itemData.mainImage?.replace(".avif", ".webp"))}`;
@@ -264,10 +265,6 @@ const parsedTextEn = computed(() =>
 	(item.value.descriptionEn ?? '').replace(/\n/g, '<br>')
 );
 
-const hasCampUnlocked = computed(() =>
-	!!(item.value.campUnlockedItems && item.value.campUnlockedItems.length > 0)
-);
-
 watch(() => item.value.mainImage, () => {
 	initLightbox();
 });
@@ -363,7 +360,7 @@ useCopyOnClick(copyContainerRef);
 						</li>
 					</ul>
 
-					<div class="tab-content" :class="splittedScreenshots.length > 0 || isMobile || hasCampUnlocked ? 'with-screenshots' : ''" id="categoriesTabContent">
+					<div class="tab-content" :class="splittedScreenshots.length > 0 || isMobile ? 'with-screenshots' : ''" id="categoriesTabContent">
 						<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
 							<h1 class="book-title">{{ item.nameRu }}</h1>
 							<div v-if="item.isPTS" class="alert alert-info atomic-shop-card" role="alert">
@@ -373,6 +370,7 @@ useCopyOnClick(copyContainerRef);
 								<div style="margin-left:55px;">Сейчас этот предмет доступен только на публичном тестовом сервере.</div>
 							</div>
 							<div class="book-main" v-html="parsedTextRu"></div>
+							<F76AtomicShopCampUnlocked :key="item.formId" :camp-unlocked-items="item.campUnlockedItems" lang="ru" />
 						</div>
 
 						<div class="tab-pane p-3" id="english-pane" role="tabpanel" aria-labelledby="english-pane" tabindex="1">
@@ -384,33 +382,10 @@ useCopyOnClick(copyContainerRef);
 								<div style="margin-left:55px;">This item is currently available only on the Public Test Server.</div>
 							</div>
 							<div class="book-main" v-html="parsedTextEn"></div>
+							<F76AtomicShopCampUnlocked :key="item.formId" :camp-unlocked-items="item.campUnlockedItems" lang="en" />
 						</div>
 
 						<div class="tab-pane p-3" id="info-pane" role="tabpanel" aria-labelledby="info-pane" tabindex="2">
-						</div>
-					</div>
-
-					<div v-if="hasCampUnlocked" class="camp-unlocked-block" :class="{ 'camp-unlocked-block-last': !(isMobile || splittedScreenshots.length > 0) }">
-						<div class="fo-sect-h">
-							<span class="fo-bar"></span>
-							<h3 class="fo-h3">Позволяет строить в C.A.M.P.:</h3>
-						</div>
-						<div class="row g-3">
-							<div v-for="campItem in item.campUnlockedItems" :key="campItem.formId" class="col-12 col-md-6">
-								<RouterLink :to="`/f76-camp/${campItem.formId}-${campItem.slug}`" class="camp-unlocked-card">
-									<img :src="prepareCampImage(campItem.mainImage, 100)" :alt="campItem.nameRu || campItem.nameEn || 'CAMP Item'" class="camp-unlocked-image" loading="lazy" @error="atomicShopHandleImageError">
-									<div class="camp-unlocked-info">
-										<div class="camp-unlocked-name">{{ campItem.nameRu || campItem.nameEn }}</div>
-										<div class="camp-unlocked-path">
-											<span v-if="campItem.category">{{ campItem.category.nameRu }}</span>
-											<svg v-if="campItem.category && campItem.subcategory" class="breadcrumb-separator camp-unlocked-separator" viewBox="0 0 320 512" fill="currentColor">
-												<path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
-											</svg>
-											<span v-if="campItem.subcategory">{{ campItem.subcategory.nameRu }}</span>
-										</div>
-									</div>
-								</RouterLink>
-							</div>
 						</div>
 					</div>
 
@@ -534,87 +509,6 @@ useCopyOnClick(copyContainerRef);
 	border-bottom-right-radius: 12px;
 }
 
-.camp-unlocked-block {
-	background: var(--bs-block-bg);
-	padding: 0 2.25rem 2.25rem;
-}
-
-.camp-unlocked-block-last {
-	border-bottom-left-radius: 12px;
-	border-bottom-right-radius: 12px;
-}
-
-.section-heading {
-	font-size: 1.25rem;
-	font-weight: 600;
-	color: var(--bs-body-color);
-	margin: 0 0 1rem 0;
-	padding-top: 0;
-	text-align: left;
-}
-
-.camp-unlocked-card {
-	display: flex;
-	align-items: center;
-	gap: 0.65rem;
-	padding: 0.5rem 0.85rem 0.5rem 0.5rem;
-	border-radius: 10px;
-	background: rgba(255, 255, 255, 0.03);
-	border: 1px solid rgba(255, 255, 255, 0.07);
-	transition: border-color 0.15s ease, background-color 0.15s ease;
-
-	&:hover {
-		border-color: #6c757d;
-		background: rgba(255, 255, 255, 0.05);
-	}
-}
-
-.camp-unlocked-image {
-	width: 44px;
-	height: 44px;
-	object-fit: contain;
-	flex-shrink: 0;
-	border-radius: 6px;
-}
-
-.camp-unlocked-info {
-	display: flex;
-	flex-direction: column;
-	min-width: 0;
-	gap: 0.15rem;
-}
-
-.camp-unlocked-name {
-	font-size: 0.875rem;
-	font-weight: 500;
-	color: var(--bs-body-color);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	transition: color 0.15s ease;
-}
-
-.camp-unlocked-path {
-	display: flex;
-	align-items: center;
-	font-size: 0.75rem;
-	color: #a1a1aa;
-	white-space: nowrap;
-	overflow: hidden;
-
-	span {
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-}
-
-.camp-unlocked-separator {
-	width: 0.5rem;
-	height: 0.5rem;
-	margin: 0 0.35rem;
-	flex-shrink: 0;
-}
-
 .card {
 	padding: 1.25rem !important;
 	text-align: center;
@@ -720,11 +614,7 @@ useCopyOnClick(copyContainerRef);
 	}
 
 	.screenshots {
-		padding: 0 1.2rem 1.25rem;
-	}
-
-	.camp-unlocked-block {
-		padding: 0 1.2rem 2.25rem;
+		padding: 0 2.2rem 1.25rem;
 	}
 
 	.hide-tab {
@@ -739,6 +629,7 @@ useCopyOnClick(copyContainerRef);
 
 	.screenshots {
 		text-align: center;
+		padding: 0 1.2rem 1.25rem;
 	}
 
 	.book-title {

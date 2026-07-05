@@ -7,6 +7,7 @@ import { useFetchCampItem, useFetchCampCategories, usePrefetchCampCategory, useP
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import F76CampUnlockConditions from '@/components/F76CampUnlockConditions.vue';
 import F76CampProducesTable from '@/components/F76CampProducesTable.vue';
+import F76CampRecipeVariants from '@/components/F76CampRecipeVariants.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
@@ -74,7 +75,7 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 });
 
 const updateMetaTags = (itemData: CampItem) => {
-	let metaTitle = `${itemData.nameRu} | Fallout 76`;
+	let metaTitle = `${itemData.nameRu} | C.A.M.P. F76`;
 	let metaDescription = generateMetaDescriptionAtomicShop(itemData.descriptionRu as string);
 	let metaLink = `https://rueso.ru/f76-camp/${itemData.formId}-${itemData.slug}`;
 	let metaIcon = `https://rueso.ru${prepareCampImage(itemData.mainImage)}`;
@@ -246,11 +247,11 @@ const splittedScreenshots = computed(() => {
 });
 
 const parsedTextRu = computed(() =>
-	(item.value.descriptionRu ?? '').replace(/\n/g, '<br>')
+	(item.value.descriptionRu ?? item.value.recipe?.descriptionRu ?? '').replace(/\n/g, '<br>')
 );
 
 const parsedTextEn = computed(() =>
-	(item.value.descriptionEn ?? '').replace(/\n/g, '<br>')
+	(item.value.descriptionEn ?? item.value.recipe?.descriptionEn ?? '').replace(/\n/g, '<br>')
 );
 
 const placementBadges = computed(() => [
@@ -336,7 +337,8 @@ onBeforeRouteLeave(async () => {
 							<div class="book-main" v-html="parsedTextRu"></div>
 
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="ru" />
-							<F76CampProducesTable :produces="item.produces" lang="ru" :is-last-block="!(isMobile || splittedScreenshots.length > 0)" />
+							<F76CampProducesTable :produces="item.produces" lang="ru" />
+							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="ru" />
 						</div>
 
 						<div class="tab-pane p-3" id="english-pane" role="tabpanel" aria-labelledby="english-pane" tabindex="1">
@@ -350,7 +352,8 @@ onBeforeRouteLeave(async () => {
 							<div class="book-main" v-html="parsedTextEn"></div>
 
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="en" />
-							<F76CampProducesTable :produces="item.produces" lang="en" :is-last-block="!(isMobile || splittedScreenshots.length > 0)" />
+							<F76CampProducesTable :produces="item.produces" lang="en" />
+							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="en" />
 						</div>
 
 						<div class="tab-pane p-3" id="info-pane" role="tabpanel" aria-labelledby="info-pane" tabindex="2">
@@ -454,7 +457,7 @@ onBeforeRouteLeave(async () => {
 }
 
 .tab-content {
-	padding: 0.5rem 1.2rem 1rem;
+	padding: 0.5rem 1.2rem 1.25rem;
 
 	&.with-screenshots {
 		border-bottom-left-radius: 0%;
@@ -646,7 +649,7 @@ onBeforeRouteLeave(async () => {
 	}
 
 	.screenshots {
-		padding: 0 1.2rem 1.25rem;
+		padding: 0 2.2rem 1.25rem;
 	}
 
 	.hide-tab {
@@ -661,6 +664,7 @@ onBeforeRouteLeave(async () => {
 
 	.screenshots {
 		text-align: center;
+		padding: 0 1.2rem 1.25rem;
 	}
 
 	.book-title {

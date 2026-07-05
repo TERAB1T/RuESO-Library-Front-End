@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
 import { computed } from 'vue';
+import { useQueryClient } from '@tanstack/vue-query';
+import { usePrefetchAtomicShopItem } from '@/composables/useApi';
 import { prepareCampImage, prepareAtomicShopImage, atomicShopHandleImageError } from '@/utils';
+
 import type { LearnConditionLeaf, LearnConditionGroup, LearnConditionOrGroup, UnlockedByEntitlement } from '@/types';
 
 const props = defineProps<{
 	learnConditions: LearnConditionGroup | null;
 	unlockedByEntitlements: UnlockedByEntitlement[] | null;
 	lang: 'ru' | 'en';
-	isLastBlock?: boolean;
 }>();
 
 const pick = (ru: string | null | undefined, en: string | null | undefined) =>
@@ -29,6 +31,7 @@ const conditionLabelsRu: Record<string, string> = {
 	food: 'Собрать',
 	plan: 'Изучить',
 	challenge: 'Выполнить испытание',
+	entitlementAtx: 'Купить',
 	entitlement: 'Получить',
 	workshop: 'Захватить',
 	level: 'Достичь',
@@ -40,7 +43,8 @@ const conditionLabelsEn: Record<string, string> = {
 	food: 'Collect',
 	plan: 'Learn',
 	challenge: 'Complete challenge',
-	entitlement: 'Obtain',
+	entitlementAtx: 'Purchase',
+	entitlement: 'Claim',
 	workshop: 'Capture',
 	level: 'Reach',
 	quest: 'Complete quest',
@@ -55,6 +59,7 @@ interface ResolvedConditionLeaf {
 	content: string;
 	image: string | null;
 	link: string | null;
+	linkFormId: string | null;
 }
 
 const formIdToImageFilename = (formId: string) => {
@@ -68,54 +73,59 @@ const resolveConditionLeaf = (leaf: LearnConditionLeaf): ResolvedConditionLeaf =
 		const entItem = props.unlockedByEntitlements?.find(e => e.formId === normalizedFormId);
 		return {
 			type: 'entitlement',
-			label: conditionLabels.value.entitlement,
+			label: (entItem?.editorId.includes('atx_') ? conditionLabels.value.entitlementAtx : conditionLabels.value.entitlement) ?? '',
 			content: pick(entItem?.nameRu, entItem?.nameEn) || leaf.editorId || (props.lang === 'ru' ? 'Неизвестный предмет' : 'Unknown item'),
 			image: entItem?.mainImage ? prepareAtomicShopImage(entItem.mainImage) : null,
-			link: entItem?.slug ? `/f76-atomic-shop/${entItem.formId}-${entItem.slug}` : null
+			link: entItem?.slug ? `/f76-atomic-shop/${entItem.formId}-${entItem.slug}` : null,
+			linkFormId: entItem?.formId ?? null
 		};
 	}
 
 	if (leaf.type === 'food') {
 		return {
 			type: 'food',
-			label: conditionLabels.value.food,
+			label: conditionLabels.value.food ?? '',
 			content: pick(leaf.ru, leaf.en) || leaf.editorId || '—',
 			image: prepareCampImage(formIdToImageFilename(leaf.formId), 100),
-			link: null
+			link: null,
+			linkFormId: null
 		};
 	}
 
 	if (leaf.type === 'workshop') {
 		return {
 			type: 'workshop',
-			label: conditionLabels.value.workshop,
+			label: conditionLabels.value.workshop ?? '',
 			content: props.lang === 'ru' ? 'Любая мастерская' : 'Any workshop',
 			image: null,
-			link: null
+			link: null,
+			linkFormId: null
 		};
 	}
 
 	if (leaf.type === 'level') {
 		return {
 			type: 'level',
-			label: conditionLabels.value.level,
+			label: conditionLabels.value.level ?? '',
 			content: leaf.level != null
 				? (props.lang === 'ru' ? `${leaf.level}-й уровень` : `Level ${leaf.level}`)
 				: (props.lang === 'ru' ? '0-й уровень' : 'Level 0'),
 			image: null,
-			link: null
+			link: null,
+			linkFormId: null
 		};
 	}
 
 	return {
 		type: leaf.type,
-		label: conditionLabels.value[leaf.type] ?? conditionLabels.value.misc,
+		label: conditionLabels.value[leaf.type] ?? conditionLabels.value.misc ?? '',
 		content: pick(leaf.ru, leaf.en)
 			|| ('editorId' in leaf ? leaf.editorId : null)
 			|| ('formId' in leaf ? leaf.formId : null)
 			|| '—',
 		image: null,
-		link: null
+		link: null,
+		linkFormId: null
 	};
 };
 
@@ -166,10 +176,13 @@ const t = computed(() => props.lang === 'ru'
 );
 
 defineExpose({ hasUnlockConditions });
+
+const queryClient = useQueryClient();
+const prefetchAtxItem = (formId: string) => usePrefetchAtomicShopItem(queryClient, formId);
 </script>
 
 <template>
-	<div v-if="hasUnlockConditions" class="unlock-conditions-block" :class="{ 'unlock-conditions-block-last': isLastBlock }">
+	<div v-if="hasUnlockConditions" class="unlock-conditions-block">
 		<div class="fo-sect-h">
 			<span class="fo-bar"></span>
 			<h3 class="fo-h3">{{ t.title }}</h3>
@@ -183,7 +196,7 @@ defineExpose({ hasUnlockConditions });
 					<template v-for="(slot, si) in orGroup" :key="si">
 						<div v-if="si > 0" class="unlock-or-label">{{ t.or }}</div>
 
-						<component v-if="slot.kind === 'leaf'" :is="slot.item.link ? RouterLink : 'div'" :to="slot.item.link || undefined" class="unlock-card" :class="{ 'unlock-card-link': !!slot.item.link }">
+						<component v-if="slot.kind === 'leaf'" :is="slot.item.link ? RouterLink : 'div'" :to="slot.item.link || undefined" class="unlock-card" :class="{ 'unlock-card-link': !!slot.item.link }" @mouseenter="slot.item.linkFormId && prefetchAtxItem(slot.item.linkFormId)">
 							<img v-if="slot.item.image" :src="slot.item.image" class="unlock-card-icon" :alt="slot.item.content" loading="lazy" @error="atomicShopHandleImageError">
 							<img v-else :src="conditionIcons[slot.item.type]" class="unlock-card-icon" :alt="slot.item.label" loading="lazy" @error="atomicShopHandleImageError">
 							<div class="unlock-card-text">
@@ -193,7 +206,7 @@ defineExpose({ hasUnlockConditions });
 						</component>
 
 						<div v-else class="unlock-nested-and">
-							<component v-for="(leaf, li) in slot.items" :key="li" :is="leaf.link ? RouterLink : 'div'" :to="leaf.link || undefined" class="unlock-card unlock-card-small" :class="{ 'unlock-card-link': !!leaf.link }">
+							<component v-for="(leaf, li) in slot.items" :key="li" :is="leaf.link ? RouterLink : 'div'" :to="leaf.link || undefined" class="unlock-card unlock-card-small" :class="{ 'unlock-card-link': !!leaf.link }" @mouseenter="leaf.linkFormId && prefetchAtxItem(leaf.linkFormId)">
 								<img v-if="leaf.image" :src="leaf.image" class="unlock-card-icon" :alt="leaf.content" loading="lazy" @error="atomicShopHandleImageError">
 								<img v-else :src="conditionIcons[leaf.type]" class="unlock-card-icon" :alt="leaf.label" loading="lazy" @error="atomicShopHandleImageError">
 								<div class="unlock-card-text">
@@ -212,7 +225,7 @@ defineExpose({ hasUnlockConditions });
 				<template v-for="(slot, si) in flattenedAndSlots" :key="si">
 					<div v-if="si > 0" class="unlock-or-label">{{ t.and }}</div>
 
-					<component v-if="slot.kind === 'leaf'" :is="slot.item.link ? RouterLink : 'div'" :to="slot.item.link || undefined" class="unlock-card" :class="{ 'unlock-card-link': !!slot.item.link }">
+					<component v-if="slot.kind === 'leaf'" :is="slot.item.link ? RouterLink : 'div'" :to="slot.item.link || undefined" class="unlock-card" :class="{ 'unlock-card-link': !!slot.item.link }" @mouseenter="slot.item.linkFormId && prefetchAtxItem(slot.item.linkFormId)">
 						<img v-if="slot.item.image" :src="slot.item.image" class="unlock-card-icon" :alt="slot.item.content" loading="lazy" @error="atomicShopHandleImageError">
 						<img v-else :src="conditionIcons[slot.item.type]" class="unlock-card-icon" :alt="slot.item.label" loading="lazy" @error="atomicShopHandleImageError">
 						<div class="unlock-card-text">
@@ -222,7 +235,7 @@ defineExpose({ hasUnlockConditions });
 					</component>
 
 					<div v-else class="unlock-nested-and">
-						<component v-for="(leaf, li) in slot.items" :key="li" :is="leaf.link ? RouterLink : 'div'" :to="leaf.link || undefined" class="unlock-card unlock-card-small" :class="{ 'unlock-card-link': !!leaf.link }">
+						<component v-for="(leaf, li) in slot.items" :key="li" :is="leaf.link ? RouterLink : 'div'" :to="leaf.link || undefined" class="unlock-card unlock-card-small" :class="{ 'unlock-card-link': !!leaf.link }" @mouseenter="leaf.linkFormId && prefetchAtxItem(leaf.linkFormId)">
 							<img v-if="leaf.image" :src="leaf.image" class="unlock-card-icon" :alt="leaf.content" loading="lazy" @error="atomicShopHandleImageError">
 							<img v-else :src="conditionIcons[leaf.type]" class="unlock-card-icon" :alt="leaf.label" loading="lazy" @error="atomicShopHandleImageError">
 							<div class="unlock-card-text">
@@ -239,13 +252,7 @@ defineExpose({ hasUnlockConditions });
 
 <style scoped lang="scss">
 .unlock-conditions-block {
-	background: var(--bs-block-bg);
-	padding: 0 0 2.25rem;
-}
-
-.unlock-conditions-block-last {
-	border-bottom-left-radius: 12px;
-	border-bottom-right-radius: 12px;
+	margin-top: 2.25rem;
 }
 
 .unlock-and-divider {
@@ -364,9 +371,6 @@ defineExpose({ hasUnlockConditions });
 }
 
 @media (max-width: 991.98px) {
-	.unlock-conditions-block {
-		padding: 0 0 2.25rem;
-	}
 
 	.unlock-or-row-single .unlock-card,
 	.unlock-or-row-single .unlock-nested-and {
@@ -375,6 +379,7 @@ defineExpose({ hasUnlockConditions });
 }
 
 @media (max-width: 767.98px) {
+
 	.unlock-card,
 	.unlock-nested-and {
 		flex-basis: 100%;
