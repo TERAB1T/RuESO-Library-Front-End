@@ -312,7 +312,7 @@ const prefetchAtxItem = (formId: string) => usePrefetchAtomicShopItem(queryClien
 	display: flex;
 	align-items: center;
 	gap: 0.65rem;
-	padding: 0.5rem 0.85rem 0.5rem 0.5rem;
+	padding: 0.5rem;
 	border-radius: 10px;
 	background: rgba(255, 255, 255, 0.03);
 	border: 1px solid rgba(255, 255, 255, 0.07);

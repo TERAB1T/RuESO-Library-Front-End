@@ -100,7 +100,7 @@ const prefetchItem = (formId: string) => usePrefetchCampItem(queryClient, formId
 	display: flex;
 	align-items: center;
 	gap: 0.55rem;
-	padding: 0.4rem 0.75rem 0.4rem 0.4rem;
+	padding: 0.5rem;
 	border-radius: 8px;
 	background: rgba(255, 255, 255, 0.03);
 	border: 1px solid rgba(255, 255, 255, 0.07);
@@ -121,7 +121,7 @@ const prefetchItem = (formId: string) => usePrefetchCampItem(queryClient, formId
 	text-align: left;
 	background: none;
 	border: none;
-	padding: 0.4rem 0.4rem;
+	padding: 0.5rem;
 
 	.recipe-variant-more-text {
 		color: #a1a1aa;
@@ -139,8 +139,8 @@ const prefetchItem = (formId: string) => usePrefetchCampItem(queryClient, formId
 }
 
 .recipe-variant-icon {
-	width: 32px;
-	height: 32px;
+	width: 44px;
+	height: 44px;
 	object-fit: contain;
 	flex-shrink: 0;
 	border-radius: 6px;
