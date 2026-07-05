@@ -147,11 +147,12 @@ const prefetchItem = (formId: string) => usePrefetchCampItem(queryClient, formId
 }
 
 .recipe-variant-name {
-	font-size: 0.8rem;
+	font-size: .875rem;
+    font-weight: 500;
 	color: var(--bs-body-color);
 	line-height: 1.25;
 	display: -webkit-box;
-	-webkit-line-clamp: 2;
+	-webkit-line-clamp: 3;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }
