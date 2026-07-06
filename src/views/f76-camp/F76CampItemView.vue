@@ -158,7 +158,7 @@ const initLightbox = () => {
 		});
 
 		lightbox.addFilter('itemData', (itemData, index) => {
-			const imgSrc = itemData.src || itemData.element?.href || '';
+			const imgSrc = itemData.src || (itemData.element as HTMLAnchorElement | undefined)?.href || '';
 
 			if (sizeCache.has(imgSrc)) {
 				const cached = sizeCache.get(imgSrc);

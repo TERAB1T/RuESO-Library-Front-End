@@ -89,10 +89,24 @@ const mergeDuplicates = (items: ProducesItemNode[]): ProducesItemNode[] => {
 const activeRows = computed<DisplayGroup[]>(() => {
 	if (!activeMode.value) return [];
 
+	const outcomes = activeMode.value.outcomes;
+	const onlyNode = outcomes.length === 1 ? outcomes[0] : undefined;
+
+	if (onlyNode && isListNode(onlyNode)) {
+		return [{
+			kind: 'group',
+			isUngrouped: true,
+			label: null,
+			probability: null,
+			availabilityNote: null,
+			items: mergeDuplicates(collectLeaves(onlyNode.entries)).sort((a, b) => b.probability - a.probability)
+		}];
+	}
+
 	const groups: DisplayGroup[] = [];
 	const looseItems: ProducesItemNode[] = [];
 
-	for (const node of activeMode.value.outcomes) {
+	for (const node of outcomes) {
 		if (isItemNode(node)) {
 			looseItems.push(node);
 		} else if (isListNode(node)) {
@@ -272,7 +286,7 @@ const t = computed(() => props.lang === 'ru'
 	gap: 0.5rem;
 	margin-bottom: 1rem;
 	font-size: 1.0325rem;
-    line-height: 1.6;
+	line-height: 1.6;
 }
 
 .produces-summary-name {
@@ -421,7 +435,7 @@ const t = computed(() => props.lang === 'ru'
 
 .produces-summary-vending {
 	font-size: 1.0325rem;
-    line-height: 1.6;
+	line-height: 1.6;
 }
 
 @media (max-width: 767.98px) {
