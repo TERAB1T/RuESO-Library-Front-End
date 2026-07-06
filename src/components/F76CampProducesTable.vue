@@ -168,24 +168,17 @@ const formatInterval = (intervalHours: number | null): string | null => {
 	if (intervalHours == null || intervalHours <= 0) return null;
 
 	const timeStr = formatTimeSpan(intervalHours);
+	const perHour = Math.round(1 / intervalHours);
 
-	if (intervalHours < 1) {
-		const perHour = Math.round(1 / intervalHours);
+	if (perHour === 1) {
 		return props.lang === 'ru'
-			? `${perHour} ${pluralizeRu(perHour, ['предмет', 'предмета', 'предметов'])} в час (по одному раз в ${timeStr})`
-			: `${perHour} per hour (every ${timeStr})`;
+			? `${perHour} ${pluralizeRu(perHour, ['предмет', 'предмета', 'предметов'])} в час`
+			: `${perHour} per hour`;
 	}
 
-	const hours = Math.round(intervalHours);
-	const isExactHours = Math.abs(intervalHours - hours) < 0.001;
-
 	return props.lang === 'ru'
-		? (isExactHours
-			? `раз в ${hours} ${pluralizeRu(hours, ['час', 'часа', 'часов'])}`
-			: `раз в ${hours} ч. (раз в ${timeStr})`)
-		: (isExactHours
-			? `every ${hours}h`
-			: `every ${hours}h (every ${timeStr})`);
+		? `${perHour} ${pluralizeRu(perHour, ['предмет', 'предмета', 'предметов'])} в час (по одному раз в ${timeStr})`
+		: `${perHour} per hour (every ${timeStr})`;
 };
 
 const formatVendingSummary = (mode: ProducesMode): string | null => {
