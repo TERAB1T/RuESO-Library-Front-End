@@ -8,6 +8,7 @@ import Breadcrumb from '@/components/Breadcrumb.vue';
 import F76CampUnlockConditions from '@/components/F76CampUnlockConditions.vue';
 import F76CampProducesTable from '@/components/F76CampProducesTable.vue';
 import F76CampRecipeVariants from '@/components/F76CampRecipeVariants.vue';
+import F76CampRecipeComponents from '@/components/F76CampRecipeComponents.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
@@ -246,13 +247,17 @@ const splittedScreenshots = computed(() => {
 	return screenshotsArray.map(s => prepareCampImage(s));
 });
 
-const parsedTextRu = computed(() =>
-	(item.value.descriptionRu ?? item.value.recipe?.descriptionRu ?? '').replace(/\n/g, '<br>')
-);
+const parsedTextRu = computed(() => {
+	if (item.value.descriptionRu) return item.value.descriptionRu.replace(/\n/g, '<br>');
+	if (item.value.recipe?.descriptionRu) return item.value.recipe.descriptionRu.replace(/\n/g, '<br>');
+	return '';
+});
 
-const parsedTextEn = computed(() =>
-	(item.value.descriptionEn ?? item.value.recipe?.descriptionEn ?? '').replace(/\n/g, '<br>')
-);
+const parsedTextEn = computed(() => {
+	if (item.value.descriptionEn) return item.value.descriptionEn.replace(/\n/g, '<br>');
+	if (item.value.recipe?.descriptionEn) return item.value.recipe.descriptionEn.replace(/\n/g, '<br>');
+	return '';
+});
 
 const placementBadges = computed(() => [
 	{ key: 'camp', label: 'C.A.M.P.', available: !!item.value.camp },
@@ -438,6 +443,10 @@ onBeforeRouteLeave(async () => {
 										{{ item.editorId }}
 									</div>
 								</div>
+
+								<!--<div class="card components-card" v-if="item.recipe?.components && item.recipe.components.length > 0">
+									<F76CampRecipeComponents :components="item.recipe?.components ?? []" />
+								</div>-->
 							</div>
 						</template>
 					</Teleport>
@@ -515,6 +524,12 @@ onBeforeRouteLeave(async () => {
 	margin-bottom: 0.3rem;
 	color: #a1a1aa;
 	font-weight: 500;
+}
+
+.components-card {
+	margin-top: 1rem;
+	padding-top: 0 !important;
+	text-align: left;
 }
 
 .camp-placement-badges {
