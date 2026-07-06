@@ -177,9 +177,15 @@ const formatInterval = (intervalHours: number | null): string | null => {
 	}
 
 	const hours = Math.round(intervalHours);
+	const isExactHours = Math.abs(intervalHours - hours) < 0.001;
+
 	return props.lang === 'ru'
-		? `раз в ${hours} ч. (раз в ${timeStr})`
-		: `every ${hours}h (every ${timeStr})`;
+		? (isExactHours
+			? `раз в ${hours} ${pluralizeRu(hours, ['час', 'часа', 'часов'])}`
+			: `раз в ${hours} ч. (раз в ${timeStr})`)
+		: (isExactHours
+			? `every ${hours}h`
+			: `every ${hours}h (every ${timeStr})`);
 };
 
 const formatVendingSummary = (mode: ProducesMode): string | null => {
