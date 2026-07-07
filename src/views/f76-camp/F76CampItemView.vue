@@ -9,6 +9,7 @@ import F76CampUnlockConditions from '@/components/F76CampUnlockConditions.vue';
 import F76CampProducesTable from '@/components/F76CampProducesTable.vue';
 import F76CampRecipeVariants from '@/components/F76CampRecipeVariants.vue';
 import F76CampRecipeComponents from '@/components/F76CampRecipeComponents.vue';
+import F76CampDisplayTable from '@/components/F76CampDisplayTable.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
@@ -343,6 +344,7 @@ onBeforeRouteLeave(async () => {
 
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="ru" />
 							<F76CampProducesTable :produces="item.produces" lang="ru" />
+							<F76CampDisplayTable :display="item.display" lang="ru" />
 							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="ru" />
 						</div>
 
@@ -358,6 +360,7 @@ onBeforeRouteLeave(async () => {
 
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="en" />
 							<F76CampProducesTable :produces="item.produces" lang="en" />
+							<F76CampDisplayTable :display="item.display" lang="en" />
 							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="en" />
 						</div>
 
