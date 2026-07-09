@@ -5,6 +5,7 @@ import type { ProducesMode, ProducesNode, ProducesItemNode, ProducesListNode } f
 
 const props = defineProps<{
 	produces: ProducesMode[] | null;
+	carryWeight: number | null;
 	lang: 'ru' | 'en';
 }>();
 
@@ -204,7 +205,7 @@ const vendingSummary = computed<string | null>(() =>
 const intervalText = computed<string | null>(() =>
 	activeMode.value ? formatInterval(activeMode.value.intervalHours) : null);
 
-const formatEveryPeriod = (intervalHours: number): string => {
+const formatEveryPeriod = (intervalHours: number): { prefix: string; time: string } => {
 	const totalSeconds = Math.round(intervalHours * 3600);
 	const hours = Math.floor(totalSeconds / 3600);
 	const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -214,36 +215,46 @@ const formatEveryPeriod = (intervalHours: number): string => {
 
 	if (props.lang === 'ru') {
 		if (partCount === 1) {
-			if (hours > 0) return hours === 1 ? 'Каждый час' : `Каждые ${hours} ч.}`;
-			if (minutes > 0) return minutes === 1 ? 'Каждую минуту' : `Каждые ${minutes} мин.`;
-			return seconds === 1 ? 'Каждую секунду' : `Каждые ${seconds} сек.`;
+			if (hours > 0) return hours === 1 ? { prefix: 'Каждый', time: 'час' } : { prefix: 'Каждые', time: `${hours} ч.` };
+			if (minutes > 0) return minutes === 1 ? { prefix: 'Каждую', time: 'минуту' } : { prefix: 'Каждые', time: `${minutes} мин.` };
+			return seconds === 1 ? { prefix: 'Каждую', time: 'секунду' } : { prefix: 'Каждые', time: `${seconds} сек.` };
 		}
 
 		const parts: string[] = [];
 		if (hours > 0) parts.push(`${hours} ч.`);
 		if (minutes > 0) parts.push(`${minutes} мин.`);
 		if (seconds > 0) parts.push(`${seconds} сек.`);
-		return `Каждые ${parts.join(' ')}`;
+		return { prefix: 'Каждые', time: parts.join(' ') };
 	}
 
 	if (partCount === 1) {
-		if (hours > 0) return hours === 1 ? 'Every hour' : `Every ${hours}h`;
-		if (minutes > 0) return minutes === 1 ? 'Every minute' : `Every ${minutes}m`;
-		return seconds === 1 ? 'Every second' : `Every ${seconds}s`;
+		if (hours > 0) return hours === 1 ? { prefix: 'Every', time: 'hour' } : { prefix: 'Every', time: `${hours}h` };
+		if (minutes > 0) return minutes === 1 ? { prefix: 'Every', time: 'minute' } : { prefix: 'Every', time: `${minutes}m` };
+		return seconds === 1 ? { prefix: 'Every', time: 'second' } : { prefix: 'Every', time: `${seconds}s` };
 	}
 
 	const parts: string[] = [];
 	if (hours > 0) parts.push(`${hours}h`);
 	if (minutes > 0) parts.push(`${minutes}m`);
 	if (seconds > 0) parts.push(`${seconds}s`);
-	return `Every ${parts.join(' ')}`;
+	return { prefix: 'Every', time: parts.join(' ') };
 };
 
-const collectorPeriod = computed<string | null>(() => {
+const collectorPeriod = computed<{ prefix: string; time: string } | null>(() => {
 	if (!activeMode.value) return null;
 	if (activeMode.value.cost != null) return null;
 	if (activeMode.value.intervalHours == null || activeMode.value.intervalHours <= 0) return null;
 	return formatEveryPeriod(activeMode.value.intervalHours);
+});
+
+const carryWeightText = computed<string | null>(() => {
+	if (props.carryWeight == null || vendingSummary.value) return null;
+
+	const weight = Math.round(props.carryWeight);
+
+	return props.lang === 'ru'
+		? ` Максимальная вместимость — ${weight} ${pluralizeRu(weight, ['фунт', 'фунта', 'фунтов'])}.`
+		: ` Maximum capacity — ${weight} lb${weight === 1 ? '' : 's'}.`;
 });
 
 const t = computed(() => props.lang === 'ru'
@@ -274,8 +285,9 @@ const t = computed(() => props.lang === 'ru'
 			</template>
 			<template v-else-if="collectorPeriod">
 				<span class="produces-summary-vending">
-					<template v-if="lang === 'ru'">Этот предмет — сборщик. <strong>{{ collectorPeriod }}</strong> он производит по одному предмету из списка ниже.</template>
-					<template v-else>This item is a collector. <strong>{{ collectorPeriod }}</strong>, it produces one item from the list below.</template>
+					<template v-if="lang === 'ru'">Этот предмет — сборщик. {{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong> он производит по одному предмету из списка ниже.</template>
+					<template v-else>This item is a collector. {{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong>, it produces one item from the list below.</template>
+					<span v-if="carryWeightText">{{ carryWeightText }}</span>
 				</span>
 			</template>
 			<template v-else>

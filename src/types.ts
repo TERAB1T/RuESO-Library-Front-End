@@ -360,6 +360,7 @@ export interface CampItemWithRelations extends CampItem {
 	campMaxValue: number | null;
 	workshopMaxFormId: string | null;
 	workshopMaxValue: number | null;
+	carryWeight: number | null;
 	learnConditions: LearnConditionGroup | null;
 	produces: ProducesMode[] | null;
 	display: DisplayInfo | null;
