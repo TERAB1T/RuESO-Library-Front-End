@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { prepareCampImage, atomicShopHandleImageError, pluralizeRu } from '@/utils';
 import type { ProducesMode, ProducesNode, ProducesItemNode, ProducesListNode } from '@/types';
 
@@ -13,10 +13,11 @@ const hasMultipleModes = computed(() => (props.produces?.length ?? 0) > 1);
 
 const activeModeIndex = ref(0);
 
-const activeMode = computed<ProducesMode | null>(() => {
-	if (!props.produces || props.produces.length === 0) return null;
-	return props.produces[Math.min(activeModeIndex.value, props.produces.length - 1)] ?? props.produces[0] ?? null;
+watch(() => props.produces, () => {
+	activeModeIndex.value = 0;
 });
+
+const activeMode = computed<ProducesMode | null>(() => props.produces?.[activeModeIndex.value] ?? null);
 
 const pick = (ru: string | null | undefined, en: string | null | undefined) =>
 	props.lang === 'ru' ? (ru || en) : (en || ru);
@@ -61,8 +62,8 @@ const collectLeaves = (nodes: ProducesNode[]): ProducesItemNode[] => {
 };
 
 interface DisplayGroup {
-	kind: 'group';
 	isUngrouped: boolean;
+	groupNumber: number | null;
 	label: string | null;
 	probability: number | null;
 	availabilityNote: string | null;
@@ -86,6 +87,18 @@ const mergeDuplicates = (items: ProducesItemNode[]): ProducesItemNode[] => {
 	return Array.from(map.values());
 };
 
+const prepareItems = (items: ProducesItemNode[]) =>
+	mergeDuplicates(items).sort((a, b) => b.probability - a.probability);
+
+const makeUngrouped = (items: ProducesItemNode[], label: string | null = null): DisplayGroup => ({
+	isUngrouped: true,
+	groupNumber: null,
+	label,
+	probability: null,
+	availabilityNote: null,
+	items: prepareItems(items),
+});
+
 const activeRows = computed<DisplayGroup[]>(() => {
 	if (!activeMode.value) return [];
 
@@ -93,14 +106,7 @@ const activeRows = computed<DisplayGroup[]>(() => {
 	const onlyNode = outcomes.length === 1 ? outcomes[0] : undefined;
 
 	if (onlyNode && isListNode(onlyNode)) {
-		return [{
-			kind: 'group',
-			isUngrouped: true,
-			label: null,
-			probability: null,
-			availabilityNote: null,
-			items: mergeDuplicates(collectLeaves(onlyNode.entries)).sort((a, b) => b.probability - a.probability)
-		}];
+		return [makeUngrouped(collectLeaves(onlyNode.entries))];
 	}
 
 	const groups: DisplayGroup[] = [];
@@ -111,33 +117,25 @@ const activeRows = computed<DisplayGroup[]>(() => {
 			looseItems.push(node);
 		} else if (isListNode(node)) {
 			groups.push({
-				kind: 'group',
 				isUngrouped: false,
+				groupNumber: null,
 				label: pick(node.ru, node.en) ?? null,
 				probability: node.probability,
 				availabilityNote: node.availabilityNote ? (pick(node.availabilityNote.ru, node.availabilityNote.en) ?? null) : null,
-				items: mergeDuplicates(collectLeaves(node.entries)).sort((a, b) => b.probability - a.probability)
+				items: prepareItems(collectLeaves(node.entries)),
 			});
 		}
 	}
 
-	groups.sort((a, b) => (b.probability ?? 0) - (a.probability ?? 0));
-
 	if (groups.length === 0) {
-		return looseItems.length > 0
-			? [{ kind: 'group', isUngrouped: true, label: null, probability: null, availabilityNote: null, items: mergeDuplicates(looseItems).sort((a, b) => b.probability - a.probability) }]
-			: [];
+		return looseItems.length > 0 ? [makeUngrouped(looseItems)] : [];
 	}
 
+	groups.sort((a, b) => (b.probability ?? 0) - (a.probability ?? 0));
+	groups.forEach((g, i) => { g.groupNumber = i + 1; });
+
 	if (looseItems.length > 0) {
-		groups.push({
-			kind: 'group',
-			isUngrouped: true,
-			label: props.lang === 'ru' ? 'Без группы' : 'Ungrouped',
-			probability: null,
-			availabilityNote: null,
-			items: mergeDuplicates(looseItems).sort((a, b) => b.probability - a.probability)
-		});
+		groups.push(makeUngrouped(looseItems, props.lang === 'ru' ? 'Без группы' : 'Ungrouped'));
 	}
 
 	return groups;
@@ -150,24 +148,33 @@ const formatPercent = (probability: number) => {
 
 const formatTimeSpan = (intervalHours: number): string => {
 	const totalSeconds = Math.round(intervalHours * 3600);
-	const minutes = Math.floor(totalSeconds / 60);
+	const hours = Math.floor(totalSeconds / 3600);
+	const minutes = Math.floor((totalSeconds % 3600) / 60);
 	const seconds = totalSeconds % 60;
 
+	const parts: string[] = [];
 	if (props.lang === 'ru') {
-		if (minutes > 0)
-			return seconds > 0 ? `${minutes} мин. ${seconds} сек.` : `${minutes} мин.`;
-		return `${seconds} сек.`;
+		if (hours > 0) parts.push(`${hours} ч.`);
+		if (minutes > 0) parts.push(`${minutes} мин.`);
+		if (seconds > 0) parts.push(`${seconds} сек.`);
+		return parts.length > 0 ? parts.join(' ') : '0 сек.';
 	}
 
-	if (minutes > 0)
-		return seconds > 0 ? `${minutes} min ${seconds} sec` : `${minutes} min`;
-	return `${seconds} sec`;
+	if (hours > 0) parts.push(`${hours} h`);
+	if (minutes > 0) parts.push(`${minutes} min`);
+	if (seconds > 0) parts.push(`${seconds} sec`);
+	return parts.length > 0 ? parts.join(' ') : '0 sec';
 };
 
 const formatInterval = (intervalHours: number | null): string | null => {
 	if (intervalHours == null || intervalHours <= 0) return null;
 
 	const timeStr = formatTimeSpan(intervalHours);
+	if (intervalHours > 1) {
+		return props.lang === 'ru'
+			? `По одному предмету раз в ${timeStr}`
+			: `One item every ${timeStr}`;
+	}
 	const perHour = Math.round(1 / intervalHours);
 
 	if (perHour === 1) {
@@ -187,13 +194,61 @@ const formatVendingSummary = (mode: ProducesMode): string | null => {
 	const timeStr = formatTimeSpan(mode.intervalHours);
 
 	return props.lang === 'ru'
-		? `При взаимодействии с автоматом игрок получает случайный предмет из списка ниже. Можно использовать не чаще чем раз в ${timeStr} Стоимость: ${mode.cost} ${pluralizeRu(mode.cost, ['крышка', 'крышки', 'крышек'])}.`
-		: `Interacting with this machine gives the player a random item from the list below. Can be used once every ${timeStr}. Cost: ${mode.cost} cap${mode.cost === 1 ? '' : 's'}.`;
+		? `Этот предмет — торговый автомат. При взаимодействии с ним игрок получает случайный предмет из списка ниже. Можно использовать не чаще чем раз в ${timeStr} Стоимость: ${mode.cost} ${pluralizeRu(mode.cost, ['крышка', 'крышки', 'крышек'])}.`
+		: `This item is a vending machine. Interacting with it gives the player a random item from the list below. Can be used once every ${timeStr}. Cost: ${mode.cost} cap${mode.cost === 1 ? '' : 's'}.`;
 };
 
+const vendingSummary = computed<string | null>(() =>
+	activeMode.value ? formatVendingSummary(activeMode.value) : null);
+
+const intervalText = computed<string | null>(() =>
+	activeMode.value ? formatInterval(activeMode.value.intervalHours) : null);
+
+const formatEveryPeriod = (intervalHours: number): string => {
+	const totalSeconds = Math.round(intervalHours * 3600);
+	const hours = Math.floor(totalSeconds / 3600);
+	const minutes = Math.floor((totalSeconds % 3600) / 60);
+	const seconds = totalSeconds % 60;
+
+	const partCount = [hours, minutes, seconds].filter(v => v > 0).length;
+
+	if (props.lang === 'ru') {
+		if (partCount === 1) {
+			if (hours > 0) return hours === 1 ? 'Каждый час' : `Каждые ${hours} ч.}`;
+			if (minutes > 0) return minutes === 1 ? 'Каждую минуту' : `Каждые ${minutes} мин.`;
+			return seconds === 1 ? 'Каждую секунду' : `Каждые ${seconds} сек.`;
+		}
+
+		const parts: string[] = [];
+		if (hours > 0) parts.push(`${hours} ч.`);
+		if (minutes > 0) parts.push(`${minutes} мин.`);
+		if (seconds > 0) parts.push(`${seconds} сек.`);
+		return `Каждые ${parts.join(' ')}`;
+	}
+
+	if (partCount === 1) {
+		if (hours > 0) return hours === 1 ? 'Every hour' : `Every ${hours}h`;
+		if (minutes > 0) return minutes === 1 ? 'Every minute' : `Every ${minutes}m`;
+		return seconds === 1 ? 'Every second' : `Every ${seconds}s`;
+	}
+
+	const parts: string[] = [];
+	if (hours > 0) parts.push(`${hours}h`);
+	if (minutes > 0) parts.push(`${minutes}m`);
+	if (seconds > 0) parts.push(`${seconds}s`);
+	return `Every ${parts.join(' ')}`;
+};
+
+const collectorPeriod = computed<string | null>(() => {
+	if (!activeMode.value) return null;
+	if (activeMode.value.cost != null) return null;
+	if (activeMode.value.intervalHours == null || activeMode.value.intervalHours <= 0) return null;
+	return formatEveryPeriod(activeMode.value.intervalHours);
+});
+
 const t = computed(() => props.lang === 'ru'
-	? { title: 'Производит', mode: (i: number) => `Режим ${i + 1}`, colItem: 'Предмет', colType: 'Тип', colCount: 'Кол-во', colChance: 'Шанс', group: (n: number) => `Группа ${n}` }
-	: { title: 'Produces', mode: (i: number) => `Mode ${i + 1}`, colItem: 'Item', colType: 'Type', colCount: 'Qty', colChance: 'Chance', group: (n: number) => `Group ${n}` }
+	? { title: vendingSummary.value ? 'Торговый автомат' : 'Сборщик', mode: (i: number) => `Режим ${i + 1}`, colItem: 'Предмет', colType: 'Тип', colCount: 'Кол-во', colChance: 'Шанс', group: (n: number) => `Группа ${n}` }
+	: { title: vendingSummary.value ? 'Vending Machine' : 'Collector', mode: (i: number) => `Mode ${i + 1}`, colItem: 'Item', colType: 'Type', colCount: 'Qty', colChance: 'Chance', group: (n: number) => `Group ${n}` }
 );
 
 </script>
@@ -214,13 +269,19 @@ const t = computed(() => props.lang === 'ru'
 		</ul>
 
 		<div v-if="activeMode" class="produces-summary">
-			<template v-if="formatVendingSummary(activeMode)">
-				<span class="produces-summary-vending">{{ formatVendingSummary(activeMode) }}</span>
+			<template v-if="vendingSummary">
+				<span class="produces-summary-vending">{{ vendingSummary }}</span>
+			</template>
+			<template v-else-if="collectorPeriod">
+				<span class="produces-summary-vending">
+					<template v-if="lang === 'ru'">Этот предмет — сборщик. <strong>{{ collectorPeriod }}</strong> он производит по одному предмету из списка ниже.</template>
+					<template v-else>This item is a collector. <strong>{{ collectorPeriod }}</strong>, it produces one item from the list below.</template>
+				</span>
 			</template>
 			<template v-else>
 				<span class="produces-summary-name">{{ pick(activeMode.ru, activeMode.en) }}:</span>
-				<span v-if="formatInterval(activeMode.intervalHours)" class="produces-summary-interval">
-					{{ formatInterval(activeMode.intervalHours) }}
+				<span v-if="intervalText" class="produces-summary-interval">
+					{{ intervalText }}
 				</span>
 			</template>
 		</div>
@@ -239,7 +300,7 @@ const t = computed(() => props.lang === 'ru'
 					<tr v-if="!(group.isUngrouped && activeRows.length === 1)" class="produces-row produces-row-group-header">
 						<td colspan="3" class="produces-td-group-label">
 							<template v-if="!group.isUngrouped">
-								{{t.group(activeRows.slice(0, index + 1).filter(g => !g.isUngrouped).length)}}
+								{{ t.group(group.groupNumber ?? 0) }}
 								<span v-if="group.label" class="produces-group-name">— {{ group.label }}</span>
 							</template>
 							<template v-else>
@@ -344,10 +405,6 @@ const t = computed(() => props.lang === 'ru'
 .produces-group-name {
 	font-weight: 400;
 	color: #a1a1aa;
-}
-
-.produces-row-nested .produces-td-item {
-	padding-left: 1.5rem;
 }
 
 .produces-td-item {

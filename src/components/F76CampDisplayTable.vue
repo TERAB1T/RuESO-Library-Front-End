@@ -16,17 +16,11 @@ const pick = (ru: string | null | undefined, en: string | null | undefined) =>
 const t = computed(() => props.lang === 'ru'
 	? {
 		title: 'Витрина',
-		intro: 'Этот предмет — витрина. В нее можно поместить:',
-		excludedIntro: 'выставить',
-		colItem: 'Категория',
-		colCount: 'Макс. количество'
+		intro: 'Этот предмет — витрина. В нее можно поместить:'
 	}
 	: {
 		title: 'Display',
-		intro: 'This item is a display case. It can hold:',
-		excludedIntro: 'display',
-		colItem: 'Category',
-		colCount: 'Max amount'
+		intro: 'This item is a display case. It can hold:'
 	}
 );
 </script>
