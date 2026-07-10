@@ -144,6 +144,8 @@ const activeRows = computed<DisplayGroup[]>(() => {
 
 const formatPercent = (probability: number) => {
 	const percent = probability * 100;
+	if (props.lang === 'ru')
+		return `${(Math.round(percent * 100) / 100).toLocaleString('ru-RU')}%`;
 	return `${Math.round(percent * 100) / 100}%`;
 };
 
@@ -195,8 +197,8 @@ const formatVendingSummary = (mode: ProducesMode): string | null => {
 	const timeStr = formatTimeSpan(mode.intervalHours);
 
 	return props.lang === 'ru'
-		? `Этот предмет — торговый автомат. При взаимодействии с ним игрок получает случайный предмет из списка ниже. Можно использовать не чаще чем раз в ${timeStr} Стоимость: ${mode.cost} ${pluralizeRu(mode.cost, ['крышка', 'крышки', 'крышек'])}.`
-		: `This item is a vending machine. Interacting with it gives the player a random item from the list below. Can be used once every ${timeStr}. Cost: ${mode.cost} cap${mode.cost === 1 ? '' : 's'}.`;
+		? `Этот объект — торговый автомат. При взаимодействии с ним игрок получает случайный предмет из списка ниже. Можно использовать не чаще чем раз в ${timeStr} Стоимость: ${mode.cost} ${pluralizeRu(mode.cost, ['крышка', 'крышки', 'крышек'])}.`
+		: `This object is a vending machine. Interacting with it gives the player a random item from the list below. Can be used once every ${timeStr}. Cost: ${mode.cost} cap${mode.cost === 1 ? '' : 's'}.`;
 };
 
 const vendingSummary = computed<string | null>(() =>
@@ -285,8 +287,8 @@ const t = computed(() => props.lang === 'ru'
 			</template>
 			<template v-else-if="collectorPeriod">
 				<span class="produces-summary-vending">
-					<template v-if="lang === 'ru'">Этот предмет — сборщик. {{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong> он производит по одному предмету из списка ниже.</template>
-					<template v-else>This item is a collector. {{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong>, it produces one item from the list below.</template>
+					<template v-if="lang === 'ru'">Этот объект — сборщик. {{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong> он производит по одному предмету из списка ниже.</template>
+					<template v-else>This object is a collector. {{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong>, it produces one item from the list below.</template>
 					<span v-if="carryWeightText">{{ carryWeightText }}</span>
 				</span>
 			</template>

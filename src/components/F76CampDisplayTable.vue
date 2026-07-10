@@ -16,11 +16,11 @@ const pick = (ru: string | null | undefined, en: string | null | undefined) =>
 const t = computed(() => props.lang === 'ru'
 	? {
 		title: 'Витрина',
-		intro: 'Этот предмет — витрина. В нее можно поместить:'
+		intro: 'Этот объект — витрина. В нее можно поместить:'
 	}
 	: {
 		title: 'Display',
-		intro: 'This item is a display case. It can hold:'
+		intro: 'This object is a display case. It can hold:'
 	}
 );
 </script>

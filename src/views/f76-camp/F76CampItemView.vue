@@ -10,6 +10,7 @@ import F76CampProducesTable from '@/components/F76CampProducesTable.vue';
 import F76CampRecipeVariants from '@/components/F76CampRecipeVariants.vue';
 import F76CampRecipeComponents from '@/components/F76CampRecipeComponents.vue';
 import F76CampDisplayTable from '@/components/F76CampDisplayTable.vue';
+import F76CampPowerInfo from '@/components/F76CampPowerInfo.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
@@ -275,6 +276,15 @@ const maximumEntries = computed(() => {
 	return entries;
 });
 
+const requiresPowerDisplay = computed(() => {
+	if (!item.value.requiresPower) return 'Нет';
+	return item.value.powerRequired > 0 ? String(item.value.powerRequired) : 'Да';
+});
+
+const powerGeneratedDisplay = computed(() => {
+	return item.value.powerGenerated > 0 ? item.value.powerGenerated : null;
+});
+
 watch(() => item.value.mainImage, () => {
 	initLightbox();
 });
@@ -345,6 +355,7 @@ onBeforeRouteLeave(async () => {
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="ru" />
 							<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" lang="ru" />
 							<F76CampDisplayTable :display="item.display" lang="ru" />
+							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="ru" />
 							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="ru" />
 						</div>
 
@@ -361,6 +372,7 @@ onBeforeRouteLeave(async () => {
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="en" />
 							<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" lang="en" />
 							<F76CampDisplayTable :display="item.display" lang="en" />
+							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="en" />
 							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="en" />
 						</div>
 
@@ -436,6 +448,14 @@ onBeforeRouteLeave(async () => {
 												{{ entry.label }}: <strong>{{ entry.value != null ? entry.value : '∞' }}</strong>
 											</span>
 										</div>
+									</div>
+									<div v-if="!powerGeneratedDisplay" class="card-element">
+										<div class="card-subtitle">Требует энергию</div>
+										{{ requiresPowerDisplay }}
+									</div>
+									<div v-if="powerGeneratedDisplay" class="card-element">
+										<div class="card-subtitle">Производит энергию</div>
+										{{ powerGeneratedDisplay }}
 									</div>
 									<div class="card-element">
 										<div class="card-subtitle">Form ID</div>

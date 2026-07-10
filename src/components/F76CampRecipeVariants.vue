@@ -59,10 +59,10 @@ const prefetchItem = (formId: string) => usePrefetchCampItem(queryClient, formId
 
 		<div class="recipe-variants-subtitle">
 			<template v-if="lang === 'ru'">
-				Этот предмет относится к группе «<strong>{{ recipeName }}</strong>». В нее также {{ recipeItems.length === 1 ? 'входит' : 'входят' }}:
+				Этот объект относится к группе «<strong>{{ recipeName }}</strong>». В нее также {{ recipeItems.length === 1 ? 'входит' : 'входят' }}:
 			</template>
 			<template v-else>
-				This item belongs to the “<strong>{{ recipeName }}</strong>” group. It also includes:
+				This object belongs to the “<strong>{{ recipeName }}</strong>” group. It also includes:
 			</template>
 		</div>
 

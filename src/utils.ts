@@ -27,8 +27,8 @@ export const prepareURL = (url: string) => {
  * @param str The string to convert the first letter of to uppercase.
  * @returns The string with the first letter converted to uppercase, or an empty string if the input string is empty or null.
  */
-export const uppercaseFirstLetter = (str: string) =>
-  str ? str[0].toUpperCase() + str.slice(1) : '';
+export const uppercaseFirstLetter = (str: string): string =>
+	str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
 
 
 /**
@@ -36,8 +36,8 @@ export const uppercaseFirstLetter = (str: string) =>
  * @param str The string to convert the first letter of to lowercase.
  * @returns The string with the first letter converted to lowercase, or an empty string if the input string is empty or null.
  */
-export const lowercaseFirstLetter = (str: string) =>
-  str ? str[0].toLowerCase() + str.slice(1) : '';
+export const lowercaseFirstLetter = (str: string): string =>
+	str ? str.charAt(0).toLowerCase() + str.slice(1) : '';
 
 /**
  * Replaces the ESO UI icon URL with a PNG image URL.
@@ -206,8 +206,8 @@ export const formatDateToMonthYear = (dateString: string): string => {
  * @returns A string in the format "YYYY-MM-DD 00:00", where [YYYY] is the year, [MM] is the month, and [DD] is the day.
  */
 export const formatDateTime = (input: string): string => {
-  const [dd, mm, yyyy] = input.split(".");
-  return `${yyyy}-${mm}-${dd} 00:00`;
+	const [dd, mm, yyyy] = input.split(".");
+	return `${yyyy}-${mm}-${dd} 00:00`;
 }
 
 const atomicShopLocalStorageKey = 'atomic-shop-sort-order';
@@ -288,9 +288,9 @@ export const atomicShopHandleImageError = (event: Event) => {
 
 
 export const joinWithAnd = (arr: string[], separator?: string): string => {
-  if (arr.length === 0) return '';
-  if (arr.length === 1) return arr[0] || '';
-  return arr.slice(0, -1).join(', ') + (separator ? ` ${separator} ` : ' и ') + arr[arr.length - 1];
+	if (arr.length === 0) return '';
+	if (arr.length === 1) return arr[0] || '';
+	return arr.slice(0, -1).join(', ') + (separator ? ` ${separator} ` : ' и ') + arr[arr.length - 1];
 }
 
 /**
@@ -308,3 +308,14 @@ export const pluralizeRu = (count: number, forms: [string, string, string]): str
 
 	return forms[2];
 };
+
+/**
+ * Converts a distance in Creation Engine game units to meters, rounded to 1 decimal place.
+ *
+ * @param units - Distance in game units.
+ * @returns Distance in meters, rounded to 1 decimal place.
+ */
+export const gameUnitsToMeters = (units: number): number => {
+	const UNITS_PER_METER = 1 / 0.0142875; // ≈ 69.99 meters
+	return Math.round((units / UNITS_PER_METER) * 10) / 10;
+}

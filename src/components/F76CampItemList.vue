@@ -214,13 +214,6 @@ onBeforeUnmount(() => {
 		<h2 class="mb-4">Предметы C.A.M.P. Fallout 76</h2>
 	</template>
 
-	<div class="alert alert-danger camp-wip-card" role="alert">
-		<div class="pts-badge-wrapper" style="top:calc(50% - 20px);">
-			<div class="pts-badge">WIP</div>
-		</div>
-		<div style="margin-left:55px;">Раздел находится в разработке. Подробная информация о каждом предмете будет добавлена позже.</div>
-	</div>
-
 	<div class="row g-4 mb-2">
 		<div class="col-12 col-md-8">
 			<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter(($event.target as HTMLInputElement).value)">
