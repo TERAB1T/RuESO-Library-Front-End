@@ -353,9 +353,9 @@ onBeforeRouteLeave(async () => {
 							<div class="book-main" v-html="parsedTextRu"></div>
 
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="ru" />
+							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="ru" />
 							<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" lang="ru" />
 							<F76CampDisplayTable :display="item.display" lang="ru" />
-							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="ru" />
 							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="ru" />
 						</div>
 
@@ -370,9 +370,9 @@ onBeforeRouteLeave(async () => {
 							<div class="book-main" v-html="parsedTextEn"></div>
 
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="en" />
+							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="en" />
 							<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" lang="en" />
 							<F76CampDisplayTable :display="item.display" lang="en" />
-							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="en" />
 							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="en" />
 						</div>
 
