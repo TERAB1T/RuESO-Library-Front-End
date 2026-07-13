@@ -197,8 +197,8 @@ const formatVendingSummary = (mode: ProducesMode): string | null => {
 	const timeStr = formatTimeSpan(mode.intervalHours);
 
 	return props.lang === 'ru'
-		? `Этот объект — торговый автомат. При взаимодействии с ним игрок получает случайный предмет из списка ниже. Можно использовать не чаще чем раз в ${timeStr} Стоимость: ${mode.cost} ${pluralizeRu(mode.cost, ['крышка', 'крышки', 'крышек'])}.`
-		: `This object is a vending machine. Interacting with it gives the player a random item from the list below. Can be used once every ${timeStr}. Cost: ${mode.cost} cap${mode.cost === 1 ? '' : 's'}.`;
+		? `При взаимодействии с этим объектом игрок получает случайный предмет из списка ниже. Можно использовать не чаще чем раз в ${timeStr} Стоимость: ${mode.cost} ${pluralizeRu(mode.cost, ['крышка', 'крышки', 'крышек'])}.`
+		: `Interacting with this object gives the player a random item from the list below. Can be used once every ${timeStr}. Cost: ${mode.cost} cap${mode.cost === 1 ? '' : 's'}.`;
 };
 
 const vendingSummary = computed<string | null>(() =>
@@ -260,8 +260,8 @@ const carryWeightText = computed<string | null>(() => {
 });
 
 const t = computed(() => props.lang === 'ru'
-	? { title: vendingSummary.value ? 'Торговый автомат' : 'Сборщик', mode: (i: number) => `Режим ${i + 1}`, colItem: 'Предмет', colType: 'Тип', colCount: 'Кол-во', colChance: 'Шанс', group: (n: number) => `Группа ${n}` }
-	: { title: vendingSummary.value ? 'Vending Machine' : 'Collector', mode: (i: number) => `Mode ${i + 1}`, colItem: 'Item', colType: 'Type', colCount: 'Qty', colChance: 'Chance', group: (n: number) => `Group ${n}` }
+	? { title: vendingSummary.value ? 'Взаимодействие' : 'Производство', mode: (i: number) => `Режим ${i + 1}`, colItem: 'Предмет', colType: 'Тип', colCount: 'Кол-во', colChance: 'Шанс', group: (n: number) => `Группа ${n}` }
+	: { title: vendingSummary.value ? 'Interaction' : 'Production', mode: (i: number) => `Mode ${i + 1}`, colItem: 'Item', colType: 'Type', colCount: 'Qty', colChance: 'Chance', group: (n: number) => `Group ${n}` }
 );
 
 </script>
@@ -287,8 +287,8 @@ const t = computed(() => props.lang === 'ru'
 			</template>
 			<template v-else-if="collectorPeriod">
 				<span class="produces-summary-vending">
-					<template v-if="lang === 'ru'">Этот объект — сборщик. {{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong> он производит по одному предмету из списка ниже.</template>
-					<template v-else>This object is a collector. {{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong>, it produces one item from the list below.</template>
+					<template v-if="lang === 'ru'">{{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong> этот объект производит по одному предмету из списка ниже.</template>
+					<template v-else>{{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong>, this object produces one item from the list below.</template>
 					<span v-if="carryWeightText">{{ carryWeightText }}</span>
 				</span>
 			</template>
