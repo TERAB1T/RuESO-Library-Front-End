@@ -76,6 +76,9 @@ onMounted(async () => {
 							</li>
 						</ul>
 					</li>
+					<li class="nav-item mx-2">
+						<RouterLink activeClass="active" class="nav-link py-2 px-2" to="/partners" exact>Партнеры сайта</RouterLink>
+					</li>
 				</ul>
 			</div>
 
