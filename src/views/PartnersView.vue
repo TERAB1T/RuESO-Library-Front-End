@@ -46,13 +46,13 @@ const partners: Partner[] = [
 		image: '/public/img/partner-f76hub.webp',
 		category: 'Fallout',
 	},
-	/*{
-		name: 'Партнер 2',
-		description: 'Бла бла бла бла бла бла бла бла бла бла бла бла бла бла бла бла бла бла бла бла бла бла.',
-		url: 'https://example.com',
-		image: 'https://placehold.co/728x300',
+	{
+		name: 'Атомная хатка',
+		description: 'Графика и новости Fallout 76 под одной крышей!',
+		url: 'https://t.me/xata_skrayu',
+		image: '/public/img/partner-atomhut.webp',
 		category: 'Fallout',
-	},*/
+	},
 ];
 </script>
 
