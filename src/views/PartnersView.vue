@@ -40,6 +40,20 @@ interface Partner {
 
 const partners: Partner[] = [
 	{
+		name: 'The Elder Scrolls Wiki',
+		description: 'Крупнейшее русскоязычное хранилище знаний о вселенной Древних свитков.',
+		url: 'https://elderscrolls.fandom.com/ru/wiki/The_Elder_Scrolls_Wiki',
+		image: '/public/img/partner-teswiki.webp',
+		category: 'The Elder Scrolls',
+	},
+	{
+		name: 'Artaeum Library',
+		description: 'Официальный канал TES Wiki, карманный путеводитель и живое комьюнити Древних свитков.',
+		url: 'https://t.me/Artaeum',
+		image: '/public/img/partner-artaeum.webp',
+		category: 'The Elder Scrolls',
+	},
+	{
 		name: 'F76 HUB',
 		description: 'Крупнейший русскоязычный Discord по Fallout 76: общение, рейды, трейд, помощь новичкам и новости.',
 		url: 'https://discord.gg/hub76',
@@ -110,7 +124,6 @@ const partners: Partner[] = [
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: linear-gradient(135deg, #4e4e4e 0%, #383838 100%);
 	line-height: 0;
 	will-change: transform;
 }
