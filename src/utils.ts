@@ -100,6 +100,10 @@ export const parsePseudoCode = (text: string): string => {
 				break;
 			case '0d5820':
 				colorCode = '75ff9f';
+				break;
+			case '0000ff':
+				colorCode = '86c6ff';
+				break;
 		}
 
 		return `<span style="color: #${colorCode}">${text}</span>`;
