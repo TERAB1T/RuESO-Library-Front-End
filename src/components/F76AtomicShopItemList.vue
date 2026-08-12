@@ -110,9 +110,11 @@ watch(
 	(newFilter) => {
 		state.filter = (newFilter as string | undefined) || '';
 
-		const filterInput = document.getElementById('library-filter') as HTMLInputElement;
-		if (filterInput && document.activeElement !== filterInput) {
-			filterInput.value = state.filter || '';
+		if (!import.meta.env.SSR) {
+			const filterInput = document.getElementById('library-filter') as HTMLInputElement;
+			if (filterInput && document.activeElement !== filterInput) {
+				filterInput.value = state.filter || '';
+			}
 		}
 	},
 	{ immediate: true }
