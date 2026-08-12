@@ -3,7 +3,7 @@ import { reactive, watch, watchEffect, onServerPrefetch } from 'vue';
 import { useRoute } from 'vue-router';
 import BookCategories from '@/components/ESOBookCategories.vue';
 import BookList from '@/components/ESOBookList.vue';
-import { useHead } from '@unhead/vue';
+import { useHead, injectHead } from '@unhead/vue';
 import { prepareIcon } from '@/utils';
 import { useFetchCategories, useFetchPatches } from '@/composables/useApi';
 import { formatDateToMonthYear, uppercaseFirstLetter } from '@/utils';
@@ -11,6 +11,7 @@ import { formatDateToMonthYear, uppercaseFirstLetter } from '@/utils';
 import type { Category, Patch } from '@/types';
 
 const route = useRoute();
+const head = injectHead();
 
 const state = reactive({
 	currentCategoryId: Number(route.params.categoryId) ?? -1,
@@ -65,7 +66,7 @@ const updateHead = () => {
 		link: [
 			{ rel: 'canonical', href: metaLink },
 		]
-	});
+	}, { head });
 }
 
 const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCategories();

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
-import { useHead } from '@unhead/vue';
+import { useHead, injectHead } from '@unhead/vue';
 import { prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
 import { useFetchAtomicShopItem, useFetchAtomicShopCategories, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory } from '@/composables/useApi';
 import F76AtomicShopCampUnlocked from '@/components/F76AtomicShopCampUnlocked.vue';
@@ -17,6 +17,7 @@ import 'photoswipe/style.css';
 import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbItem } from '@/types';
 
 const route = useRoute();
+const head = injectHead();
 
 let lightbox: PhotoSwipeLightbox | null = null;
 let BootstrapModal: any = null;
@@ -119,7 +120,7 @@ const updateMetaTags = (itemData: AtomicShopItem) => {
 		script: [
 			{
 				type: 'application/ld+json',
-				children: JSON.stringify({
+				innerHTML: JSON.stringify({
 					"@context": "https://schema.org",
 					"@type": "CreativeWork",
 					"name": itemData.nameRu,
@@ -132,10 +133,10 @@ const updateMetaTags = (itemData: AtomicShopItem) => {
 			},
 			{
 				type: 'application/ld+json',
-				children: JSON.stringify(breadcrumbSchema)
+				innerHTML: JSON.stringify(breadcrumbSchema)
 			}
 		]
-	});
+	}, { head });
 }
 
 const initLightbox = () => {

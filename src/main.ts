@@ -6,12 +6,13 @@ import {
 	VueQueryPlugin,
 	hydrate,
 } from '@tanstack/vue-query';
-import { createHead } from '@unhead/vue';
+import { createHead as createClientHead } from '@unhead/vue/client';
+import { createHead as createServerHead } from '@unhead/vue/server';
 
 export function createApp(initialState = {}) {
 	const app = createSSRApp(App);
 
-	const head = createHead();
+	const head = import.meta.env.SSR ? createServerHead({ disableDefaults: true }) : createClientHead();
 	app.use(head);
 
 	const router = createAppRouter();

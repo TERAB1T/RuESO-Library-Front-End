@@ -3,12 +3,13 @@ import { reactive, watch, watchEffect, onServerPrefetch } from 'vue';
 import { useRoute } from 'vue-router';
 import F76AtomicShopCategories from '@/components/F76AtomicShopCategories.vue';
 import F76AtomicShopItemList from '@/components/F76AtomicShopItemList.vue';
-import { useHead } from '@unhead/vue';
+import { useHead, injectHead } from '@unhead/vue';
 import { useFetchAtomicShopCategories, useFetchAtomicShopUpdated } from '@/composables/useApi';
 
 import type { AtomicShopCategoryWithSubcategories } from '@/types';
 
 const route = useRoute();
+const head = injectHead();
 
 const state = reactive({
 	currentCategoryFormId: route.params.categoryFormId ?? '-1',
@@ -63,7 +64,7 @@ const updateHead = () => {
 		link: [
 			{ rel: 'canonical', href: metaLink },
 		]
-	});
+	}, { head });
 };
 
 const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchAtomicShopCategories();

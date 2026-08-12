@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref } from 'vue';
-import { useHead } from '@unhead/vue';
+import { useHead, injectHead } from '@unhead/vue';
 import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
 import { useFetchBook, useFetchCategories, useFetchPatches, usePrefetchBook } from '@/composables/useApi';
 import Breadcrumb from '@/components/Breadcrumb.vue';
@@ -14,6 +14,7 @@ import type { Book, BreadcrumbItem } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
+const head = injectHead();
 
 const currentBookId = computed(() => Number(route.params.bookId) || 1);
 
@@ -104,7 +105,7 @@ const updateMetaTags = (bookData: Book) => {
 		script: [
 			{
 				type: 'application/ld+json',
-				children: JSON.stringify({
+				innerHTML: JSON.stringify({
 					"@context": "https://schema.org",
 					"@type": "CreativeWork",
 					"name": bookData.titleRu,
@@ -119,10 +120,10 @@ const updateMetaTags = (bookData: Book) => {
 			},
 			{
 				type: 'application/ld+json',
-				children: JSON.stringify(breadcrumbSchema)
+				innerHTML: JSON.stringify(breadcrumbSchema)
 			}
 		]
-	});
+	}, { head });
 }
 
 watchEffect(() => {
