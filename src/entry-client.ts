@@ -1,4 +1,3 @@
-import "bootstrap";
 import './assets/main.scss';
 import { createApp } from "./main";
 
