@@ -11,12 +11,12 @@ export async function render(_url: string) {
 	await router.push(_url);
 	await router.isReady();
 
-	const ctx = {};
+	const ctx: { modules?: Set<string> } = {};
 	const html = await renderToString(app, ctx);
 
 	const vueQueryState = { toJSON: () => dehydrate(queryClient) };
 
 	const payload = await renderSSRHead(head);
 
-	return [html, payload, vueQueryState];
+	return [html, payload, vueQueryState, ctx.modules ?? new Set<string>()];
 }

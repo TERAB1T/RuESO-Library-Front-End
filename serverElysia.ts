@@ -13,6 +13,25 @@ const resolve = (p: string) => path.resolve(__dirname, p);
 const templateHtml = await fs.readFile(resolve("dist/client/index.html"), "utf-8");
 const port = process.env.PORT || 6173;
 
+let ssrManifest: Record<string, string[]> = {};
+try {
+	ssrManifest = JSON.parse(await fs.readFile(resolve("dist/client/.vite/ssr-manifest.json"), "utf-8"));
+} catch {
+	console.log("SSR manifest not found, CSS for code-split chunks won't be preloaded in the initial HTML");
+}
+
+function renderCssLinks(modules: Set<string>, manifest: Record<string, string[]>): string {
+	const files = new Set<string>();
+
+	for (const id of modules) {
+		for (const file of manifest[id] ?? []) {
+			if (file.endsWith(".css")) files.add(file);
+		}
+	}
+
+	return Array.from(files).map(file => `<link rel="stylesheet" href="${file}">`).join("");
+}
+
 const ssrCache = new LRUCache<string, string>({
 	max: 500,
 	ttl: 1000 * 60 * 1, // 1 minute
@@ -50,9 +69,12 @@ new Elysia()
 			template = templateHtml;
 			render = (await import("./dist/server/entry-server.js")).render;
 
-			const [rendered, payload, vueQueryState] = await render(url);
+			const [rendered, payload, vueQueryState, modules] = await render(url);
 
-			const headTags = payload?.headTags ?? '';
+			const cssLinks = renderCssLinks(modules, ssrManifest);
+			payload.headTags = `${payload?.headTags ?? ''}${cssLinks}`;
+
+			const headTags = payload.headTags;
 			if (headTags.includes("Страница не найдена")) {
 				set.status = 404;
 			}
