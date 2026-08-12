@@ -121,7 +121,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 	if (!textFilter || textFilter.length < 3) {
 		filter.value = '';
 	} else {
-		filter.value = encodeURI(textFilter);
+		filter.value = textFilter;
 	}
 
 	if (currentPage.value !== 1) {
@@ -132,7 +132,8 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 
 <template>
 	<template v-if="state.currentCategory.id > 0 && categoryInfo?.titleRu">
-		<h2>Библиотека ESO: {{ lowercaseFirstLetter(categoryInfo?.titleRu) }}<div class="h2-subtitle">{{ categoryInfo?.titleEn }}</div></h2>
+		<h2>Библиотека ESO: {{ lowercaseFirstLetter(categoryInfo?.titleRu) }}<div class="h2-subtitle">{{ categoryInfo?.titleEn }}</div>
+		</h2>
 
 		<div class="alert alert-dark" role="alert">
 			{{ categoryInfo?.descRu }}
@@ -198,14 +199,14 @@ h2 {
 	& .h2-subtitle {
 		color: #ffffff79;
 		font-size: 1.3rem;
-		margin-top:10px;
+		margin-top: 10px;
 	}
 }
 
 h4 {
 	margin-top: 20px;
 	border-bottom: #ffffff79 1px solid;
-	padding-bottom:10px;
+	padding-bottom: 10px;
 }
 
 .booklist-right {

@@ -112,7 +112,7 @@ watch(
 
 		const filterInput = document.getElementById('library-filter') as HTMLInputElement;
 		if (filterInput && document.activeElement !== filterInput) {
-			filterInput.value = state.filter ? decodeURI(state.filter) : '';
+			filterInput.value = state.filter || '';
 		}
 	},
 	{ immediate: true }
@@ -145,7 +145,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 		state.filter = '';
 		delete newQuery.filter;
 	} else {
-		state.filter = encodeURI(textFilter);
+		state.filter = textFilter;
 		newQuery.filter = state.filter;
 	}
 
@@ -196,7 +196,7 @@ const enableTooltips = async () => {
 onMounted(async () => {
 	const filterInput = document.getElementById('library-filter') as HTMLInputElement;
 	if (filterInput && state.filter) {
-		filterInput.value = decodeURI(state.filter);
+		filterInput.value = state.filter;
 	}
 
 	await enableTooltips();
