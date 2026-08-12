@@ -102,10 +102,5 @@ export function highlight(
 
 	const re = new RegExp(pattern, flag);
 
-	let node = root.firstChild;
-	while (node) {
-		const next = node.nextSibling;
-		highlightText(node, re, options.element || 'span', options.className || 'highlight');
-		node = next;
-	}
+	highlightText(root, re, options.element || 'span', options.className || 'highlight');
 }
