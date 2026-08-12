@@ -1,5 +1,5 @@
 import { computed, type Ref, type ComputedRef } from 'vue';
-import { joinWithAnd } from '@/utils';
+import { joinWithAnd, escapeHtml } from '@/utils';
 
 import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbItem } from '@/types';
 
@@ -21,9 +21,9 @@ const parseItemWithPrice = (itemString: string): ParsedItem => {
 
 const formatItem = (parsed: ParsedItem, withPrice: boolean = true): string => {
 	const priceHtml = parsed.price && withPrice
-		? ` (<span class="support-item-price">${parsed.price}</span>)`
+		? ` (<span class="support-item-price">${escapeHtml(parsed.price)}</span>)`
 		: '';
-	return `<span class="support-item-name">${parsed.name}</span>${priceHtml}`;
+	return `<span class="support-item-name">${escapeHtml(parsed.name)}</span>${priceHtml}`;
 };
 
 const parseBundles = (bundlesString: string): ParsedItem[] => {

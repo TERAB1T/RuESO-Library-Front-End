@@ -1,4 +1,34 @@
 /**
+ * Escapes HTML-sensitive characters so a string is safe to interpolate into
+ * an HTML attribute value or as element text content.
+ * @param str The string to escape.
+ * @returns The escaped string.
+ */
+export const escapeHtml = (str: string): string => {
+	if (!str) return '';
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
+}
+
+/**
+ * Escapes only double quotes, so a string can't break out of a
+ * double-quoted HTML attribute. Unlike escapeHtml(), this leaves
+ * &, <, > untouched — for text that may already contain its own
+ * HTML entities (e.g. book text using &lt;/&gt; for literal angle
+ * brackets), where full escaping would double-encode them.
+ * @param str The string to escape.
+ * @returns The escaped string.
+ */
+export const escapeAttrQuotes = (str: string): string => {
+	if (!str) return '';
+	return str.replace(/"/g, '&quot;');
+}
+
+/**
  * Prepares a URL based on the environment and platform.
  *
  * - In a server-side rendering (SSR) environment:
@@ -110,13 +140,13 @@ export const parsePseudoCode = (text: string): string => {
 	}
 
 	const replaceAntiquity = (match: string, icon: string, text: string): string =>
-		`<h3><img src="${prepareIcon(icon)}" style="margin:10px 0;" alt="${text}">  ${text}</h3>`;
+		`<h3><img src="${escapeHtml(prepareIcon(icon))}" style="margin:10px 0;" alt="${escapeAttrQuotes(text)}">  ${text}</h3>`;
 
 	const replaceHireling = (match: string, icon: string, text: string): string =>
-		`<h5><img src="${prepareIcon(icon)}" width="40" alt="${text}">  ${text}</h5>`;
+		`<h5><img src="${escapeHtml(prepareIcon(icon))}" width="40" alt="${escapeAttrQuotes(text)}">  ${text}</h5>`;
 
 	const replaceImage = (match: string, image: string, width: string, height: string): string =>
-		`<img src="${prepareIcon(image)}" style="width: ${width}px; height: ${height}px;">`;
+		`<img src="${escapeHtml(prepareIcon(image))}" style="width: ${escapeHtml(width)}px; height: ${escapeHtml(height)}px;">`;
 
 	text = text
 		.replace(/\[BR\]/gi, '<br>')
