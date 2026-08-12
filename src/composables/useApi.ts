@@ -6,6 +6,7 @@ import type {
 	Book,
 	Category,
 	Patch,
+	PatchBooksExport,
 	LastModified,
 	AtomicShopCategoryWithSubcategories,
 	AtomicShopItem,
@@ -17,6 +18,7 @@ import type {
 } from '@/types';
 import type { UseQueryReturnType } from '@tanstack/vue-query'
 import type { ComputedRef, Ref } from 'vue';
+import { computed } from 'vue';
 
 const DEBOUNCE_DELAY = 200;
 const DEFAULT_STALE_TIME = 5 * 60 * 1000;
@@ -77,6 +79,15 @@ export const useFetchPatches = (): UseQueryReturnType<Patch[], Error> => {
 	return useQuery({
 		queryKey: ['patches'],
 		queryFn: () => fetchApi(prepareURL('/api/library/patches')),
+		staleTime: Infinity,
+	});
+}
+
+export const useFetchPatchBooksExport = (patchVersion: ComputedRef<string>): UseQueryReturnType<PatchBooksExport, Error> => {
+	return useQuery({
+		queryKey: ['patches', 'export', patchVersion],
+		queryFn: () => fetchApi(prepareURL(`/api/library/patches/${patchVersion.value}/export`)),
+		enabled: computed(() => patchVersion.value !== '-1'),
 		staleTime: Infinity,
 	});
 }

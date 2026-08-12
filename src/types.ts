@@ -44,6 +44,11 @@ export interface LastModified {
 	lastModified: string;
 }
 
+export interface PatchBooksExport extends Patch {
+	books: Book[];
+	categories: Pick<Category, 'id' | 'titleRu'>[];
+}
+
 export interface GlossaryGameCheckbox {
 	id: string;
 	name: string;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { reactive, watch, computed, watchEffect, ref } from 'vue';
-import { useFetchBooks, useFetchCategories, useFetchPatches } from '@/composables/useApi';
+import { reactive, watch, computed, watchEffect } from 'vue';
+import { useFetchPatchBooksExport, useFetchPatches } from '@/composables/useApi';
 import { prepareIcon } from '@/utils';
 
 import type { Category, Patch } from '@/types';
@@ -14,9 +14,8 @@ const state = reactive({
 
 const currentPatch = computed(() => state.currentPatchVersion);
 
-const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCategories();
 const { data: patchesData, suspense: patchesSuspense, isSuccess: isPatchesFetched } = useFetchPatches();
-const { data: booksData, suspense: booksSuspense, isSuccess: isBooksFetched } = useFetchBooks(computed(() => -1), currentPatch, computed(() => 1), 100000, ref(''));
+const { data: exportData, suspense: exportSuspense, isSuccess: isExportFetched } = useFetchPatchBooksExport(currentPatch);
 
 watchEffect(() => {
 	if (patchesData.value) {
@@ -25,18 +24,18 @@ watchEffect(() => {
 	}
 });
 
-watch([booksData, categoriesData], ([books, categories]) => {
-	if (!books?.books || !categories?.length) return;
+watch(exportData, (data) => {
+	if (!data?.books || !data?.categories) return;
 
-	state.categories = categories;
+	state.categories = data.categories as Category[];
 
-	const filteredBooks = [...books.books].sort((a, b) =>
+	const filteredBooks = [...data.books].sort((a, b) =>
 		a.titleRu.localeCompare(b.titleRu)
 	);
 
 	state.bookList = filteredBooks
 		.map((book) => {
-			const category = categories.find(cat => Number(cat.id) === Number(book.catId));
+			const category = data.categories.find(cat => Number(cat.id) === Number(book.catId));
 			return `${book.titleRu.replace(/[\t\n]/g, ' ')}\t${book.titleEn.replace(/[\t\n]/g, ' ')}\t${category?.titleRu ?? '—'}\thttps://rueso.ru${prepareIcon(book.icon)}`;
 		})
 		.join('\n');
