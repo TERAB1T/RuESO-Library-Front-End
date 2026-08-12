@@ -25,6 +25,16 @@ const DEFAULT_STALE_TIME = 5 * 60 * 1000;
 const LIBRARY_PAGE_SIZE = 50;
 const ATX_PAGE_SIZE = 15;
 
+export class ApiError extends Error {
+	status: number;
+
+	constructor(url: string, status: number) {
+		super(`Request to ${url} failed with status ${status}`);
+		this.name = 'ApiError';
+		this.status = status;
+	}
+}
+
 const fetchApi = async (url: string) => {
 	const fetchParams: Record<string, string> = {};
 
@@ -39,7 +49,7 @@ const fetchApi = async (url: string) => {
 	// console.timeEnd(`fetching: ${url}`);
 
 	if (!response.ok) {
-		throw new Error(`Failed to: ${url}`);
+		throw new ApiError(url, response.status);
 	}
 	return response.json();
 }
