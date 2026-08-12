@@ -78,10 +78,12 @@ new Elysia()
 		} catch (e) {
 			if (e instanceof Error) {
 				console.log(e.stack);
-				set.status = 500;
-
-				return e.stack;
 			} else console.log(e);
+
+			set.status = 500;
+			return new Response("Internal Server Error. Please try again later.", {
+				headers: { "Content-Type": "text/html; charset=utf-8" },
+			});
 		}
 	})
 	.listen(isWindows ? { port } : { unix: SOCKET_PATH }, () => {
