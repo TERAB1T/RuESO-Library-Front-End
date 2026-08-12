@@ -6,13 +6,13 @@ import {
 	VueQueryPlugin,
 	hydrate,
 } from '@tanstack/vue-query';
-import { createHead, setHeadInjectionHandler } from '@unhead/vue';
+import { createHead } from '@unhead/vue';
 
 export function createApp(initialState = {}) {
 	const app = createSSRApp(App);
 
 	const head = createHead();
-	setHeadInjectionHandler(() => head);
+	app.use(head);
 
 	const router = createAppRouter();
 	app.use(router);
