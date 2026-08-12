@@ -37,7 +37,7 @@ const ssrCache = new LRUCache<string, string>({
 	ttl: 1000 * 60 * 1, // 1 minute
 });
 
-const NO_CACHE_PATHS = ['/books-export', 'api'];
+const NO_CACHE_PATHS = ['/books-export', '/api'];
 
 new Elysia()
 	.use(staticPlugin({
