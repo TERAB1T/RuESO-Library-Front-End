@@ -42,6 +42,17 @@ export interface Category {
 	}
 }
 
+export interface BooksResponse {
+	books: Book[];
+	categories?: Pick<Category, 'id' | 'titleRu'>[];
+	pagination?: {
+		page: number;
+		page_size: number;
+		total_books: number;
+		total_pages: number;
+	}
+}
+
 export interface LastModified {
 	lastModified: string;
 }

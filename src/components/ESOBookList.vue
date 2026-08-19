@@ -14,7 +14,7 @@ const router = useRouter();
 
 const state = reactive({
 	books: [] as Book[],
-	categories: [] as Category[],
+	categories: [] as Pick<Category, 'id' | 'titleRu'>[],
 	isLoading: true,
 	pageSize: 50,
 	totalPages: 1
@@ -22,7 +22,7 @@ const state = reactive({
 
 const currentPage = computed(() => Number(route.query.page) || 1);
 const currentCategory = computed(() => Number(route.params.categoryId) || -1);
-const currentPatch = computed(() => route.params.patchVersion || '-1');
+const currentPatch = computed(() => (route.params.patchVersion as string) || '-1');
 
 const filter = ref('');
 
@@ -88,7 +88,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 </script>
 
 <template>
-	<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter($event.target.value)">
+	<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter(($event.target as HTMLInputElement).value)">
 
 	<TransitionGroup v-if="!state.categories.length" class="list-group list-group-flush" name="list" tag="div">
 		<RouterLink v-for="book in state.books" :key="book.id" class="list-group-item list-group-item-action" :to="`/library/eso/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">

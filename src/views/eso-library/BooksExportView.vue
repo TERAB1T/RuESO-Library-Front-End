@@ -20,7 +20,7 @@ const { data: exportData, suspense: exportSuspense, isSuccess: isExportFetched }
 watchEffect(() => {
 	if (patchesData.value) {
 		state.patches = patchesData.value;
-		state.currentPatchVersion = state.patches.length > 0 ? state.patches[0].version : '-1';
+		state.currentPatchVersion = state.patches[0]?.version ?? '-1';
 	}
 });
 

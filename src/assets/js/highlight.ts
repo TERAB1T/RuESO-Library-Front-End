@@ -43,7 +43,10 @@ function highlightText(
 		}
 	} else if (node.nodeType === Node.ELEMENT_NODE && node.hasChildNodes() && !/(script|style)/i.test((node as HTMLElement).tagName)) {
 		for (let i = 0; i < node.childNodes.length; i++) {
-			i += highlightText(node.childNodes[i], re, nodeName, className);
+			const child = node.childNodes[i];
+			if (child) {
+				i += highlightText(child, re, nodeName, className);
+			}
 		}
 	}
 	return 0;

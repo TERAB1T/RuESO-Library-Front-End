@@ -7,6 +7,7 @@ import type {
 	Category,
 	Patch,
 	PatchBooksExport,
+	BooksResponse,
 	LastModified,
 	AtomicShopCategoryWithSubcategories,
 	AtomicShopItem,
@@ -64,7 +65,7 @@ export const useFetchBook = (bookId: ComputedRef<number>): UseQueryReturnType<Bo
 	});
 }
 
-export const useFetchBooks = (categoryId: ComputedRef<number>, patchVersion: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: Ref<string>): UseQueryReturnType<Category, Error> => {
+export const useFetchBooks = (categoryId: ComputedRef<number>, patchVersion: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: Ref<string>): UseQueryReturnType<BooksResponse, Error> => {
 	return useQuery({
 		queryKey: ['books', categoryId, patchVersion, { currentPage, pageSize, filter }],
 		queryFn: () => {
