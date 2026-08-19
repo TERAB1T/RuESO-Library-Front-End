@@ -318,6 +318,7 @@ h1 {
 
 .fa-dwnld-icon {
 	height: 0.9em;
+	width: 0.7875em;
 }
 
 .book-categories-column {
