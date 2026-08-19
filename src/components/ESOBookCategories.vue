@@ -236,14 +236,14 @@ const prefetchPatch = (patchVersion: string) => usePrefetchPatch(queryClient, pa
 	}
 	.mobile-library-tabs {
 		position: sticky;
-		top: 67px;
+		top: 66px;
 		z-index: 3;
 	}
 }
 
 @media (max-width: 767.98px) {
 	.mobile-library-tabs {
-		top: 57px;
+		top: 56px;
 	}
 }
 
