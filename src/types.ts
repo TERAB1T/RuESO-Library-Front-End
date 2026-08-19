@@ -1,3 +1,5 @@
+export type LibraryMobileTab = 'books' | 'categories' | 'patches';
+
 export interface Book {
 	id: number;
 	titleEn: string;

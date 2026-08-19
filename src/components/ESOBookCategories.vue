@@ -1,26 +1,52 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
-import { reactive, watch, computed, onMounted, watchEffect, onServerPrefetch } from 'vue';
-import { useFetchLibraryUpdated, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
+import { reactive, ref, watch, computed, onMounted } from 'vue';
+import { usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
+import { useWindowSize } from '@vueuse/core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { formatDateTime } from '@/utils';
+
+import type { LibraryMobileTab } from '@/types';
 
 const route = useRoute();
 
 const props = defineProps<{
 	categories: any[]
 	patches: any[]
+	mobileTab: LibraryMobileTab
+	lastUpdated: string
+}>();
+
+const emit = defineEmits<{
+	(e: 'update:mobileTab', value: LibraryMobileTab): void
 }>();
 
 const state = reactive({
 	currentCategoryId: Number(route.params.categoryId) ?? -1,
-	currentPatchVersion: route.params.patchVersion ?? '-1',
-	lastUpdated: ""
+	currentPatchVersion: route.params.patchVersion ?? '-1'
 });
 
-const { data: libraryUpdatedData, suspense: libraryUpdatedSuspense, isSuccess: isLibraryUpdatedFetched } = useFetchLibraryUpdated();
+const { width } = useWindowSize();
+const isDesktop = computed(() => width.value > 991);
+const isMountedClient = ref(false);
+onMounted(() => { isMountedClient.value = true; });
+
+const desktopPane = ref<'categories' | 'patches'>(state.currentPatchVersion !== '-1' ? 'patches' : 'categories');
+
+const showCategoriesPane = computed(() =>
+	(isMountedClient.value && !isDesktop.value) ? props.mobileTab === 'categories' : desktopPane.value === 'categories'
+);
+const showPatchesPane = computed(() =>
+	(isMountedClient.value && !isDesktop.value) ? props.mobileTab === 'patches' : desktopPane.value === 'patches'
+);
+
+function onSelectMobileLink() {
+	if (isMountedClient.value && !isDesktop.value) {
+		emit('update:mobileTab', 'books');
+	}
+}
 
 const sortedCategories = computed(() => {
 	return [...(props.categories || [])].sort((a, b) => {
@@ -36,6 +62,7 @@ watch(
 	() => Number(route.params.categoryId),
 	(newCategoryId) => {
 		state.currentCategoryId = newCategoryId ?? -1;
+		if (state.currentCategoryId > 0) desktopPane.value = 'categories';
 	},
 	{ immediate: true }
 );
@@ -44,6 +71,7 @@ watch(
 	() => route.params.patchVersion,
 	(newPatchVersion) => {
 		state.currentPatchVersion = newPatchVersion ?? '-1';
+		if (state.currentPatchVersion !== '-1') desktopPane.value = 'patches';
 	},
 	{ immediate: true }
 );
@@ -51,90 +79,98 @@ watch(
 const queryClient = useQueryClient();
 const prefetchCategory = (categoryId: number) => usePrefetchCategory(queryClient, categoryId);
 const prefetchPatch = (patchVersion: string) => usePrefetchPatch(queryClient, patchVersion);
-
-watchEffect(() => {
-	if (libraryUpdatedData.value) {
-		state.lastUpdated = libraryUpdatedData.value.lastModified;
-	}
-});
-
-onServerPrefetch(async () => {
-	await libraryUpdatedSuspense();
-	if (libraryUpdatedData.value) {
-		state.lastUpdated = libraryUpdatedData.value.lastModified;
-	}
-});
-
-onMounted(async () => {
-	const { Collapse } = await import("bootstrap");
-
-	const collapseElement = document.querySelector('#collapse-categories');
-	const bsCollapse = collapseElement ? new Collapse(collapseElement, { toggle: false }) : null;
-
-	document.querySelector('#collapse-categories')?.addEventListener('click', (event) => {
-		const link = (event.target as Element).closest('.list-group-item');
-		if (!link) return;
-
-		if (window.innerWidth <= 768) bsCollapse?.hide();
-	});
-});
 </script>
 
 <template>
-	<button class="btn btn-primary w-100 d-lg-none mt-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-categories" aria-expanded="false" aria-controls="collapse-categories">
-		Показать категории
-	</button>
-
-	<div id="collapse-categories" class="collapse d-lg-block book-categories-container">
-		<div class="p-3">
-			<div class="d-flex justify-content-between gap-3 flex-nowrap">
-				<a href="/files/eso-library.fb2" role="button" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center download-button">
-					<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" />
-					.FB2
-				</a>
-
-				<a href="/files/eso-library.epub" role="button" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center download-button">
-					<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" />
-					.EPUB
-				</a>
-			</div>
-
-			<ul class="nav nav-tabs" id="categoriesTab" role="tablist">
+	<div class="book-categories-container">
+		<div>
+			<ul class="nav nav-tabs d-lg-none mobile-library-tabs" role="tablist">
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" :class="{ 'active': state.currentPatchVersion === '-1' }" id="book-categories-tab" data-bs-toggle="tab" data-bs-target="#book-categories-pane" type="button" role="tab" aria-controls="book-categories-pane" aria-selected="true">Категории</button>
+					<button class="nav-link" :class="{ active: mobileTab === 'books' }" type="button" @click="emit('update:mobileTab', 'books')">Книги</button>
 				</li>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" :class="{ 'active': state.currentPatchVersion !== '-1' }" id="book-patches-tab" data-bs-toggle="tab" data-bs-target="#book-patches-pane" type="button" role="tab" aria-controls="book-patches-pane" aria-selected="false">Патчи</button>
+					<button class="nav-link" :class="{ active: mobileTab === 'categories' }" type="button" @click="emit('update:mobileTab', 'categories')">Категории</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" :class="{ active: mobileTab === 'patches' }" type="button" @click="emit('update:mobileTab', 'patches')">Патчи</button>
+				</li>
+			</ul>
+
+			<div class="d-none d-lg-block">
+				<div class="library-updated text-muted small">
+					Последнее обновление:
+					<time v-if="props.lastUpdated" :datetime="formatDateTime(props.lastUpdated)">{{ props.lastUpdated }}</time>
+				</div>
+
+				<div class="d-flex justify-content-center download-links">
+					<a href="/files/eso-library.fb2" class="download-link">
+						<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" />
+						<span class="d-none d-xl-inline">Скачать в </span>.FB2
+					</a>
+
+					<a href="/files/eso-library.epub" class="download-link">
+						<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" />
+						<span class="d-none d-xl-inline">Скачать в </span>.EPUB
+					</a>
+				</div>
+			</div>
+
+			<ul class="nav nav-tabs d-none d-lg-flex" id="categoriesTab" role="tablist">
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" :class="{ 'active': showCategoriesPane }" type="button" role="tab" aria-controls="book-categories-pane" :aria-selected="showCategoriesPane" @click="desktopPane = 'categories'">Категории</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" :class="{ 'active': showPatchesPane }" type="button" role="tab" aria-controls="book-patches-pane" :aria-selected="showPatchesPane" @click="desktopPane = 'patches'">Патчи</button>
 				</li>
 			</ul>
 
 			<div class="tab-content" id="categoriesTabContent">
-				<div class="tab-pane list-group list-group-flush eso-category-list" :class="{ 'active': state.currentPatchVersion === '-1' }" id="book-categories-pane" role="tabpanel" aria-labelledby="book-categories-pane" tabindex="0">
-					<RouterLink v-for="category in sortedCategories" :key="category.id" class="list-group-item list-group-item-action" :class="{ 'active': state.currentCategoryId === category.id }" :to="state.currentCategoryId === category.id ? '/library/eso' : `/library/eso/category/${category.id}-${category.slug}`" @mouseenter="prefetchCategory(category.id)">
+				<div class="tab-pane list-group list-group-flush eso-category-list" :class="{ 'active': showCategoriesPane }" id="book-categories-pane" role="tabpanel" aria-labelledby="book-categories-pane" tabindex="0">
+					<RouterLink v-for="category in sortedCategories" :key="category.id" class="list-group-item list-group-item-action" :class="{ 'active': state.currentCategoryId === category.id }" :to="state.currentCategoryId === category.id ? '/library/eso' : `/library/eso/category/${category.id}-${category.slug}`" @mouseenter="prefetchCategory(category.id)" @click="onSelectMobileLink">
 						{{ category.titleRu }}
 					</RouterLink>
 				</div>
-				<div class="tab-pane list-group list-group-flush eso-category-list" :class="{ 'active': state.currentPatchVersion !== '-1' }" id="book-patches-pane" role="tabpanel" aria-labelledby="book-patches-pane" tabindex="0">
-					<RouterLink v-for="patch in props.patches" :key="patch.version" class="list-group-item list-group-item-action" :class="{ 'active': state.currentPatchVersion === patch.version }" :to="state.currentPatchVersion === patch.version ? '/library/eso' : `/library/eso/patch/${patch.version}-${patch.slug}`" @mouseenter="prefetchPatch(patch.version)">
+				<div class="tab-pane list-group list-group-flush eso-category-list" :class="{ 'active': showPatchesPane }" id="book-patches-pane" role="tabpanel" aria-labelledby="book-patches-pane" tabindex="0">
+					<RouterLink v-for="patch in props.patches" :key="patch.version" class="list-group-item list-group-item-action" :class="{ 'active': state.currentPatchVersion === patch.version }" :to="state.currentPatchVersion === patch.version ? '/library/eso' : `/library/eso/patch/${patch.version}-${patch.slug}`" @mouseenter="prefetchPatch(patch.version)" @click="onSelectMobileLink">
 						{{ patch.version }} ({{ patch.nameRu }})
 					</RouterLink>
 				</div>
 			</div>
-
-			<div class="w-100 library-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time></div>
 		</div>
 	</div>
 </template>
 
 <style scoped lang="scss">
-.download-button {
-	height: 48px;
-	margin-bottom: 20px;
+.download-links {
+	gap: 25px;
+	margin: 10px 0 16px;
+}
+
+.download-link {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	color: var(--bs-primary);
+	text-decoration: none;
+	font-weight: 500;
+	padding: 4px 8px;
+	margin: -4px -8px;
+	border-radius: var(--bs-border-radius, 0.375rem);
+
+	&:hover {
+		color: var(--bs-primary);
+		text-decoration: none;
+		background: color-mix(in srgb, var(--bs-primary), transparent 96%);
+	}
+
+	&:active {
+		color: var(--bs-primary);
+		background: color-mix(in srgb, var(--bs-primary), transparent 84%);
+	}
 }
 
 .fa-dwnld-icon {
-	height: 1em;
-	margin-right: 10px;
+	height: 0.9em;
 }
 
 .book-categories-container {
@@ -148,10 +184,17 @@ onMounted(async () => {
 	scrollbar-color: transparent transparent;
 }
 
+@media (min-width: 992px) {
+	.book-categories-container > div > .d-none.d-lg-block {
+		margin-top: 26px;
+	}
+}
+
 .nav-tabs {
 	position: sticky;
 	top: 0;
 	z-index: 3;
+	margin-top: 28px;
 }
 
 .book-categories-container::-webkit-scrollbar {
@@ -191,5 +234,21 @@ onMounted(async () => {
 	.nav-tabs {
 		position: static;
 	}
+	.mobile-library-tabs {
+		position: sticky;
+		top: 67px;
+		z-index: 3;
+	}
+}
+
+@media (max-width: 767.98px) {
+	.mobile-library-tabs {
+		top: 57px;
+	}
+}
+
+.mobile-library-tabs {
+	margin-top: 1rem;
+	margin-bottom: 0;
 }
 </style>

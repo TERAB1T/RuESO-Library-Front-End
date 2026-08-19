@@ -54,6 +54,13 @@ const partners: Partner[] = [
 		category: 'The Elder Scrolls',
 	},
 	{
+		name: 'Eso-Wiki',
+		description: 'Неофициальный wiki-проект, посвящённый MMORPG The Elder Scrolls Online.',
+		url: 'https://eso-wiki.ru',
+		image: '/public/img/partner-eso-wiki.webp',
+		category: 'The Elder Scrolls',
+	},
+	{
 		name: 'F76 HUB',
 		description: 'Крупнейший русскоязычный Discord по Fallout 76: общение, рейды, трейд, помощь новичкам и новости.',
 		url: 'https://discord.gg/hub76',
@@ -72,7 +79,7 @@ const partners: Partner[] = [
 
 <template>
 	<main class="container-xl" style="margin: 20px auto;">
-		<h2>Партнеры сайта</h2>
+		<h1>Партнеры сайта</h1>
 		<p class="partners-intro">
 			Проекты, сообщества и площадки, которые мы рекомендуем и с которыми дружим.
 		</p>
@@ -94,6 +101,16 @@ const partners: Partner[] = [
 </template>
 
 <style scoped lang="scss">
+h1 {
+	font-size: 2rem;
+}
+
+@media (max-width: 991.98px) {
+	h1 {
+		font-size: calc(1.325rem + .9vw);
+	}
+}
+
 .partners-intro {
 	color: var(--bs-secondary-color);
 	max-width: 640px;
