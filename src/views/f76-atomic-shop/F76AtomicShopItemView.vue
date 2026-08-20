@@ -3,7 +3,7 @@ import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
 import { useHead, injectHead } from '@unhead/vue';
 import { prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
-import { useFetchAtomicShopItem, useFetchAtomicShopCategories, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory } from '@/composables/useApi';
+import { useFetchAtomicShopItem, useFetchAtomicShopCategories, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory, usePrefetchAtomicShopAcquisitionSource } from '@/composables/useApi';
 import F76AtomicShopCampUnlocked from '@/components/F76AtomicShopCampUnlocked.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
@@ -49,6 +49,23 @@ const subcategoryInfo = computed(() => {
 		if (subcategory) return subcategory;
 	}
 	return null;
+});
+
+const acquisitionSourceInfo = computed(() => {
+	const source = item.value.acquisitionSource;
+	if (!source || (source.type !== 'season' && source.type !== 'miniseason')) return null;
+	return source;
+});
+
+const acquisitionSourceTypeLabel = computed(() =>
+	acquisitionSourceInfo.value?.type === 'miniseason' ? 'Мини-сезон' : 'Сезон'
+);
+
+const acquisitionSourceLabel = computed(() => {
+	const source = acquisitionSourceInfo.value;
+	if (!source) return '';
+	if (source.nameRu) return source.nameRu;
+	return source.type === 'season' ? `Сезон ${source.number}` : 'Мини-сезон';
 });
 
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
@@ -218,6 +235,7 @@ onServerPrefetch(async () => {
 const queryClient = useQueryClient();
 const prefetchCategory = (categoryFormId: string | undefined) => usePrefetchAtomicShopCategory(queryClient, categoryFormId);
 const prefetchSubcategory = (subcategoryFormId: string | undefined) => usePrefetchAtomicShopSubcategory(queryClient, subcategoryFormId);
+const prefetchAcquisitionSource = (type: string | undefined, number: number | undefined) => usePrefetchAtomicShopAcquisitionSource(queryClient, type, number);
 
 const { width } = useWindowSize();
 const isMobile = computed(() => width.value <= 991);
@@ -433,6 +451,12 @@ useCopyOnClick(copyContainerRef);
 												{{ subcategoryInfo.nameRu }}
 											</RouterLink>
 										</span>
+									</div>
+									<div v-if="acquisitionSourceInfo" class="card-element">
+										<div class="card-subtitle">{{ acquisitionSourceTypeLabel }}</div>
+										<RouterLink :to="`/f76-atomic-shop/${acquisitionSourceInfo.type}/${acquisitionSourceInfo.number}-${acquisitionSourceInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchAcquisitionSource(acquisitionSourceInfo.type, acquisitionSourceInfo.number)">
+											{{ acquisitionSourceLabel }}
+										</RouterLink>
 									</div>
 									<div class="card-element">
 										<div class="card-subtitle">Оригинальное название</div>

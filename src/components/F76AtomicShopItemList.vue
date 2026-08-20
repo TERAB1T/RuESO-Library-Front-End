@@ -3,11 +3,11 @@ import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch, ref, onMounted, onBeforeUnmount } from 'vue';
 import { prepareAtomicShopImage, getAtomicShopSortOrder, setAtomicShopSortOrder, atomicShopHandleImageError } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
-import { useFetchAtomicShopItems, usePrefetchAtomicShopItem } from '@/composables/useApi';
+import { useFetchAtomicShopItems, useFetchAtomicShopAcquisitionTypeItems, useFetchAtomicShopAcquisitionSourceItems, usePrefetchAtomicShopItem } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useDebounceFn } from '@vueuse/core';
 
-import type { AtomicShopCategoryWithSubcategories, AtomicShopItem, AtomicShopSubcategory } from '@/types';
+import type { AtomicShopCategoryWithSubcategories, AtomicShopItem } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
@@ -16,33 +16,16 @@ const props = defineProps<{
 	categories: AtomicShopCategoryWithSubcategories[]
 }>();
 
-const getCategoryByFormId = (formId: string): AtomicShopCategoryWithSubcategories | undefined =>
-	props.categories.find(category => category.formId === formId);
+const currentAcquisitionType = computed(() => (route.params.acquisitionType || '-1') as string);
+const currentAcquisitionNumber = computed(() => route.params.acquisitionNumber ? Number(route.params.acquisitionNumber) : -1);
 
-const categoryInfo = computed(() =>
-	getCategoryByFormId(state.currentCategory.formId)
-);
-
-const getSubcategoryByFormId = (formId: string): AtomicShopSubcategory | undefined =>
-	props.categories
-		.flatMap(category => category.subcategories)
-		.find(subcategory => subcategory.formId === formId);
-
-const subcategoryInfo = computed(() =>
-	getSubcategoryByFormId(state.currentSubcategory.formId)
-);
+const isAcquisitionSourceMode = computed(() => currentAcquisitionType.value !== '-1' && currentAcquisitionNumber.value !== -1);
+const isAcquisitionTypeMode = computed(() => currentAcquisitionType.value !== '-1' && currentAcquisitionNumber.value === -1);
+const isCategoryMode = computed(() => currentAcquisitionType.value === '-1');
 
 const state = reactive({
 	items: [] as AtomicShopItem[],
-	currentCategory: {
-		formId: (route.params.categoryFormId ?? '-1') as string,
-		nameRu: ''
-	},
-	currentSubcategory: {
-		formId: (route.params.subcategoryFormId ?? '-1') as string,
-		nameRu: ''
-	},
-	pageSize: 15,
+	pageSize: 18,
 	totalPages: 1,
 	filter: (route.query.filter as string | undefined) || '',
 	sortOrder: getAtomicShopSortOrder(),
@@ -66,36 +49,65 @@ const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched } = 
 	computed(() => state.filter),
 	computed(() => state.sortOrder),
 	computed(() => state.isPTS),
-	computed(() => state.hasSupport)
+	computed(() => state.hasSupport),
+	isCategoryMode
 );
 
-watchEffect(async () => {
-	if (itemsData.value) {
-		state.items = itemsData.value.items ?? [];
-		state.totalPages = itemsData.value.pagination?.total_pages ?? 1;
+const { data: acquisitionTypeData, suspense: acquisitionTypeSuspense, isSuccess: isAcquisitionTypeItemsFetched } = useFetchAtomicShopAcquisitionTypeItems(
+	currentAcquisitionType,
+	currentPage,
+	state.pageSize,
+	computed(() => state.filter),
+	computed(() => state.sortOrder),
+	computed(() => state.isPTS),
+	computed(() => state.hasSupport),
+	isAcquisitionTypeMode
+);
 
-		state.currentCategory.nameRu = itemsData.value.category?.nameRu ?? '';
-		state.currentSubcategory.nameRu = itemsData.value.subcategory?.nameRu ?? '';
-	}
+const { data: acquisitionSourceData, suspense: acquisitionSourceSuspense, isSuccess: isAcquisitionSourceItemsFetched } = useFetchAtomicShopAcquisitionSourceItems(
+	currentAcquisitionType,
+	currentAcquisitionNumber,
+	currentPage,
+	state.pageSize,
+	computed(() => state.filter),
+	computed(() => state.sortOrder),
+	computed(() => state.isPTS),
+	computed(() => state.hasSupport),
+	isAcquisitionSourceMode
+);
+
+const isItemsFetchedForCurrentMode = computed(() => {
+	if (isAcquisitionSourceMode.value) return isAcquisitionSourceItemsFetched.value;
+	if (isAcquisitionTypeMode.value) return isAcquisitionTypeItemsFetched.value;
+	return isItemsFetched.value;
 });
 
-onServerPrefetch(async () => {
-	await itemsSuspense();
-	if (itemsData.value) {
-		state.items = itemsData.value.items ?? [];
-		state.totalPages = itemsData.value.pagination?.total_pages ?? 1;
-
-		state.currentCategory.nameRu = itemsData.value.category?.nameRu ?? '';
-		state.currentSubcategory.nameRu = itemsData.value.subcategory?.nameRu ?? '';
+const applyItemsData = () => {
+	if (isAcquisitionSourceMode.value) {
+		state.items = acquisitionSourceData.value?.items ?? [];
+		state.totalPages = acquisitionSourceData.value?.pagination?.total_pages ?? 1;
+	} else if (isAcquisitionTypeMode.value) {
+		state.items = acquisitionTypeData.value?.items ?? [];
+		state.totalPages = acquisitionTypeData.value?.pagination?.total_pages ?? 1;
+	} else {
+		state.items = itemsData.value?.items ?? [];
+		state.totalPages = itemsData.value?.pagination?.total_pages ?? 1;
 	}
+};
+
+watchEffect(applyItemsData);
+
+onServerPrefetch(async () => {
+	if (isAcquisitionSourceMode.value) await acquisitionSourceSuspense();
+	else if (isAcquisitionTypeMode.value) await acquisitionTypeSuspense();
+	else await itemsSuspense();
+
+	applyItemsData();
 });
 
 watch(
-	() => [route.params.categoryFormId, route.params.subcategoryFormId, route.query.page, route.query.isPTS, route.query.hasSupport],
-	([newCategoryFormId, newSubcategoryFormId, newPage, newIsPTS, newHasSupport]) => {
-		state.currentCategory.formId = (newCategoryFormId ?? '-1') as string;
-		state.currentSubcategory.formId = (newSubcategoryFormId ?? '-1') as string;
-
+	() => [route.params.categoryFormId, route.params.subcategoryFormId, route.params.acquisitionType, route.params.acquisitionNumber, route.query.page, route.query.isPTS, route.query.hasSupport],
+	([, , , , newPage, newIsPTS, newHasSupport]) => {
 		state.isPTS = (newIsPTS === '1') ? true : false;
 		state.hasSupport = (newHasSupport === '1') ? true : false;
 
@@ -214,18 +226,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<template v-if="state.currentSubcategory.formId !== '-1' && subcategoryInfo?.nameRu">
-		<h2 class="mb-4">Атомная лавка: {{ subcategoryInfo?.nameRu === 'S.P.E.C.I.A.L.' ? subcategoryInfo?.nameRu : subcategoryInfo?.nameRu.toLowerCase() }}</h2>
-	</template>
-
-	<template v-else-if="state.currentCategory.formId !== '-1' && categoryInfo?.nameRu">
-		<h2 class="mb-4">Атомная лавка: {{ categoryInfo?.nameRu === 'C.A.M.P.' ? categoryInfo?.nameRu : categoryInfo?.nameRu.toLowerCase() }}</h2>
-	</template>
-
-	<template v-else>
-		<h2 class="mb-4">Атомная лавка Fallout 76</h2>
-	</template>
-
 	<div class="row g-4 mb-2">
 		<div class="col-12 col-md-8">
 			<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter(($event.target as HTMLInputElement).value)">
@@ -267,7 +267,7 @@ onBeforeUnmount(() => {
 		</div>
 	</div>
 
-	<div v-if="isItemsFetched && state.items.length === 0" class="alert alert-info">
+	<div v-if="isItemsFetchedForCurrentMode && state.items.length === 0" class="alert alert-info">
 		Предметы не найдены
 	</div>
 

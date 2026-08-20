@@ -234,6 +234,82 @@ export const formatDateToMonthYear = (dateString: string): string => {
 	return `${patchStatus} в ${months[month]} ${year} года`;
 }
 
+const MONTHS_GENITIVE = [
+	'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+	'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+];
+
+/**
+ * Formats a unix timestamp (seconds) into a Russian date string in genitive
+ * case, e.g. "1 сентября 2020 года".
+ * @param timestamp The unix timestamp in seconds.
+ * @returns A string in the format "[day] [month] [year] года".
+ */
+const formatFullDateGenitive = (timestamp: number): string => {
+	const date = new Date(timestamp * 1000);
+	return `${date.getDate()} ${MONTHS_GENITIVE[date.getMonth()]} ${date.getFullYear()} года`;
+}
+
+/**
+ * Builds the descriptive sentence for a season/miniseason acquisition source,
+ * covering every combination of known/unknown start and end dates relative to
+ * the current moment: already ended, currently running with a known end,
+ * currently running with no announced end, announced but not yet started,
+ * and not yet announced at all. When there's no name, seasons fall back to
+ * an ordinal ("17-го сезона"); miniseasons fall back to a generic label, or
+ * "будущего мини-сезона" specifically when the start date isn't announced.
+ * @param type Whether this is a "season" or "miniseason" source.
+ * @param number The source's sequential number, used for the nameless season fallback.
+ * @param nameRu The source's Russian name, or null/empty if not yet announced.
+ * @param nameEn The source's English name, shown in parentheses after the Russian one.
+ * @param startDate Unix timestamp (seconds) of the start date, or null if unannounced.
+ * @param endDate Unix timestamp (seconds) of the end date, or null if unknown/open-ended.
+ * @returns A ready-to-display Russian sentence describing the source's timing.
+ */
+export const formatSeasonDescription = (
+	type: 'season' | 'miniseason',
+	number: number,
+	nameRu: string | null,
+	nameEn: string | null,
+	startDate: number | null,
+	endDate: number | null
+): string => {
+	const isSeason = type === 'season';
+	const now = Date.now() / 1000;
+
+	const subject = nameRu
+		? `${isSeason ? 'сезона' : 'мини-сезона'} «${nameRu}»${nameEn ? ` (${nameEn})` : ''}`
+		: !startDate && !isSeason
+			? 'будущего мини-сезона'
+			: isSeason
+				? `${number}-го сезона`
+				: 'мини-сезона';
+
+	if (!startDate) {
+		return `Награды ${subject} с необъявленной датой начала.`;
+	}
+
+	if (endDate && endDate <= now) {
+		return `Награды ${subject}, который продлился с ${formatFullDateGenitive(startDate)} по ${formatFullDateGenitive(endDate)}.`;
+	}
+
+	if (startDate > now) {
+		return endDate
+			? `Награды ${subject}, который начнется ${formatFullDateGenitive(startDate)} и продлится до ${formatFullDateGenitive(endDate)}.`
+			: `Награды ${subject}, который начнется ${formatFullDateGenitive(startDate)}.`;
+	}
+
+	return endDate
+		? `Награды ${subject}, который начался ${formatFullDateGenitive(startDate)} и продлится до ${formatFullDateGenitive(endDate)}.`
+		: `Награды ${subject}, который начался ${formatFullDateGenitive(startDate)}.`;
+}
+
+export const ACQUISITION_TYPE_LABELS: Record<string, string> = {
+	atx: 'Атомная лавка',
+	season: 'Сезоны',
+	miniseason: 'Мини-сезоны'
+};
+
 /**
  * Converts a given date string from "DD.MM.YYYY" format to "YYYY-MM-DD 00:00" format.
  * @param input The date string to convert.

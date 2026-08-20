@@ -42,7 +42,7 @@ const state = reactive({
 		formId: (route.params.subcategoryFormId ?? '-1') as string,
 		nameRu: ''
 	},
-	pageSize: 15,
+	pageSize: 18,
 	totalPages: 1,
 	filter: (route.query.filter as string | undefined) || '',
 	sortOrder: getCampSortOrder(),

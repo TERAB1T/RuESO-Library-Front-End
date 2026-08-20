@@ -86,6 +86,16 @@ export default function createAppRouter() {
 						path: 'subcategory/:subcategoryFormId([a-f0-9]{8}):slug?',
 						name: 'atomic-shop-subcategory',
 						component: F76AtomicShopView,
+					},
+					{
+						path: ':acquisitionType(atx|season|miniseason)',
+						name: 'atomic-shop-acquisition-type',
+						component: F76AtomicShopView,
+					},
+					{
+						path: ':acquisitionType(atx|season|miniseason)/:acquisitionNumber(\\d+):slug?',
+						name: 'atomic-shop-acquisition-source',
+						component: F76AtomicShopView,
 					}
 				],
 			},

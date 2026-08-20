@@ -1,4 +1,5 @@
 export type LibraryMobileTab = 'books' | 'categories' | 'patches';
+export type AtomicShopMobileTab = 'items' | 'categories' | 'acquisition';
 
 export interface Book {
 	id: number;
@@ -118,6 +119,44 @@ export interface AtomicShopCategoryWithSubcategories extends AtomicShopCategory 
 	subcategories: AtomicShopSubcategory[];
 }
 
+export interface AcquisitionSource {
+	id: number;
+	slug: string;
+	type: string;
+	number: number;
+	nameEn: string | null;
+	nameRu: string | null;
+	startDate: number | null;
+	endDate: number | null;
+}
+
+export interface AcquisitionSourcesByType {
+	type: string;
+	sources: AcquisitionSource[];
+}
+
+export interface AcquisitionTypeItemsResponse {
+	type: string;
+	items: AtomicShopItem[];
+	pagination?: {
+		page: number;
+		pageSize: number;
+		total_books: number;
+		total_pages: number;
+	}
+}
+
+export interface AcquisitionSourceItemsResponse {
+	acquisitionSource: AcquisitionSource;
+	items: AtomicShopItem[];
+	pagination?: {
+		page: number;
+		pageSize: number;
+		total_books: number;
+		total_pages: number;
+	}
+}
+
 export interface CampUnlockedItem {
 	formId: string;
 	nameEn: string | null;
@@ -147,6 +186,7 @@ export interface AtomicShopItem {
 	orderByName: number;
 	orderByFormId: number;
 	campUnlockedItems: CampUnlockedItem[] | null;
+	acquisitionSource?: Pick<AcquisitionSource, 'type' | 'number' | 'nameRu' | 'slug'> | null;
 }
 
 export interface AtomicShopItemsResponse {
