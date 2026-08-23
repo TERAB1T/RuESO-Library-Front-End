@@ -414,6 +414,12 @@ export interface Buff {
 	effects: BuffEffect[];
 }
 
+export interface ArcadeGame {
+	name: LocalizedName;
+	description: LocalizedName;
+	pointsDescription: LocalizedName;
+}
+
 export interface RecipeComponent {
 	formId: string;
 	editorId: string | null;
@@ -460,6 +466,7 @@ export interface CampItemWithRelations extends CampItem {
 	produces: ProducesMode[] | null;
 	display: DisplayInfo | null;
 	buffs: Buff[] | null;
+	arcadeGame: ArcadeGame | null;
 	unlockedByEntitlements: UnlockedByEntitlement[] | null;
 	recipe: RecipeInfo | null;
 	recipeItems: RecipeSiblingItem[];

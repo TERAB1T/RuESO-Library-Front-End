@@ -2,10 +2,11 @@
 import { computed } from 'vue';
 import { formatDurationSeconds } from '@/utils';
 
-import type { Buff, BuffEffect, BuffTrigger, BuffCondition } from '@/types';
+import type { ArcadeGame, Buff, BuffEffect, BuffTrigger, BuffCondition } from '@/types';
 
 const props = defineProps<{
 	buffs: Buff[] | null;
+	arcadeGame: ArcadeGame | null;
 	lang: 'ru' | 'en';
 }>();
 
@@ -17,6 +18,8 @@ const pick = (ru: string | null | undefined, en: string | null | undefined) =>
 	props.lang === 'ru' ? (ru || en) : (en || ru);
 
 const hasBuffs = computed(() => !!props.buffs && props.buffs.length > 0);
+const hasArcadeGame = computed(() => !!props.arcadeGame);
+const hasContent = computed(() => hasBuffs.value || hasArcadeGame.value);
 
 const conditionLabels: Record<BuffCondition, { ru: string; en: string }> = {
 	noAllyNearby: {
@@ -95,9 +98,9 @@ const buildHeader = (trigger: BuffTrigger, delaySeconds: number | null, isOneOf:
 			case 'onActivate':
 				return `При взаимодействии с этим объектом вы получаете ${gained}:`;
 			case 'onPassThrough':
-				return `При прохождении сквозь этот объект вы получаете ${gained}:`;
+				return `При прохождении через этот объект вы получаете ${gained}:`;
 			default:
-				return `Этот объект даёт ${gained}:`;
+				return `Этот объект дает ${gained}:`;
 		}
 	}
 
@@ -155,25 +158,53 @@ const buffGroups = computed<BuffGroup[]>(() => {
 
 const hasDiseaseRisk = computed(() => !!props.buffs?.some(buff => buff.diseaseRisk));
 
+const arcadeInfo = computed(() => {
+	if (!props.arcadeGame) return null;
+
+	return {
+		name: pick(props.arcadeGame.name.ru, props.arcadeGame.name.en) || '—',
+		description: pick(props.arcadeGame.description.ru, props.arcadeGame.description.en) || '—',
+		pointsDescription: pick(props.arcadeGame.pointsDescription.ru, props.arcadeGame.pointsDescription.en) || ''
+	};
+});
+
 const t = computed(() => props.lang === 'ru'
 	? {
 		title: 'Взаимодействие',
 		perk: (name: string) => `(только со способностью «${name}»)`,
-		disease: 'При использовании можно подхватить заболевание.'
+		disease: 'При использовании можно подхватить заболевание.',
+		arcadeIntro: 'Этот объект — игровой автомат «Ядер-Аркады», и с ним можно взаимодействовать. Каждая игра стоит 1 крышку.'
 	}
 	: {
 		title: 'Interaction',
 		perk: (name: string) => `(requires the ${name} perk)`,
-		disease: 'Using this object may cause a disease.'
+		disease: 'Using this object may cause a disease.',
+		arcadeIntro: 'This object is a Nuka-Cade arcade machine, and you can interact with it. Each game costs 1 cap.'
 	}
 );
 </script>
 
 <template>
-	<div v-if="hasBuffs" class="buffs-block">
+	<div v-if="hasContent" class="buffs-block">
 		<div class="fo-sect-h">
 			<span class="fo-bar"></span>
 			<h3 class="fo-h3">{{ t.title }}</h3>
+		</div>
+
+		<div v-if="arcadeInfo" class="buffs-group">
+			<p class="buffs-group-header">{{ t.arcadeIntro }}</p>
+
+			<ul class="buffs-list">
+				<li>
+					<span class="buff-name">{{ arcadeInfo.name }}</span>
+
+					<ul class="buff-effects">
+						<li>{{ arcadeInfo.description }}</li>
+					</ul>
+				</li>
+			</ul>
+
+			<p v-if="arcadeInfo.pointsDescription" class="buffs-group-note">{{ arcadeInfo.pointsDescription }}</p>
 		</div>
 
 		<div v-for="group in buffGroups" :key="group.key" class="buffs-group">
@@ -216,6 +247,14 @@ const t = computed(() => props.lang === 'ru'
 	font-size: 1.0325rem;
 	line-height: 1.6;
 	margin-bottom: 0.6rem;
+}
+
+// Closing paragraph after the list: Bootstrap resets p margin-top to 0 and the
+// list has no bottom margin, so the gap has to be restored explicitly.
+.buffs-group-note {
+	font-size: 1.0325rem;
+	line-height: 1.6;
+	margin: 0.6rem 0 0;
 }
 
 .buffs-list {

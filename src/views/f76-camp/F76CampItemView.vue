@@ -355,7 +355,7 @@ onBeforeRouteLeave(async () => {
 							<div class="book-main" v-html="parsedTextRu"></div>
 
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="ru" />
-							<F76CampBuffs :buffs="item.buffs" lang="ru" />
+							<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" lang="ru" />
 							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="ru" />
 							<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" lang="ru" />
 							<F76CampDisplayTable :display="item.display" lang="ru" />
@@ -373,7 +373,7 @@ onBeforeRouteLeave(async () => {
 							<div class="book-main" v-html="parsedTextEn"></div>
 
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="en" />
-							<F76CampBuffs :buffs="item.buffs" lang="en" />
+							<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" lang="en" />
 							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="en" />
 							<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" lang="en" />
 							<F76CampDisplayTable :display="item.display" lang="en" />
