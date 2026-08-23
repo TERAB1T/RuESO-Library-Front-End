@@ -382,6 +382,38 @@ export interface DisplayInfo {
 	excluded: DisplayExcludedEntry[];
 }
 
+export type BuffTrigger = 'whileUsing' | 'afterDelay' | 'onActivate' | 'onPassThrough';
+export type BuffCondition = 'noAllyNearby' | 'infatuatedAllyNearby' | 'romanticAllyNearby';
+
+export interface LocalizedName {
+	en: string | null;
+	ru: string | null;
+}
+
+export interface BuffRequiredPerk {
+	formId: string;
+	name: LocalizedName;
+}
+
+export interface BuffEffect {
+	mgefFormId: string;
+	description: LocalizedName;
+	magnitude: number;
+	duration: number;
+	actorValueFormId: string | null;
+	requiresPerk: BuffRequiredPerk | null;
+}
+
+export interface Buff {
+	spellFormId: string;
+	name: LocalizedName;
+	trigger: BuffTrigger;
+	delaySeconds: number | null;
+	condition: BuffCondition | null;
+	diseaseRisk: boolean;
+	effects: BuffEffect[];
+}
+
 export interface RecipeComponent {
 	formId: string;
 	editorId: string | null;
@@ -427,6 +459,7 @@ export interface CampItemWithRelations extends CampItem {
 	learnConditions: LearnConditionGroup | null;
 	produces: ProducesMode[] | null;
 	display: DisplayInfo | null;
+	buffs: Buff[] | null;
 	unlockedByEntitlements: UnlockedByEntitlement[] | null;
 	recipe: RecipeInfo | null;
 	recipeItems: RecipeSiblingItem[];

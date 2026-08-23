@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { prepareCampImage, atomicShopHandleImageError, pluralizeRu } from '@/utils';
+import { prepareCampImage, atomicShopHandleImageError, pluralizeRu, formatDurationSeconds } from '@/utils';
 import type { ProducesMode, ProducesNode, ProducesItemNode, ProducesListNode } from '@/types';
 
 const props = defineProps<{
@@ -149,25 +149,8 @@ const formatPercent = (probability: number) => {
 	return `${Math.round(percent * 100) / 100}%`;
 };
 
-const formatTimeSpan = (intervalHours: number): string => {
-	const totalSeconds = Math.round(intervalHours * 3600);
-	const hours = Math.floor(totalSeconds / 3600);
-	const minutes = Math.floor((totalSeconds % 3600) / 60);
-	const seconds = totalSeconds % 60;
-
-	const parts: string[] = [];
-	if (props.lang === 'ru') {
-		if (hours > 0) parts.push(`${hours} ч.`);
-		if (minutes > 0) parts.push(`${minutes} мин.`);
-		if (seconds > 0) parts.push(`${seconds} сек.`);
-		return parts.length > 0 ? parts.join(' ') : '0 сек.';
-	}
-
-	if (hours > 0) parts.push(`${hours} h`);
-	if (minutes > 0) parts.push(`${minutes} min`);
-	if (seconds > 0) parts.push(`${seconds} sec`);
-	return parts.length > 0 ? parts.join(' ') : '0 sec';
-};
+const formatTimeSpan = (intervalHours: number): string =>
+	formatDurationSeconds(intervalHours * 3600, props.lang);
 
 const formatInterval = (intervalHours: number | null): string | null => {
 	if (intervalHours == null || intervalHours <= 0) return null;

@@ -420,6 +420,35 @@ export const pluralizeRu = (count: number, forms: [string, string, string]): str
 };
 
 /**
+ * Formats a duration in seconds as a short human-readable span:
+ * "2 ч. 30 мин." / "2 h 30 min". Zero-valued units are omitted.
+ *
+ * @param totalSeconds Duration in seconds.
+ * @param lang Output language.
+ * @returns The formatted span, or "0 сек." / "0 sec" for a zero duration.
+ */
+export const formatDurationSeconds = (totalSeconds: number, lang: 'ru' | 'en'): string => {
+	const rounded = Math.round(totalSeconds);
+	const hours = Math.floor(rounded / 3600);
+	const minutes = Math.floor((rounded % 3600) / 60);
+	const seconds = rounded % 60;
+
+	const parts: string[] = [];
+
+	if (lang === 'ru') {
+		if (hours > 0) parts.push(`${hours} ч.`);
+		if (minutes > 0) parts.push(`${minutes} мин.`);
+		if (seconds > 0) parts.push(`${seconds} сек.`);
+		return parts.length > 0 ? parts.join(' ') : '0 сек.';
+	}
+
+	if (hours > 0) parts.push(`${hours} h`);
+	if (minutes > 0) parts.push(`${minutes} min`);
+	if (seconds > 0) parts.push(`${seconds} sec`);
+	return parts.length > 0 ? parts.join(' ') : '0 sec';
+};
+
+/**
  * Converts a distance in Creation Engine game units to meters, rounded to 1 decimal place.
  *
  * @param units - Distance in game units.
