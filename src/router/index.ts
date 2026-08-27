@@ -1,17 +1,16 @@
 import { createRouter, createMemoryHistory, createWebHistory } from 'vue-router'
-
-const HomeView = () => import('@/views/HomeView.vue')
-const PartnersView = () => import('@/views/PartnersView.vue')
-const LibraryView = () => import('@/views/eso-library/LibraryView.vue')
-const BookView = () => import('@/views/eso-library/BookView.vue')
-const GlossaryTESView = () => import('@/views/glossaries/GlossaryTESView.vue')
-const GlossaryFalloutView = () => import('@/views/glossaries/GlossaryFalloutView.vue')
-const BooksExportView = () => import('@/views/eso-library/BooksExportView.vue')
-const F76AtomicShopView = () => import('@/views/f76-atomic-shop/F76AtomicShopView.vue')
-const F76AtomicShopItemView = () => import('@/views/f76-atomic-shop/F76AtomicShopItemView.vue')
-const F76CampView = () => import('@/views/f76-camp/F76CampView.vue')
-const F76CampItemView = () => import('@/views/f76-camp/F76CampItemView.vue')
-const NotFoundView = () => import('@/views/NotFoundView.vue')
+import HomeView from '@/views/HomeView.vue'
+import PartnersView from '@/views/PartnersView.vue'
+import LibraryView from '@/views/eso-library/LibraryView.vue'
+import BookView from '@/views/eso-library/BookView.vue'
+import GlossaryTESView from '@/views/glossaries/GlossaryTESView.vue'
+import GlossaryFalloutView from '@/views/glossaries/GlossaryFalloutView.vue'
+import BooksExportView from '@/views/eso-library/BooksExportView.vue'
+import F76AtomicShopView from '@/views/f76-atomic-shop/F76AtomicShopView.vue'
+import F76AtomicShopItemView from '@/views/f76-atomic-shop/F76AtomicShopItemView.vue'
+import F76CampView from '@/views/f76-camp/F76CampView.vue'
+import F76CampItemView from '@/views/f76-camp/F76CampItemView.vue'
+import NotFoundView from '@/views/NotFoundView.vue'
 
 export default function createAppRouter() {
 	const router = createRouter({
