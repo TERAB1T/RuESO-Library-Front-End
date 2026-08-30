@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
 import { useSupportText } from '@/composables/useSupportText';
 import { useCopyOnClick } from '@/composables/useCopyOnClick';
+import { trackSupportGuideOpen } from '@/metrika';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import 'photoswipe/style.css';
 
@@ -468,7 +469,7 @@ useCopyOnClick(copyContainerRef);
 											Нет
 										</div>
 										<div v-else>
-											<button type="button" class="btn btn-link modal-trigger" data-bs-toggle="modal" data-bs-target="#supportModal" aria-haspopup="dialog" v-html="generateSupportUrlText"></button>
+											<button type="button" class="btn btn-link modal-trigger" data-bs-toggle="modal" data-bs-target="#supportModal" aria-haspopup="dialog" @click="trackSupportGuideOpen(item.formId)" v-html="generateSupportUrlText"></button>
 										</div>
 									</div>
 									<div class="card-element">

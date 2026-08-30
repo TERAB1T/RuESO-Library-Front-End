@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue';
+import { trackPartnerClick } from '@/metrika';
 
 const metaTitle = 'Партнеры сайта | RuESO';
 const metaDescription = 'Проекты, сообщества и площадки, которые мы рекомендуем и с которыми дружим.';
@@ -86,7 +87,7 @@ const partners: Partner[] = [
 
 		<div class="row g-4 mb-4">
 			<div v-for="partner in partners" :key="partner.name" class="col-12 col-md-6 col-lg-4">
-				<a :href="partner.url" target="_blank" class="card h-100 text-decoration-none main-page-card">
+				<a :href="partner.url" target="_blank" class="card h-100 text-decoration-none main-page-card" @click="trackPartnerClick(partner.name)">
 					<div class="card-img-wrapper">
 						<img :src="partner.image" class="card-img-top" :alt="partner.name">
 					</div>

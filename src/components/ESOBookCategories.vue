@@ -7,6 +7,7 @@ import { useWindowSize } from '@vueuse/core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { formatDateTime } from '@/utils';
+import { trackLibraryDownload } from '@/metrika';
 
 import type { LibraryMobileTab } from '@/types';
 
@@ -103,12 +104,12 @@ const prefetchPatch = (patchVersion: string) => usePrefetchPatch(queryClient, pa
 				</div>
 
 				<div class="d-flex justify-content-center download-links">
-					<a href="/files/eso-library.fb2" class="download-link">
+					<a href="/files/eso-library.fb2" class="download-link" @click="trackLibraryDownload('fb2')">
 						<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" />
 						<span class="d-none d-xl-inline">Скачать в </span>.FB2
 					</a>
 
-					<a href="/files/eso-library.epub" class="download-link">
+					<a href="/files/eso-library.epub" class="download-link" @click="trackLibraryDownload('epub')">
 						<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" />
 						<span class="d-none d-xl-inline">Скачать в </span>.EPUB
 					</a>

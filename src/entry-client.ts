@@ -1,5 +1,6 @@
 import './assets/main.scss';
 import { createApp } from "./main";
+import { initMetrikaPageViews } from "./metrika";
 
 declare global {
   interface Window {
@@ -14,5 +15,5 @@ const { app, router } = createApp(initialState);
 router.isReady().then(() => {
 	app.mount("#app");
 
-	console.log("hydrated");
+	initMetrikaPageViews(router);
 });

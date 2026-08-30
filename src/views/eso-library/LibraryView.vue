@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { prepareIcon, lowercaseFirstLetter, formatDateToMonthYear, formatDateTime, uppercaseFirstLetter } from '@/utils';
 import { useFetchCategories, useFetchPatches, useFetchLibraryUpdated } from '@/composables/useApi';
+import { trackLibraryDownload } from '@/metrika';
 
 import type { Category, Patch, LibraryMobileTab } from '@/types';
 
@@ -158,13 +159,13 @@ onServerPrefetch(async () => {
 					</div>
 
 					<div class="d-flex mobile-download-links">
-						<a href="/files/eso-library.fb2" class="download-link" aria-label="Скачать в .FB2">
+						<a href="/files/eso-library.fb2" class="download-link" aria-label="Скачать в .FB2" @click="trackLibraryDownload('fb2')">
 							<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" />
 							<span class="d-none d-md-inline">Скачать в .FB2</span>
 							<span class="d-md-none">.FB2</span>
 						</a>
 
-						<a href="/files/eso-library.epub" class="download-link" aria-label="Скачать в .EPUB">
+						<a href="/files/eso-library.epub" class="download-link" aria-label="Скачать в .EPUB" @click="trackLibraryDownload('epub')">
 							<FontAwesomeIcon :icon="faDownload" class="fa-dwnld-icon" />
 							<span class="d-none d-md-inline">Скачать в .EPUB</span>
 							<span class="d-md-none">.EPUB</span>
