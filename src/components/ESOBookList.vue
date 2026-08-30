@@ -6,6 +6,7 @@ import Pagination from '@/components/Pagination.vue';
 import { useFetchBooks, usePrefetchBook } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useDebounceFn } from '@vueuse/core';
+import { trackCatalogFilter } from '@/analytics';
 
 import type { Book, Category } from '@/types';
 
@@ -79,6 +80,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 		filter.value = '';
 	} else {
 		filter.value = textFilter;
+		trackCatalogFilter('eso_library', filter.value);
 	}
 
 	if (currentPage.value !== 1) {

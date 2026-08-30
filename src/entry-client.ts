@@ -1,6 +1,6 @@
 import './assets/main.scss';
 import { createApp } from "./main";
-import { initMetrikaPageViews } from "./metrika";
+import { initPageViewTracking } from "./analytics";
 
 declare global {
   interface Window {
@@ -15,5 +15,5 @@ const { app, router } = createApp(initialState);
 router.isReady().then(() => {
 	app.mount("#app");
 
-	initMetrikaPageViews(router);
+	initPageViewTracking(router);
 });

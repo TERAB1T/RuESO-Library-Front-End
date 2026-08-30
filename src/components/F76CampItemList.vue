@@ -6,6 +6,7 @@ import Pagination from '@/components/Pagination.vue';
 import { useFetchCampItems, usePrefetchCampItem } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useDebounceFn } from '@vueuse/core';
+import { trackCatalogFilter } from '@/analytics';
 
 import type { CampCategoryWithSubcategories, CampItem, CampSubcategory } from '@/types';
 
@@ -146,6 +147,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 	} else {
 		state.filter = textFilter;
 		newQuery.filter = state.filter;
+		trackCatalogFilter('camp', state.filter);
 	}
 
 	router.push({ query: newQuery });

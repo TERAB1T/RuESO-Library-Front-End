@@ -6,6 +6,7 @@ import Pagination from '@/components/Pagination.vue';
 import { useFetchAtomicShopItems, useFetchAtomicShopAcquisitionTypeItems, useFetchAtomicShopAcquisitionSourceItems, usePrefetchAtomicShopItem } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useDebounceFn } from '@vueuse/core';
+import { trackCatalogFilter } from '@/analytics';
 
 import type { AtomicShopCategoryWithSubcategories, AtomicShopItem } from '@/types';
 
@@ -161,6 +162,7 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 	} else {
 		state.filter = textFilter;
 		newQuery.filter = state.filter;
+		trackCatalogFilter('atomic_shop', state.filter);
 	}
 
 	router.push({ query: newQuery });

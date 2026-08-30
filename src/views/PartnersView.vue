@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue';
-import { trackPartnerClick } from '@/metrika';
+import { trackPartnerClick } from '@/analytics';
 
 const metaTitle = 'Партнеры сайта | RuESO';
 const metaDescription = 'Проекты, сообщества и площадки, которые мы рекомендуем и с которыми дружим.';

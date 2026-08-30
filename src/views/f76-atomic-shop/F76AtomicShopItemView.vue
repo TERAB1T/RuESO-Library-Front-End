@@ -11,7 +11,7 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
 import { useSupportText } from '@/composables/useSupportText';
 import { useCopyOnClick } from '@/composables/useCopyOnClick';
-import { trackSupportGuideOpen } from '@/metrika';
+import { trackSupportGuideOpen } from '@/analytics';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import 'photoswipe/style.css';
 

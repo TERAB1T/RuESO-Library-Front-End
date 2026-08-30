@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { prepareIcon, lowercaseFirstLetter, formatDateToMonthYear, formatDateTime, uppercaseFirstLetter } from '@/utils';
 import { useFetchCategories, useFetchPatches, useFetchLibraryUpdated } from '@/composables/useApi';
-import { trackLibraryDownload } from '@/metrika';
+import { trackLibraryDownload } from '@/analytics';
 
 import type { Category, Patch, LibraryMobileTab } from '@/types';
 

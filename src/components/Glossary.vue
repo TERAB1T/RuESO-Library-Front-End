@@ -6,8 +6,10 @@ import { useHead } from '@unhead/vue';
 import { debounceFn, formatDateTime } from '@/utils';
 import { highlight, unhighlight } from '@/assets/js/highlight';
 import { useFetchGlossaryUpdated } from '@/composables/useApi';
+import { trackGlossarySearch } from '@/analytics';
 
 import type { GlossaryConfig } from '@/types';
+import type { GlossaryType } from '@/analytics';
 
 DataTable.use(DataTablesCore);
 
@@ -111,6 +113,8 @@ let shouldScroll = false;
 const onPageChange = () => {
 	shouldScroll = true;
 };
+
+const glossaryType: GlossaryType = props.config.type === 'fallout' ? 'fallout' : 'tes';
 
 const onPageDraw = () => {
 	if (!import.meta.env.SSR && shouldScroll)
@@ -291,7 +295,11 @@ const mainSearch = debounceFn(async (event: Event) => {
 	let currentValue = mainInput.value;
 
 	if (currentValue.length < 3) currentValue = '';
-	if (dt.search() !== currentValue) dt.search(currentValue).draw();
+
+	if (dt.search() !== currentValue) {
+		if (currentValue) trackGlossarySearch(glossaryType, currentValue);
+		dt.search(currentValue).draw();
+	}
 });
 
 /* ONMOUNTED */

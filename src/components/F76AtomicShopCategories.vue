@@ -7,6 +7,7 @@ import { useWindowSize } from '@vueuse/core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { formatDateTime, ACQUISITION_TYPE_LABELS } from '@/utils';
+import { trackFilterEnabled } from '@/analytics';
 
 import type { AtomicShopCategoryWithSubcategories, AcquisitionSource, AcquisitionSourcesByType, AtomicShopMobileTab } from '@/types';
 
@@ -211,6 +212,12 @@ const toggleSupport = () => {
 	Object.keys(query).forEach(key => !query[key] && delete query[key]);
 	return query;
 };
+
+// Only switching a filter on is worth counting; clearing it says nothing about interest.
+const onFilterClick = (filter: 'pts' | 'support', enabled: boolean) => {
+	if (!enabled) trackFilterEnabled(filter, 'atomic_shop');
+	onSelectMobileLink();
+};
 </script>
 
 <template>
@@ -274,12 +281,12 @@ const toggleSupport = () => {
 						<hr>
 						<div class="category-wrapper category-additional">
 							<div class="d-flex align-items-stretch category-item">
-								<RouterLink :to="{ path: route.path, query: togglePTS() }" class="list-group-item list-group-item-action flex-grow-1" :class="{ active: isPTS }" @click="onSelectMobileLink">
+								<RouterLink :to="{ path: route.path, query: togglePTS() }" class="list-group-item list-group-item-action flex-grow-1" :class="{ active: isPTS }" @click="onFilterClick('pts', isPTS)">
 									Тестовый сервер (PTS)
 								</RouterLink>
 							</div>
 							<div class="d-flex align-items-stretch category-item">
-								<RouterLink :to="{ path: route.path, query: toggleSupport() }" class="list-group-item list-group-item-action flex-grow-1" :class="{ active: hasSupport }" @click="onSelectMobileLink">
+								<RouterLink :to="{ path: route.path, query: toggleSupport() }" class="list-group-item list-group-item-action flex-grow-1" :class="{ active: hasSupport }" @click="onFilterClick('support', hasSupport)">
 									Продается в поддержке
 								</RouterLink>
 							</div>

@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { formatDateTime } from '@/utils';
+import { trackFilterEnabled } from '@/analytics';
 
 import type { CampCategoryWithSubcategories } from '@/types';
 
@@ -85,7 +86,10 @@ const updateFilters = (updates: Record<string, string | undefined>) => {
 	router.push({ path: route.path, query });
 };
 
-const togglePTS = () => updateFilters({ isPTS: !isPTS.value ? '1' : undefined, hasSupport: undefined });
+const togglePTS = () => {
+	if (!isPTS.value) trackFilterEnabled('pts', 'camp');
+	updateFilters({ isPTS: !isPTS.value ? '1' : undefined, hasSupport: undefined });
+};
 </script>
 
 <template>

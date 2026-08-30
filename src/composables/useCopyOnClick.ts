@@ -1,4 +1,5 @@
 import { onMounted, onUnmounted, watch } from 'vue';
+import { trackSupportItemCopy } from '@/analytics';
 import type { Ref } from 'vue';
 
 export const useCopyOnClick = (containerRef: Ref<HTMLElement | null>) => {
@@ -14,6 +15,8 @@ export const useCopyOnClick = (containerRef: Ref<HTMLElement | null>) => {
 		try {
 			const textToCopy = copyElement.textContent?.trim() || '';
 			await navigator.clipboard.writeText(textToCopy);
+
+			trackSupportItemCopy(textToCopy);
 
 			let tooltip = tooltips.get(copyElement);
 			if (!tooltip) {

@@ -7,7 +7,7 @@ import { useWindowSize } from '@vueuse/core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { formatDateTime } from '@/utils';
-import { trackLibraryDownload } from '@/metrika';
+import { trackLibraryDownload } from '@/analytics';
 
 import type { LibraryMobileTab } from '@/types';
 
