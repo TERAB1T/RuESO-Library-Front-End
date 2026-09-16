@@ -11,7 +11,7 @@ const falloutConfig: GlossaryConfig = {
 	image: 'https://rueso.ru/public/img/main-card-fallout.jpg',
 	apiEndpoint: '/api/glossary/fallout/',
 	localStorageKey: 'glossary-fallout-games',
-	defaultGames: ['fallout 4'],
+	defaultGames: ['fallout 76'],
 	gameCheckboxes: [
 		{ id: 'Fallout 1', name: 'Fallout (1997)', icon: '/img/icons/fallout1.png' },
 		{ id: 'Fallout 2', name: 'Fallout 2 (1998)', icon: '/img/icons/fallout2.png' },
