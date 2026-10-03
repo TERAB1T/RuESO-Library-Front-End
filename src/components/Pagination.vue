@@ -72,8 +72,15 @@ const handlePageChange = (page: number) => {
 </template>
 
 <style scoped>
+/* A fixed 42px width overflows narrow phones at 9 buttons (378px), so items may
+   shrink instead. Done in CSS because the server can't know the viewport width. */
+.page-item {
+	flex: 0 1 42px;
+	min-width: 0;
+}
+
 .page-link {
-	width: 42px;
+	width: 100%;
 	height: 42px;
 	text-align: center;
 	padding-left: 0;

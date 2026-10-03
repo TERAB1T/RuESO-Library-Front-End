@@ -1,7 +1,7 @@
 import { renderToString } from 'vue/server-renderer'
 
 import { createApp } from './main'
-import { renderSSRHead } from '@unhead/ssr'
+import { renderSSRHead } from '@unhead/vue/server'
 
 import { dehydrate } from '@tanstack/vue-query';
 
