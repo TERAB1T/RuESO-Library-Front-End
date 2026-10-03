@@ -64,12 +64,24 @@ export interface PatchBooksExport extends Patch {
 	categories: Pick<Category, 'id' | 'titleRu'>[];
 }
 
+export type GlossaryServer = 'live' | 'pts';
+
 export interface GlossaryGameCheckbox {
 	id: string;
 	name: string;
 	icon: string;
 	disabled?: boolean;
+	label?: string;
+	server?: GlossaryServer;
+	legacyId?: string;
 }
+
+export interface GlossaryServerInfo {
+	lastModified: string;
+	version: string | null;
+}
+
+export type GlossaryUpdated = Record<GlossaryServer, GlossaryServerInfo | null>;
 
 export interface GlossaryGameTag {
 	[key: string]: string;

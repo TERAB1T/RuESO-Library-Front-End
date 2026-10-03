@@ -9,6 +9,7 @@ import type {
 	PatchBooksExport,
 	BooksResponse,
 	LastModified,
+	GlossaryUpdated,
 	AtomicShopCategoryWithSubcategories,
 	AtomicShopItem,
 	AtomicShopItemsResponse,
@@ -232,7 +233,7 @@ export const useFetchLibraryUpdated = (): UseQueryReturnType<LastModified, Error
 	});
 }
 
-export const useFetchGlossaryUpdated = (type: string): UseQueryReturnType<LastModified, Error> => {
+export const useFetchGlossaryUpdated = (type: string): UseQueryReturnType<GlossaryUpdated, Error> => {
 	return useQuery({
 		queryKey: ['glossary', 'updated', type],
 		queryFn: () => fetchApi(prepareURL(`/api/glossary/${type}/updated`)),

@@ -11,7 +11,7 @@ const falloutConfig: GlossaryConfig = {
 	image: 'https://rueso.ru/public/img/main-card-fallout.jpg',
 	apiEndpoint: '/api/glossary/fallout/',
 	localStorageKey: 'glossary-fallout-games',
-	defaultGames: ['fallout 76'],
+	defaultGames: ['fallout76_live'],
 	gameCheckboxes: [
 		{ id: 'Fallout 1', name: 'Fallout (1997)', icon: '/img/icons/fallout1.png' },
 		{ id: 'Fallout 2', name: 'Fallout 2 (1998)', icon: '/img/icons/fallout2.png' },
@@ -21,7 +21,8 @@ const falloutConfig: GlossaryConfig = {
 		{ id: 'New Vegas', name: 'Fallout: New Vegas (2010)', icon: '/img/icons/newvegas.png' },
 		{ id: 'Fallout 4', name: 'Fallout 4 (2015)', icon: '/img/icons/fallout4.png' },
 		{ id: 'Shelter', name: 'Fallout Shelter (2015)', icon: '/img/icons/shelter.png' },
-		{ id: 'Fallout 76', name: 'Fallout 76 (2018)', icon: '/img/icons/fallout76.png' },
+		{ id: 'fallout76_live', label: 'Fallout 76', server: 'live', legacyId: 'fallout 76', name: 'Fallout 76 (2018): основной сервер', icon: '/img/icons/fallout76.png' },
+		{ id: 'fallout76_pts', label: 'Fallout 76', server: 'pts', name: 'Fallout 76 (2018): тестовый сервер (PTS)', icon: '/img/icons/fallout76pts.png' },
 	],
 	gameTags: {
 		'cc': 'Creation Club',

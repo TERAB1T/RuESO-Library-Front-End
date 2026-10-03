@@ -8,7 +8,7 @@ import { highlight, unhighlight } from '@/assets/js/highlight';
 import { useFetchGlossaryUpdated } from '@/composables/useApi';
 import { trackGlossarySearch } from '@/analytics';
 
-import type { GlossaryConfig } from '@/types';
+import type { GlossaryConfig, GlossaryUpdated } from '@/types';
 import type { GlossaryType } from '@/analytics';
 
 DataTable.use(DataTablesCore);
@@ -125,7 +125,22 @@ const onPageDraw = () => {
 	shouldScroll = false;
 };
 
-const onCheckboxChanged = () => {
+const getGameValue = (id: string): string => id.toLowerCase();
+
+const gameValues = props.config.gameCheckboxes.map(game => getGameValue(game.id));
+const serverGameValues = props.config.gameCheckboxes.filter(game => game.server).map(game => getGameValue(game.id));
+const legacyGameValues: Record<string, string> = Object.fromEntries(
+	props.config.gameCheckboxes.filter(game => game.legacyId).map(game => [game.legacyId!, getGameValue(game.id)])
+);
+
+// Server variants of the online game are mutually exclusive: one search runs against one server's DB.
+const onCheckboxChanged = (event: Event) => {
+	const { value, checked } = event.target as HTMLInputElement;
+
+	if (checked && serverGameValues.includes(value)) {
+		checkedGames.value = checkedGames.value.filter(game => game === value || !serverGameValues.includes(game));
+	}
+
 	if (!state.isFirstSearch) dt.search(dt.search()).draw();
 }
 
@@ -133,8 +148,34 @@ const onCheckboxChanged = () => {
 
 const checkedGames = ref<string[]>([]);
 
+// The stored list may come from an older build (plain "eso") or be edited by hand, so keep only known
+// games and at most one server variant; the first one wins, as on the backend.
+const sanitizeGames = (stored: unknown): string[] => {
+	if (!Array.isArray(stored)) return props.config.defaultGames;
+
+	const games: string[] = [];
+	for (const storedGame of stored) {
+		const game = legacyGameValues[storedGame] ?? storedGame;
+
+		if (!gameValues.includes(game) || games.includes(game)) continue;
+		if (serverGameValues.includes(game) && games.some(g => serverGameValues.includes(g))) continue;
+
+		games.push(game);
+	}
+
+	return games;
+};
+
+const readStoredGames = (): unknown => {
+	try {
+		return JSON.parse(localStorage.getItem(props.config.localStorageKey) as string);
+	} catch {
+		return null;
+	}
+};
+
 if (!import.meta.env.SSR) {
-	checkedGames.value = JSON.parse(localStorage.getItem(props.config.localStorageKey) as string) || props.config.defaultGames;
+	checkedGames.value = sanitizeGames(readStoredGames());
 
 	watchEffect(() => {
 		localStorage.setItem(props.config.localStorageKey, JSON.stringify(checkedGames.value));
@@ -190,7 +231,11 @@ const options: any = {
 					else if (row.tag === 'Dawnstar') data = 'dawnstar';
 				}
 
-				return `<div class="game-icon"><img src="/public/img/icons/${data}.png" alt="${data}" width="32px" height="32px">${tag}</div>`;
+				// The PTS DB stores the online game under its plain name; its icon is <game>pts.png.
+				const ptsIcon = `/img/icons/${data}pts.png`;
+				const isPtsRow = props.config.gameCheckboxes.some(game => game.server === 'pts' && game.icon === ptsIcon && checkedGames.value.includes(getGameValue(game.id)));
+
+				return `<div class="game-icon"><img src="/public${isPtsRow ? ptsIcon : `/img/icons/${data}.png`}" alt="${data}" width="32px" height="32px">${tag}</div>`;
 			}
 		},
 		{
@@ -264,7 +309,7 @@ const dtInitHighlight = (dt: any): void => {
 };
 
 const highlightDt = (body: HTMLElement, dt: any) => {
-	const prepareToHighlight = (text: string) => text.trim().replace(/['']/, '\'').replace(/[""„]/, '"').replace(/ /, ' ');
+	const prepareToHighlight = (text: string) => text.trim().replace(/[‘’]/g, '\'').replace(/[“”„]/g, '"').replace(/ /g, ' ');
 
 	if (dt.rows({ filter: 'applied' }).data().length) {
 		dt.columns().every(function (this: any) {
@@ -306,16 +351,23 @@ const mainSearch = debounceFn(async (event: Event) => {
 
 /* ONMOUNTED */
 
+const toSortableDate = (date: string): string => date.split('.').reverse().join('');
+
+const getNewestDate = (updated: GlossaryUpdated): string =>
+	[updated.live, updated.pts]
+		.map(info => info?.lastModified ?? '')
+		.reduce((newest, date) => toSortableDate(date) > toSortableDate(newest) ? date : newest, '');
+
 watchEffect(() => {
 	if (glossaryUpdatedData.value) {
-		state.lastUpdated = glossaryUpdatedData.value.lastModified;
+		state.lastUpdated = getNewestDate(glossaryUpdatedData.value);
 	}
 });
 
 onServerPrefetch(async () => {
 	await glossaryUpdatedSuspense();
 	if (glossaryUpdatedData.value) {
-		state.lastUpdated = glossaryUpdatedData.value.lastModified;
+		state.lastUpdated = getNewestDate(glossaryUpdatedData.value);
 	}
 });
 
@@ -342,8 +394,15 @@ onMounted(async () => {
 			<div class="game-checks d-flex justify-content-center flex-wrap">
 				<template v-for="(gameCheckbox, index) in config.gameCheckboxes" :key="gameCheckbox.id">
 					<div v-if="index === config.dividerIndex" class="w-100 game-checks-divider"></div>
-					<input type="checkbox" class="btn-check" :id="`btn-check-${gameCheckbox.id.toLowerCase()}`" :name="gameCheckbox.id.toLowerCase()" @change="onCheckboxChanged" v-model="checkedGames" :value="gameCheckbox.id.toLowerCase()" :disabled="gameCheckbox.disabled">
-					<label class="btn btn-outline-secondary" :for="`btn-check-${gameCheckbox.id.toLowerCase()}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name"><img width="32px" :src="`/public/${gameCheckbox.icon}`"> <span>{{ gameCheckbox.id }}</span></label>
+					<input type="checkbox" class="btn-check" :id="`btn-check-${getGameValue(gameCheckbox.id)}`" :name="getGameValue(gameCheckbox.id)" @change="onCheckboxChanged" v-model="checkedGames" :value="getGameValue(gameCheckbox.id)" :disabled="gameCheckbox.disabled">
+					<label class="btn btn-outline-secondary" :for="`btn-check-${getGameValue(gameCheckbox.id)}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name">
+						<img width="32px" :src="`/public/${gameCheckbox.icon}`">
+						<span v-if="gameCheckbox.server" class="game-check-text">
+							<span>{{ gameCheckbox.label }}</span>
+							<small class="game-check-server">{{ glossaryUpdatedData?.[gameCheckbox.server]?.version ?? glossaryUpdatedData?.[gameCheckbox.server]?.lastModified }}</small>
+						</span>
+						<span v-else>{{ gameCheckbox.label ?? gameCheckbox.id }}</span>
+					</label>
 				</template>
 				<div class="w-100 game-checks-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time></div>
 			</div>
@@ -375,5 +434,24 @@ onMounted(async () => {
 <style scoped>
 .search-fixed-height {
 	height: 48px;
+}
+
+/* Server buttons carry a second text line, so center every button's content to keep the row even. */
+.game-checks .btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.game-check-text {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: flex-start;
+	line-height: 1.15;
+}
+
+.game-check-server {
+	font-size: 0.65rem;
+	opacity: 0.6;
 }
 </style>

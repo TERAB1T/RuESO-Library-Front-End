@@ -11,14 +11,15 @@ const tesConfig: GlossaryConfig = {
 	image: 'https://rueso.ru/public/img/main-card-glossary.jpg',
 	apiEndpoint: '/api/glossary/tes/',
 	localStorageKey: 'glossary-tes-games',
-	defaultGames: ['eso'],
+	defaultGames: ['eso_live'],
 	gameCheckboxes: [
 		{ id: 'Arena', name: 'TES: Arena (1994)', icon: '/img/icons/arena.png' },
 		{ id: 'Daggerfall', name: 'TES II: Daggerfall (1996)', icon: '/img/icons/daggerfall.png' },
 		{ id: 'Morrowind', name: 'TES III: Morrowind (2002)', icon: '/img/icons/morrowind.png' },
 		{ id: 'Oblivion', name: 'TES IV: Oblivion (2006)', icon: '/img/icons/oblivion.png' },
 		{ id: 'Skyrim', name: 'TES V: Skyrim (2011)', icon: '/img/icons/skyrim.png' },
-		{ id: 'ESO', name: 'TES Online (2014)', icon: '/img/icons/eso.png' },
+		{ id: 'eso_live', label: 'ESO', server: 'live', legacyId: 'eso', name: 'TES Online (2014): основной сервер', icon: '/img/icons/eso.png' },
+		{ id: 'eso_pts', label: 'ESO', server: 'pts', name: 'TES Online (2014): тестовый сервер (PTS)', icon: '/img/icons/esopts.png' },
 		{ id: 'Battlespire', name: 'AESL: Battlespire (1997)', icon: '/img/icons/battlespire.png' },
 		{ id: 'Redguard', name: 'TESA: Redguard (1998)', icon: '/img/icons/redguard.png' },
 		{ id: 'Travels', name: 'TES Travels: Stormhold (2003), Dawnstar (2003), Shadowkey (2004), Oblivion (2006)', icon: '/img/icons/travels.png' },
@@ -41,7 +42,7 @@ const tesConfig: GlossaryConfig = {
 		'Shadowkey': 'Shadowkey',
 		'Oblivion': 'Oblivion Mobile',
 	},
-	dividerIndex: 6,
+	dividerIndex: 7,
 };
 </script>
 
