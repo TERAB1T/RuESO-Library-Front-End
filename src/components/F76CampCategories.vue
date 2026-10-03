@@ -8,14 +8,19 @@ import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons
 import { formatDateTime } from '@/utils';
 import { trackFilterEnabled } from '@/analytics';
 
-import type { CampCategoryWithSubcategories } from '@/types';
+import type { CampCategoryWithSubcategories, CampMobileTab } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
 
 const props = defineProps<{
 	categories: CampCategoryWithSubcategories[],
+	mobileTab: CampMobileTab,
 	lastUpdated: string
+}>();
+
+const emit = defineEmits<{
+	(e: 'update:mobileTab', value: CampMobileTab): void
 }>();
 
 const state = reactive({
@@ -86,24 +91,37 @@ const updateFilters = (updates: Record<string, string | undefined>) => {
 	router.push({ path: route.path, query });
 };
 
+// On desktop the sidebar ignores mobileTab (d-lg-block wins), so switching back unconditionally is safe.
+const onSelectMobileLink = () => emit('update:mobileTab', 'items');
+
 const togglePTS = () => {
 	if (!isPTS.value) trackFilterEnabled('pts', 'camp');
 	updateFilters({ isPTS: !isPTS.value ? '1' : undefined, hasSupport: undefined });
+	onSelectMobileLink();
 };
 </script>
 
 <template>
 	<div class="book-categories-container">
-		<div class="p-3">
-			<div class="library-updated text-muted small">
-				Последнее обновление:
-				<time v-if="props.lastUpdated" :datetime="formatDateTime(props.lastUpdated)">
-					{{ props.lastUpdated }}
-				</time>
+		<ul class="nav nav-tabs d-lg-none mobile-library-tabs" role="tablist">
+			<li class="nav-item" role="presentation">
+				<button class="nav-link" :class="{ active: mobileTab === 'items' }" type="button" @click="emit('update:mobileTab', 'items')">Предметы</button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button class="nav-link" :class="{ active: mobileTab === 'categories' }" type="button" @click="emit('update:mobileTab', 'categories')">Категории</button>
+			</li>
+		</ul>
+
+		<div>
+			<div class="d-none d-lg-block">
+				<div class="library-updated text-muted small">
+					Последнее обновление:
+					<time v-if="props.lastUpdated" :datetime="formatDateTime(props.lastUpdated)">{{ props.lastUpdated }}</time>
+				</div>
 			</div>
 
 			<div class="list-group list-group-flush mb-3">
-				<h5 class="list-group-item h5-list-group-item">Категории</h5>
+				<h5 class="list-group-item h5-list-group-item d-none d-lg-block">Категории</h5>
 				<div v-for="category in props.categories" :key="category.formId" class="category-wrapper">
 					<div class="d-flex align-items-stretch category-item">
 						<button v-if="hasSubcategories(category)" @click="toggleCategory(category.formId, $event)" class="btn btn-sm category-toggle" :class="{
@@ -115,14 +133,14 @@ const togglePTS = () => {
 						<RouterLink :to="buildUrl('category', category)" class="list-group-item list-group-item-action flex-grow-1" :class="{
 							'active': currentCatId === category.formId && currentSubCatId === '-1',
 							'has-subcategories': hasSubcategories(category)
-						}" @mouseenter="prefetchCategory(category.formId)">
+						}" @mouseenter="prefetchCategory(category.formId)" @click="onSelectMobileLink">
 							{{ category.nameRu }}
 						</RouterLink>
 					</div>
 
 					<Transition name="expand">
 						<div v-if="hasSubcategories(category) && isCategoryExpanded(category.formId)" class="subcategories-list">
-							<RouterLink v-for="subcategory in category.subcategories" :key="subcategory.formId" :to="buildUrl('subcategory', subcategory)" class="list-group-item list-group-item-action subcategory-item" :class="{ 'active': currentSubCatId === subcategory.formId }" @mouseenter="prefetchSubcategory(subcategory.formId)">
+							<RouterLink v-for="subcategory in category.subcategories" :key="subcategory.formId" :to="buildUrl('subcategory', subcategory)" class="list-group-item list-group-item-action subcategory-item" :class="{ 'active': currentSubCatId === subcategory.formId }" @mouseenter="prefetchSubcategory(subcategory.formId)" @click="onSelectMobileLink">
 								{{ subcategory.nameRu }}
 							</RouterLink>
 						</div>
@@ -142,15 +160,17 @@ const togglePTS = () => {
 </template>
 
 <style scoped lang="scss">
-.library-updated {
-	margin-top: 5px;
+@media (min-width: 992px) {
+	.book-categories-container > div > .d-none.d-lg-block {
+		margin-top: 60px;
+	}
 }
 
 .list-group {
 	background: var(--bs-block-bg);
 	border-radius: var(--bs-block-border-radius) !important;
 	padding: 0 1.2rem 1rem;
-	margin-top: 11px;
+	margin-top: 28px;
 }
 
 .category-wrapper {
@@ -228,11 +248,6 @@ const togglePTS = () => {
 	&:not(.active):hover {
 		color: var(--bs-primary);
 	}
-}
-
-.library-updated {
-	padding: 0.75rem 1rem;
-	text-align: center;
 }
 
 /* Анимация раскрытия */
@@ -334,5 +349,29 @@ const togglePTS = () => {
 	.h5-list-group-item {
 		position: static;
 	}
+
+	.list-group {
+		margin-top: 0;
+		padding-top: 1rem;
+		border-top-left-radius: 0 !important;
+		border-top-right-radius: 0 !important;
+	}
+
+	.mobile-library-tabs {
+		position: sticky;
+		top: 66px;
+		z-index: 3;
+	}
+}
+
+@media (max-width: 767.98px) {
+	.mobile-library-tabs {
+		top: 56px;
+	}
+}
+
+.mobile-library-tabs {
+	margin-top: 1rem;
+	margin-bottom: 0;
 }
 </style>

@@ -1,5 +1,6 @@
 export type LibraryMobileTab = 'books' | 'categories' | 'patches';
 export type AtomicShopMobileTab = 'items' | 'categories' | 'acquisition';
+export type CampMobileTab = 'items' | 'categories';
 
 export interface Book {
 	id: number;

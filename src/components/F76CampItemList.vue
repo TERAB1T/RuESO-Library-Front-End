@@ -8,7 +8,7 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { useDebounceFn } from '@vueuse/core';
 import { trackCatalogFilter } from '@/analytics';
 
-import type { CampCategoryWithSubcategories, CampItem, CampSubcategory } from '@/types';
+import type { CampCategoryWithSubcategories, CampItem } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
@@ -16,22 +16,6 @@ const router = useRouter();
 const props = defineProps<{
 	categories: CampCategoryWithSubcategories[]
 }>();
-
-const getCategoryByFormId = (formId: string): CampCategoryWithSubcategories | undefined =>
-	props.categories.find(category => category.formId === formId);
-
-const categoryInfo = computed(() =>
-	getCategoryByFormId(state.currentCategory.formId)
-);
-
-const getSubcategoryByFormId = (formId: string): CampSubcategory | undefined =>
-	props.categories
-		.flatMap(category => category.subcategories)
-		.find(subcategory => subcategory.formId === formId);
-
-const subcategoryInfo = computed(() =>
-	getSubcategoryByFormId(state.currentSubcategory.formId)
-);
 
 const state = reactive({
 	items: [] as CampItem[],
@@ -206,18 +190,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<template v-if="state.currentSubcategory.formId !== '-1' && subcategoryInfo?.nameRu">
-		<h2 class="mb-4">Предметы C.A.M.P.: {{ subcategoryInfo?.nameRu.toLowerCase() }}</h2>
-	</template>
-
-	<template v-else-if="state.currentCategory.formId !== '-1' && categoryInfo?.nameRu">
-		<h2 class="mb-4">Предметы C.A.M.P.: {{ categoryInfo?.nameRu.toLowerCase() }}</h2>
-	</template>
-
-	<template v-else>
-		<h2 class="mb-4">Предметы C.A.M.P. Fallout 76</h2>
-	</template>
-
 	<div class="row g-4 mb-2">
 		<div class="col-12 col-md-8">
 			<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter(($event.target as HTMLInputElement).value)">

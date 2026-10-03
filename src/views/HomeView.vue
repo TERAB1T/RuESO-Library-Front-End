@@ -121,7 +121,7 @@ useHead({
 					</div>
 					<div class="card-body">
 						<h5 class="card-title">Предметы C.A.M.P. Fallout 76</h5>
-						<p class="card-text">Полный перечень предметов, которые можно разместить в C.A.M.P. Fallout 76.</p>
+						<p class="card-text">Полный каталог предметов, которые можно разместить в C.A.M.P. Fallout 76.</p>
 					</div>
 				</RouterLink>
 			</div>
