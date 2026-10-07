@@ -189,6 +189,7 @@ export interface AtomicShopItem {
 	descriptionRu: string | null;
 	mainImage: string | null;
 	screenshots: string | string[] | null;
+	video: string | null;
 	categoryFormId: string | null;
 	subcategoryFormId: string | null;
 	isPTS: boolean | null;

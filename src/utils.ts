@@ -79,6 +79,8 @@ export const prepareIcon = (icon: string) => {
 	return icon.replace(/\/?esoui\/(.*?)\.dds/gi, '/public/img/eso/esoui/$1.png').toLowerCase();
 }
 
+export const prepareAtomicShopVideo = (video: string) => `/public/video/f76/${video}`;
+
 export const prepareAtomicShopImage = (icon: any) => {
 	if (!icon) return `/public/img/f76/atx/notfound.webp`;
 	return `/public/img/f76/atx/${icon}`;

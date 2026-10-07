@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router';
-import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
+import { onMounted, onBeforeUnmount, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
 import { useHead, injectHead } from '@unhead/vue';
-import { prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
+import { prepareAtomicShopImage, prepareAtomicShopVideo, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
 import { useFetchAtomicShopItem, useFetchAtomicShopCategories, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory, usePrefetchAtomicShopAcquisitionSource } from '@/composables/useApi';
 import F76AtomicShopCampUnlocked from '@/components/F76AtomicShopCampUnlocked.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
@@ -277,6 +277,27 @@ const splittedScreenshots = computed(() => {
 	return screenshotsArray.map(s => prepareAtomicShopImage(s));
 });
 
+const hasGallery = computed(() => isMobile.value || splittedScreenshots.value.length > 0);
+
+const videoRef = ref<HTMLVideoElement | null>(null);
+let videoObserver: IntersectionObserver | null = null;
+
+// The video sits at the bottom of the page, so it plays only while on screen.
+// It is keyed by item, so moving to another item yields a fresh element and a fresh observer.
+watch(videoRef, (video) => {
+	videoObserver?.disconnect();
+	if (!video) return;
+
+	video.muted = true;
+	videoObserver = new IntersectionObserver(([entry]) => {
+		if (entry?.isIntersecting) video.play().catch(() => {});
+		else video.pause();
+	}, { threshold: 0.25 });
+	videoObserver.observe(video);
+});
+
+onBeforeUnmount(() => videoObserver?.disconnect());
+
 const parsedTextRu = computed(() =>
 	(item.value.descriptionRu ?? '').replace(/\n/g, '<br>')
 );
@@ -380,7 +401,7 @@ useCopyOnClick(copyContainerRef);
 						</li>
 					</ul>
 
-					<div class="tab-content" :class="splittedScreenshots.length > 0 || isMobile ? 'with-screenshots' : ''" id="categoriesTabContent">
+					<div class="tab-content" :class="hasGallery || item.video ? 'with-screenshots' : ''" id="categoriesTabContent">
 						<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
 							<h1 class="book-title">{{ item.nameRu }}</h1>
 							<div v-if="item.isPTS" class="alert alert-info atomic-shop-card" role="alert">
@@ -409,12 +430,12 @@ useCopyOnClick(copyContainerRef);
 						</div>
 					</div>
 
-					<div v-if="isMobile || splittedScreenshots.length > 0" class="screenshots">
-						<div class="fo-sect-h">
+					<div v-if="hasGallery || item.video" class="screenshots">
+						<div v-if="hasGallery" class="fo-sect-h">
 							<span class="fo-bar"></span>
 							<h3 class="fo-h3">Галерея</h3>
 						</div>
-						<div class="row g-3">
+						<div v-if="hasGallery" class="row g-3">
 							<div v-if="isMobile" class="col-12 col-md-4">
 								<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
 									<img :src="prepareAtomicShopImage(item.mainImage)" class="img-fluid screenshot-img" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
@@ -425,6 +446,13 @@ useCopyOnClick(copyContainerRef);
 									<img :src="screenshot" class="img-fluid screenshot-img" :alt="`${item.nameRu || item.nameEn} - скриншот ${index + 1}`" @error="atomicShopHandleImageError">
 								</a>
 							</div>
+						</div>
+						<div v-if="item.video" class="item-video-section">
+							<div class="fo-sect-h">
+								<span class="fo-bar"></span>
+								<h3 class="fo-h3">Видео</h3>
+							</div>
+							<video :key="item.formId" ref="videoRef" class="item-video" :src="prepareAtomicShopVideo(item.video)" muted loop controls playsinline preload="auto"></video>
 						</div>
 					</div>
 				</div>
@@ -533,6 +561,20 @@ useCopyOnClick(copyContainerRef);
 	background: var(--bs-block-bg);
 	border-bottom-left-radius: 12px;
 	border-bottom-right-radius: 12px;
+}
+
+.row + .item-video-section {
+	margin-top: 2rem;
+}
+
+/* Videos are either 1:1 or 16:9; capping the height suits both without knowing the ratio in advance. */
+.item-video {
+	display: block;
+	margin: 0 auto;
+	max-width: 100%;
+	max-height: 540px;
+	border-radius: 8px;
+	background: #000;
 }
 
 .card {
