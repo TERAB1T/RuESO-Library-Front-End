@@ -8,7 +8,7 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { useDebounceFn } from '@vueuse/core';
 import { trackCatalogFilter } from '@/analytics';
 
-import type { AtomicShopCategoryWithSubcategories, AtomicShopItem } from '@/types';
+import type { AtomicShopCategory, AtomicShopCategoryWithSubcategories, AtomicShopItem } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
@@ -26,6 +26,7 @@ const isCategoryMode = computed(() => currentAcquisitionType.value === '-1');
 
 const state = reactive({
 	items: [] as AtomicShopItem[],
+	groupCategories: [] as Pick<AtomicShopCategory, 'formId' | 'nameRu'>[],
 	pageSize: 18,
 	totalPages: 1,
 	filter: (route.query.filter as string | undefined) || '',
@@ -86,12 +87,15 @@ const isItemsFetchedForCurrentMode = computed(() => {
 const applyItemsData = () => {
 	if (isAcquisitionSourceMode.value) {
 		state.items = acquisitionSourceData.value?.items ?? [];
+		state.groupCategories = acquisitionSourceData.value?.categories ?? [];
 		state.totalPages = acquisitionSourceData.value?.pagination?.total_pages ?? 1;
 	} else if (isAcquisitionTypeMode.value) {
 		state.items = acquisitionTypeData.value?.items ?? [];
+		state.groupCategories = [];
 		state.totalPages = acquisitionTypeData.value?.pagination?.total_pages ?? 1;
 	} else {
 		state.items = itemsData.value?.items ?? [];
+		state.groupCategories = [];
 		state.totalPages = itemsData.value?.pagination?.total_pages ?? 1;
 	}
 };
@@ -186,6 +190,18 @@ const getBreadcrumb = (item: AtomicShopItem) => {
 	return catName || '';
 };
 
+const itemGroups = computed(() => {
+	if (!state.groupCategories.length) {
+		return [{ key: 'all', title: null as string | null, items: state.items }];
+	}
+
+	return state.groupCategories.map(cat => ({
+		key: cat.formId,
+		title: cat.nameRu,
+		items: state.items.filter(item => item.categoryFormId === cat.formId)
+	}));
+});
+
 const hoveredItem = ref<string | null>(null);
 
 const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
@@ -242,32 +258,35 @@ onBeforeUnmount(() => {
 		</div>
 	</div>
 
-	<div class="row g-4 mb-4">
-		<div v-for="item in state.items" :key="item.formId" class="col-12 col-md-6 col-lg-4">
-			<RouterLink :to="`/f76-atomic-shop/${item.formId}-${item.slug}`" class="card h-100 text-decoration-none atomic-shop-card" @mouseenter="hoveredItem = item.formId; prefetchAtomicShopItem(item.formId)" @mouseleave="hoveredItem = null">
-				<div v-if="item.isPTS" class="pts-badge-wrapper" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Доступно только на публичном тестовом сервере.">
-					<div class="pts-badge">PTS</div>
-				</div>
-				<div v-if="item.supportItem || item.supportBundles" class="support-badge-wrapper" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Можно купить в службе поддержки Bethesda.">
-					<div class="support-badge">
-						<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
-							<path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5" />
-						</svg>
+	<template v-for="(group, index) in itemGroups" :key="group.key">
+		<h4 v-if="group.title" class="item-group-title" :class="{ 'mt-0': index === 0 }">{{ group.title }}</h4>
+		<div class="row g-4 mb-4">
+			<div v-for="item in group.items" :key="item.formId" class="col-12 col-md-6 col-lg-4">
+				<RouterLink :to="`/f76-atomic-shop/${item.formId}-${item.slug}`" class="card h-100 text-decoration-none atomic-shop-card" @mouseenter="hoveredItem = item.formId; prefetchAtomicShopItem(item.formId)" @mouseleave="hoveredItem = null">
+					<div v-if="item.isPTS" class="pts-badge-wrapper" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Доступно только на публичном тестовом сервере.">
+						<div class="pts-badge">PTS</div>
 					</div>
-				</div>
-				<div class="card-img-wrapper">
-					<img :src="getImageSrc(item, hoveredItem === item.formId)" class="card-img-top" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
-				</div>
-				<div class="card-body d-flex flex-column">
-					<h5 class="card-title mb-2">{{ item.nameRu || item.nameEn || 'Без названия' }}</h5>
-					<p class="card-text text-muted mb-2">{{ item.nameEn }}</p>
-					<p class="card-text text-secondary small mt-auto mb-0">
-						{{ getBreadcrumb(item) }}
-					</p>
-				</div>
-			</RouterLink>
+					<div v-if="item.supportItem || item.supportBundles" class="support-badge-wrapper" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Можно купить в службе поддержки Bethesda.">
+						<div class="support-badge">
+							<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-headset" viewBox="0 0 16 16">
+								<path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5" />
+							</svg>
+						</div>
+					</div>
+					<div class="card-img-wrapper">
+						<img :src="getImageSrc(item, hoveredItem === item.formId)" class="card-img-top" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
+					</div>
+					<div class="card-body d-flex flex-column">
+						<h5 class="card-title mb-2">{{ item.nameRu || item.nameEn || 'Без названия' }}</h5>
+						<p class="card-text text-muted mb-2">{{ item.nameEn }}</p>
+						<p class="card-text text-secondary small mt-auto mb-0">
+							{{ getBreadcrumb(item) }}
+						</p>
+					</div>
+				</RouterLink>
+			</div>
 		</div>
-	</div>
+	</template>
 
 	<div v-if="isItemsFetchedForCurrentMode && state.items.length === 0" class="alert alert-info">
 		Предметы не найдены
@@ -277,6 +296,13 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.item-group-title {
+	margin-top: 20px;
+	margin-bottom: 20px;
+	border-bottom: #ffffff79 1px solid;
+	padding-bottom: 10px;
+}
+
 .atomic-shop-card {
 	position: relative;
 	transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;

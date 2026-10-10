@@ -162,6 +162,7 @@ export interface AcquisitionTypeItemsResponse {
 export interface AcquisitionSourceItemsResponse {
 	acquisitionSource: AcquisitionSource;
 	items: AtomicShopItem[];
+	categories: Pick<AtomicShopCategory, 'formId' | 'nameRu'>[];
 	pagination?: {
 		page: number;
 		pageSize: number;
