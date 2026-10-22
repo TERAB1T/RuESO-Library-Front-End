@@ -3,17 +3,17 @@ import { reactive, ref, computed, watch, watchEffect, onServerPrefetch } from 'v
 import { useRoute } from 'vue-router';
 import BookCategories from '@/components/ESOBookCategories.vue';
 import BookList from '@/components/ESOBookList.vue';
-import { useHead, injectHead } from '@unhead/vue';
+import { useHead } from '@unhead/vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { prepareIcon, lowercaseFirstLetter, formatDateToMonthYear, formatDateTime, uppercaseFirstLetter } from '@/utils';
 import { useFetchCategories, useFetchPatches, useFetchLibraryUpdated } from '@/composables/useApi';
 import { trackLibraryDownload } from '@/analytics';
 
+import type { ReactiveHead } from '@unhead/vue';
 import type { Category, Patch, LibraryMobileTab } from '@/types';
 
 const route = useRoute();
-const head = injectHead();
 
 const mobileTab = ref<LibraryMobileTab>('books');
 
@@ -32,7 +32,8 @@ const patchInfo = computed(() =>
 	state.currentPatchVersion !== '-1' ? state.patches.find(p => p.version === state.currentPatchVersion) : undefined
 );
 
-const updateHead = () => {
+// A computed rather than a getter: during SSR unhead unwraps only refs.
+const headInput = computed((): ReactiveHead => {
 	let metaTitle = `Библиотека ESO | RuESO`;
 	let metaDescription = 'Библиотека книг из The Elder Scrolls Online';
 	let metaLink = 'https://rueso.ru/library/eso/';
@@ -51,7 +52,7 @@ const updateHead = () => {
 		metaLink = `${metaLink}patch/${patchInfo.value.version}-${patchInfo.value.slug}`;
 	}
 
-	useHead({
+	return {
 		title: metaTitle,
 		meta: [
 			{ name: 'description', content: metaDescription },
@@ -72,8 +73,10 @@ const updateHead = () => {
 		link: [
 			{ rel: 'canonical', href: metaLink },
 		]
-	}, { head });
-}
+	};
+});
+
+useHead(headInput);
 
 const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCategories();
 const { data: patchesData, suspense: patchesSuspense, isSuccess: isPatchesFetched } = useFetchPatches();
@@ -91,8 +94,6 @@ watchEffect(() => {
 	if (libraryUpdatedData.value) {
 		state.lastUpdated = libraryUpdatedData.value.lastModified;
 	}
-
-	updateHead();
 });
 
 watch(
@@ -129,8 +130,6 @@ onServerPrefetch(async () => {
 	if (libraryUpdatedData.value) {
 		state.lastUpdated = libraryUpdatedData.value.lastModified;
 	}
-
-	updateHead();
 });
 </script>
 

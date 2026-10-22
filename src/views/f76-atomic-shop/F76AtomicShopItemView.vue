@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router';
-import { onMounted, onBeforeUnmount, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
-import { useHead, injectHead } from '@unhead/vue';
+import { onMounted, onBeforeUnmount, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
+import { useHead } from '@unhead/vue';
 import { prepareAtomicShopImage, prepareAtomicShopVideo, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
 import { useFetchAtomicShopItem, useFetchAtomicShopCategories, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory, usePrefetchAtomicShopAcquisitionSource } from '@/composables/useApi';
 import F76AtomicShopCampUnlocked from '@/components/F76AtomicShopCampUnlocked.vue';
@@ -15,10 +15,10 @@ import { trackSupportGuideOpen } from '@/analytics';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import 'photoswipe/style.css';
 
+import type { ReactiveHead } from '@unhead/vue';
 import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbItem } from '@/types';
 
 const route = useRoute();
-const head = injectHead();
 
 let lightbox: PhotoSwipeLightbox | null = null;
 let BootstrapModal: any = null;
@@ -95,7 +95,11 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	return items;
 });
 
-const updateMetaTags = (itemData: AtomicShopItem) => {
+// A computed rather than a getter: during SSR unhead unwraps only refs.
+const headInput = computed((): ReactiveHead => {
+	const itemData = item.value;
+	if (!itemData.nameRu) return {};
+
 	let metaTitle = `${itemData.nameRu} | Атомная лавка F76`;
 	let metaDescription = generateMetaDescriptionAtomicShop(itemData.descriptionRu as string);
 	let metaLink = `https://rueso.ru/f76-atomic-shop/${itemData.formId}-${itemData.slug}`;
@@ -112,7 +116,7 @@ const updateMetaTags = (itemData: AtomicShopItem) => {
 		}))
 	};
 
-	useHead({
+	return {
 		title: metaTitle,
 		meta: [
 			{ name: 'description', content: metaDescription },
@@ -154,8 +158,10 @@ const updateMetaTags = (itemData: AtomicShopItem) => {
 				innerHTML: JSON.stringify(breadcrumbSchema)
 			}
 		]
-	}, { head });
-}
+	};
+});
+
+useHead(headInput);
 
 const initLightbox = () => {
 	if (import.meta.env.SSR) return;
@@ -219,18 +225,9 @@ const initLightbox = () => {
 	});
 };
 
-watchEffect(() => {
-	if (item.value.nameRu) {
-		updateMetaTags(item.value);
-	}
-});
-
 onServerPrefetch(async () => {
 	await itemSuspense();
 	await categoriesSuspense();
-	if (item.value.nameRu) {
-		updateMetaTags(item.value);
-	}
 });
 
 const queryClient = useQueryClient();

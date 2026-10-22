@@ -3,16 +3,16 @@ import { reactive, ref, computed, watch, watchEffect, onServerPrefetch } from 'v
 import { useRoute } from 'vue-router';
 import F76CampCategories from '@/components/F76CampCategories.vue';
 import F76CampItemList from '@/components/F76CampItemList.vue';
-import { useHead, injectHead } from '@unhead/vue';
+import { useHead } from '@unhead/vue';
 import { formatDateTime } from '@/utils';
 import { useFetchCampCategories, useFetchCampUpdated } from '@/composables/useApi';
 
+import type { ReactiveHead } from '@unhead/vue';
 import type { CampCategoryWithSubcategories, CampMobileTab } from '@/types';
 
 const HOME_DESCRIPTION = 'Полный каталог предметов, которые можно разместить в C.A.M.P. Fallout 76.';
 
 const route = useRoute();
-const head = injectHead();
 
 const mobileTab = ref<CampMobileTab>('items');
 
@@ -34,7 +34,8 @@ const subcategoryInfo = computed(() =>
 		: undefined
 );
 
-const updateHead = () => {
+// A computed rather than a getter: during SSR unhead unwraps only refs.
+const headInput = computed((): ReactiveHead => {
 	let metaTitle = `Предметы C.A.M.P. | Fallout 76`;
 	let metaDescription = HOME_DESCRIPTION;
 	let metaLink = 'https://rueso.ru/f76-camp/';
@@ -59,7 +60,7 @@ const updateHead = () => {
 		}
 	}
 
-	useHead({
+	return {
 		title: metaTitle,
 		meta: [
 			{ name: 'description', content: metaDescription },
@@ -80,8 +81,10 @@ const updateHead = () => {
 		link: [
 			{ rel: 'canonical', href: metaLink },
 		]
-	}, { head });
-};
+	};
+});
+
+useHead(headInput);
 
 const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCampCategories();
 const { data: campUpdatedData, suspense: campUpdatedSuspense, isSuccess: isCampUpdatedFetched } = useFetchCampUpdated();
@@ -94,8 +97,6 @@ watchEffect(() => {
 	if (campUpdatedData.value) {
 		state.lastUpdated = campUpdatedData.value.lastModified;
 	}
-
-	updateHead();
 });
 
 watch(
@@ -126,8 +127,6 @@ onServerPrefetch(async () => {
 	if (campUpdatedData.value) {
 		state.lastUpdated = campUpdatedData.value.lastModified;
 	}
-
-	updateHead();
 });
 </script>
 

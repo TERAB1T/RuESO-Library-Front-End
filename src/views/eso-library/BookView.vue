@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref } from 'vue';
-import { useHead, injectHead } from '@unhead/vue';
+import { onMounted, computed, onServerPrefetch, watch, ref } from 'vue';
+import { useHead } from '@unhead/vue';
 import { prepareIcon, parsePseudoCode, generateMetaDescription } from '@/utils';
 import { useFetchBook, useFetchCategories, useFetchPatches, usePrefetchBook } from '@/composables/useApi';
 import Breadcrumb from '@/components/Breadcrumb.vue';
@@ -10,11 +10,11 @@ import BookInfo from '@/components/ESOBookInfo.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
 
+import type { ReactiveHead } from '@unhead/vue';
 import type { Book, BreadcrumbItem } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
-const head = injectHead();
 
 const currentBookId = computed(() => Number(route.params.bookId) || 1);
 
@@ -62,7 +62,11 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	return items;
 });
 
-const updateMetaTags = (bookData: Book) => {
+// A computed rather than a getter: during SSR unhead unwraps only refs.
+const headInput = computed((): ReactiveHead => {
+	const bookData = book.value;
+	if (!bookData.titleRu) return {};
+
 	const metaTitle = `${bookData.titleRu} | Библиотека ESO`;
 	const metaDescription = generateMetaDescription(bookData.textRu);
 	const metaLink = `https://rueso.ru/library/eso/${bookData.id}-${bookData.slug}`;
@@ -79,7 +83,7 @@ const updateMetaTags = (bookData: Book) => {
 		}))
 	};
 
-	useHead({
+	return {
 		title: metaTitle,
 		meta: [
 			{ name: 'description', content: metaDescription },
@@ -123,20 +127,13 @@ const updateMetaTags = (bookData: Book) => {
 				innerHTML: JSON.stringify(breadcrumbSchema)
 			}
 		]
-	}, { head });
-}
-
-watchEffect(() => {
-	if (book.value.titleRu) {
-		updateMetaTags(book.value);
-	}
+	};
 });
+
+useHead(headInput);
 
 onServerPrefetch(async () => {
 	await bookSuspense();
-	if (book.value.titleRu) {
-		updateMetaTags(book.value);
-	}
 });
 
 const queryClient = useQueryClient();

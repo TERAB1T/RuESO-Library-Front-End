@@ -3,16 +3,16 @@ import { reactive, ref, computed, watch, watchEffect, onServerPrefetch } from 'v
 import { useRoute } from 'vue-router';
 import F76AtomicShopCategories from '@/components/F76AtomicShopCategories.vue';
 import F76AtomicShopItemList from '@/components/F76AtomicShopItemList.vue';
-import { useHead, injectHead } from '@unhead/vue';
+import { useHead } from '@unhead/vue';
 import { formatDateTime, formatSeasonDescription, ACQUISITION_TYPE_LABELS } from '@/utils';
 import { useFetchAtomicShopCategories, useFetchAtomicShopAcquisition, useFetchAtomicShopUpdated } from '@/composables/useApi';
 
+import type { ReactiveHead } from '@unhead/vue';
 import type { AtomicShopCategoryWithSubcategories, AcquisitionSourcesByType, AtomicShopMobileTab } from '@/types';
 
 const HOME_DESCRIPTION = 'Полный каталог товаров, которые появлялись или появятся в Атомной лавке либо в сезонах Fallout 76.';
 
 const route = useRoute();
-const head = injectHead();
 
 const mobileTab = ref<AtomicShopMobileTab>('items');
 
@@ -75,7 +75,8 @@ const acquisitionSourceDescription = computed(() => {
 	);
 });
 
-const updateHead = () => {
+// A computed rather than a getter: during SSR unhead unwraps only refs.
+const headInput = computed((): ReactiveHead => {
 	let metaTitle = `Атомная лавка | Fallout 76`;
 	let metaDescription = HOME_DESCRIPTION;
 	let metaLink = 'https://rueso.ru/f76-atomic-shop/';
@@ -103,7 +104,7 @@ const updateHead = () => {
 		metaDescription = `Полный каталог товаров из раздела «${label}» Атомной лавки Fallout 76.`;
 	}
 
-	useHead({
+	return {
 		title: metaTitle,
 		meta: [
 			{ name: 'description', content: metaDescription },
@@ -124,8 +125,10 @@ const updateHead = () => {
 		link: [
 			{ rel: 'canonical', href: metaLink },
 		]
-	}, { head });
-};
+	};
+});
+
+useHead(headInput);
 
 const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchAtomicShopCategories();
 const { data: acquisitionData, suspense: acquisitionSuspense, isSuccess: isAcquisitionFetched } = useFetchAtomicShopAcquisition();
@@ -143,8 +146,6 @@ watchEffect(() => {
 	if (atomicShopUpdatedData.value) {
 		state.lastUpdated = atomicShopUpdatedData.value.lastModified;
 	}
-
-	updateHead();
 });
 
 watch(
@@ -189,8 +190,6 @@ onServerPrefetch(async () => {
 	if (atomicShopUpdatedData.value) {
 		state.lastUpdated = atomicShopUpdatedData.value.lastModified;
 	}
-
-	updateHead();
 });
 </script>
 

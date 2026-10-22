@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute, onBeforeRouteLeave } from 'vue-router';
-import { onMounted, watchEffect, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
-import { useHead, injectHead } from '@unhead/vue';
+import { onMounted, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
+import { useHead } from '@unhead/vue';
 import { prepareCampImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
 import { useFetchCampItem, useFetchCampCategories, usePrefetchCampCategory, usePrefetchCampSubcategory } from '@/composables/useApi';
 import Breadcrumb from '@/components/Breadcrumb.vue';
@@ -18,10 +18,10 @@ import { useWindowSize } from '@vueuse/core';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import 'photoswipe/style.css';
 
+import type { ReactiveHead } from '@unhead/vue';
 import type { CampItem, CampItemWithRelations, CampCategoryWithSubcategories, BreadcrumbItem } from '@/types';
 
 const route = useRoute();
-const head = injectHead();
 
 let lightbox: PhotoSwipeLightbox | null = null;
 let BootstrapModal: any = null;
@@ -79,7 +79,11 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 	return items;
 });
 
-const updateMetaTags = (itemData: CampItem) => {
+// A computed rather than a getter: during SSR unhead unwraps only refs.
+const headInput = computed((): ReactiveHead => {
+	const itemData = item.value;
+	if (!itemData.nameRu) return {};
+
 	let metaTitle = `${itemData.nameRu} | C.A.M.P. F76`;
 	let metaDescription = generateMetaDescriptionAtomicShop(itemData.descriptionRu as string);
 	let metaLink = `https://rueso.ru/f76-camp/${itemData.formId}-${itemData.slug}`;
@@ -96,7 +100,7 @@ const updateMetaTags = (itemData: CampItem) => {
 		}))
 	};
 
-	useHead({
+	return {
 		title: metaTitle,
 		meta: [
 			{ name: 'description', content: metaDescription },
@@ -138,8 +142,10 @@ const updateMetaTags = (itemData: CampItem) => {
 				innerHTML: JSON.stringify(breadcrumbSchema)
 			}
 		]
-	}, { head });
-}
+	};
+});
+
+useHead(headInput);
 
 const initLightbox = () => {
 	if (import.meta.env.SSR) return;
@@ -194,18 +200,9 @@ const initLightbox = () => {
 	});
 };
 
-watchEffect(() => {
-	if (item.value.nameRu) {
-		updateMetaTags(item.value);
-	}
-});
-
 onServerPrefetch(async () => {
 	await itemSuspense();
 	await categoriesSuspense();
-	if (item.value.nameRu) {
-		updateMetaTags(item.value);
-	}
 });
 
 const queryClient = useQueryClient();
