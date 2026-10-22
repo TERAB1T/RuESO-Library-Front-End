@@ -3,6 +3,7 @@ import { reactive, ref, computed, watch, watchEffect, onServerPrefetch } from 'v
 import { useRoute } from 'vue-router';
 import F76CampCategories from '@/components/F76CampCategories.vue';
 import F76CampItemList from '@/components/F76CampItemList.vue';
+import NotFoundView from '@/views/NotFoundView.vue';
 import { useHead } from '@unhead/vue';
 import { formatDateTime } from '@/utils';
 import { useFetchCampCategories, useFetchCampUpdated } from '@/composables/useApi';
@@ -33,31 +34,31 @@ const subcategoryInfo = computed(() =>
 		? state.categories.flatMap(cat => cat.subcategories).find(sub => sub.formId === state.currentSubcategoryFormId)
 		: undefined
 );
+const isNotFound = computed(() => state.categories.length > 0 && (
+	(state.currentSubcategoryFormId !== '-1' && !subcategoryInfo.value) ||
+	(state.currentSubcategoryFormId === '-1' && state.currentCategoryFormId !== '-1' && !categoryInfo.value)
+));
 
 // A computed rather than a getter: during SSR unhead unwraps only refs.
 const headInput = computed((): ReactiveHead => {
+	if (isNotFound.value) return {};
+
 	let metaTitle = `Предметы C.A.M.P. | Fallout 76`;
 	let metaDescription = HOME_DESCRIPTION;
 	let metaLink = 'https://rueso.ru/f76-camp/';
 	let metaIcon = `https://rueso.ru/public/img/main-card-camp.jpg`;
 
-	if (state.currentSubcategoryFormId !== '-1') {
-		const subcategory = state.categories
-			.flatMap(category => category.subcategories)
-			.find(subcat => subcat.formId === state.currentSubcategoryFormId);
-		if (subcategory) {
-			metaTitle = `${subcategory.nameRu} | C.A.M.P. F76`;
-			metaLink = `${metaLink}category/${subcategory.formId}-${subcategory.slug}`;
-			metaDescription = `Все предметы для C.A.M.P. Fallout 76 из подкатегории «${subcategory.nameRu}».`;
-		}
+	if (subcategoryInfo.value) {
+		const subcategory = subcategoryInfo.value;
+		metaTitle = `${subcategory.nameRu} | C.A.M.P. F76`;
+		metaLink = `${metaLink}subcategory/${subcategory.formId}-${subcategory.slug}`;
+		metaDescription = `Все предметы для C.A.M.P. Fallout 76 из подкатегории «${subcategory.nameRu}».`;
 	}
-	else if (state.currentCategoryFormId !== '-1') {
-		const category = state.categories.find(cat => cat.formId === state.currentCategoryFormId);
-		if (category) {
-			metaTitle = `${category.nameRu} | C.A.M.P. F76`;
-			metaLink = `${metaLink}category/${category.formId}-${category.slug}`;
-			metaDescription = `Все предметы для C.A.M.P. Fallout 76 из категории «${category.nameRu}».`;
-		}
+	else if (categoryInfo.value) {
+		const category = categoryInfo.value;
+		metaTitle = `${category.nameRu} | C.A.M.P. F76`;
+		metaLink = `${metaLink}category/${category.formId}-${category.slug}`;
+		metaDescription = `Все предметы для C.A.M.P. Fallout 76 из категории «${category.nameRu}».`;
 	}
 
 	return {
@@ -131,7 +132,8 @@ onServerPrefetch(async () => {
 </script>
 
 <template>
-	<div class="container-xl">
+	<NotFoundView v-if="isNotFound" />
+	<div v-else class="container-xl">
 		<div class="camp-grid" style="position: relative;">
 			<div class="camp-main">
 				<div class="library-header">

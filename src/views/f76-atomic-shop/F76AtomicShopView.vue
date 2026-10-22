@@ -3,6 +3,7 @@ import { reactive, ref, computed, watch, watchEffect, onServerPrefetch } from 'v
 import { useRoute } from 'vue-router';
 import F76AtomicShopCategories from '@/components/F76AtomicShopCategories.vue';
 import F76AtomicShopItemList from '@/components/F76AtomicShopItemList.vue';
+import NotFoundView from '@/views/NotFoundView.vue';
 import { useHead } from '@unhead/vue';
 import { formatDateTime, formatSeasonDescription, ACQUISITION_TYPE_LABELS } from '@/utils';
 import { useFetchAtomicShopCategories, useFetchAtomicShopAcquisition, useFetchAtomicShopUpdated } from '@/composables/useApi';
@@ -41,6 +42,13 @@ const acquisitionSourceInfo = computed(() =>
 		? state.acquisition.find(group => group.type === state.currentAcquisitionType)?.sources.find(s => s.number === state.currentAcquisitionNumber)
 		: undefined
 );
+const isNotFound = computed(() =>
+	(state.categories.length > 0 && (
+		(state.currentSubcategoryFormId !== '-1' && !subcategoryInfo.value) ||
+		(state.currentSubcategoryFormId === '-1' && state.currentCategoryFormId !== '-1' && !categoryInfo.value)
+	)) ||
+	(state.acquisition.length > 0 && state.currentAcquisitionNumber !== -1 && !acquisitionSourceInfo.value)
+);
 const acquisitionSourceYear = computed(() => {
 	const ts = acquisitionSourceInfo.value?.endDate ?? acquisitionSourceInfo.value?.startDate;
 	return ts ? new Date(ts * 1000).getFullYear() : '';
@@ -77,6 +85,8 @@ const acquisitionSourceDescription = computed(() => {
 
 // A computed rather than a getter: during SSR unhead unwraps only refs.
 const headInput = computed((): ReactiveHead => {
+	if (isNotFound.value) return {};
+
 	let metaTitle = `Атомная лавка | Fallout 76`;
 	let metaDescription = HOME_DESCRIPTION;
 	let metaLink = 'https://rueso.ru/f76-atomic-shop/';
@@ -84,7 +94,7 @@ const headInput = computed((): ReactiveHead => {
 
 	if (subcategoryInfo.value) {
 		metaTitle = `${subcategoryInfo.value.nameRu} | Атомная лавка F76`;
-		metaLink = `${metaLink}category/${subcategoryInfo.value.formId}-${subcategoryInfo.value.slug}`;
+		metaLink = `${metaLink}subcategory/${subcategoryInfo.value.formId}-${subcategoryInfo.value.slug}`;
 		metaDescription = `Полный каталог товаров из подкатегории «${subcategoryInfo.value.nameRu}» Атомной лавки Fallout 76.`;
 	}
 	else if (categoryInfo.value) {
@@ -194,7 +204,8 @@ onServerPrefetch(async () => {
 </script>
 
 <template>
-	<div class="container-xl">
+	<NotFoundView v-if="isNotFound" />
+	<div v-else class="container-xl">
 		<div class="atomic-shop-grid" style="position: relative;">
 			<div class="atomic-shop-main">
 				<div class="library-header">
