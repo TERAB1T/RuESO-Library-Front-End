@@ -79,13 +79,19 @@ new Elysia()
 				set.status = 404;
 			}
 
+			// Replacements are passed as functions: a replacement string would treat
+			// $&, $` and $' in page content as special patterns.
 			Object.entries(payload).forEach(([key, value]) => {
-				template = template.replace(`<!--${key}-->`, String(value));
+				template = template.replace(`<!--${key}-->`, () => String(value));
 			});
 
+			// Escaping "<" keeps "</script" in the data from closing the tag early;
+			// \u003c turns back into "<" when the browser reads the string literal.
+			const serializedState = JSON.stringify(JSON.stringify(vueQueryState)).replace(/</g, '\\u003c');
+
 			const html = template
-				.replace(`<!--app-html-->`, rendered ?? '')
-				.replace(`<!--vue-query-state-->`, `<script>window.__VUE_QUERY_STATE__ = ${JSON.stringify(JSON.stringify(vueQueryState))}</script>`);
+				.replace(`<!--app-html-->`, () => rendered ?? '')
+				.replace(`<!--vue-query-state-->`, () => `<script>window.__VUE_QUERY_STATE__ = ${serializedState}</script>`);
 
 			if (shouldCache && set.status === 200) {
 				ssrCache.set(url, html);
