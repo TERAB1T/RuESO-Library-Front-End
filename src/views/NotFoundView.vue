@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
 import { useHead } from '@unhead/vue';
+import { useSSRContext } from 'vue';
+
+// Read by entry-server.ts to send a 404 status.
+if (import.meta.env.SSR) {
+	const ssrContext = useSSRContext();
+	if (ssrContext) ssrContext.notFound = true;
+}
 
 useHead({
 	title: `Страница не найдена | RuESO`,

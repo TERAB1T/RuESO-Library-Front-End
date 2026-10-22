@@ -39,6 +39,18 @@ const ssrCache = new LRUCache<string, string>({
 
 const NO_CACHE_PATHS = ['/books-export', '/api'];
 
+// Only these query params change the rendered page; others (ysclid, utm_*, scanner junk)
+// would otherwise create a separate cache entry per URL.
+const CACHE_KEY_PARAMS = ['filter', 'hasSupport', 'isPTS', 'page'];
+
+function getCacheKey(urlObj: URL): string {
+	const params = CACHE_KEY_PARAMS
+		.filter(name => urlObj.searchParams.has(name))
+		.map(name => `${name}=${encodeURIComponent(urlObj.searchParams.get(name)!)}`);
+
+	return params.length ? `${urlObj.pathname}?${params.join('&')}` : urlObj.pathname;
+}
+
 new Elysia()
 	.use(staticPlugin({
 		assets: "dist/client/assets",
@@ -51,9 +63,10 @@ new Elysia()
 			const url = urlObj.pathname + urlObj.search;
 
 			const shouldCache = !NO_CACHE_PATHS.some(path => url.startsWith(path));
+			const cacheKey = getCacheKey(urlObj);
 
 			if (shouldCache) {
-				const cached = ssrCache.get(url);
+				const cached = ssrCache.get(cacheKey);
 				if (cached) {
 					return new Response(cached, {
 						headers: {
@@ -69,15 +82,10 @@ new Elysia()
 			template = templateHtml;
 			render = (await import("./dist/server/entry-server.js")).render;
 
-			const [rendered, payload, vueQueryState, modules] = await render(url);
+			const [rendered, payload, vueQueryState, modules, status] = await render(url);
 
 			const cssLinks = renderCssLinks(modules, ssrManifest);
 			payload.headTags = `${payload?.headTags ?? ''}${cssLinks}`;
-
-			const headTags = payload.headTags;
-			if (headTags.includes("Страница не найдена")) {
-				set.status = 404;
-			}
 
 			// Replacements are passed as functions: a replacement string would treat
 			// $&, $` and $' in page content as special patterns.
@@ -93,14 +101,16 @@ new Elysia()
 				.replace(`<!--app-html-->`, () => rendered ?? '')
 				.replace(`<!--vue-query-state-->`, () => `<script>window.__VUE_QUERY_STATE__ = ${serializedState}</script>`);
 
-			if (shouldCache && set.status === 200) {
-				ssrCache.set(url, html);
+			if (shouldCache && status === 200) {
+				ssrCache.set(cacheKey, html);
 			}
 
 			return new Response(html, {
+				status,
 				headers: {
 					"Content-Type": "text/html",
 					"X-Cache": shouldCache ? "MISS" : "BYPASS",
+					...(status === 503 && { "Retry-After": "60" }),
 				},
 			});
 		} catch (e) {
