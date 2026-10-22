@@ -6,6 +6,7 @@ import { useHead } from '@unhead/vue';
 import { debounceFn, formatDateTime } from '@/utils';
 import { highlight, unhighlight } from '@/assets/js/highlight';
 import { useFetchGlossaryUpdated } from '@/composables/useApi';
+import { useDelegatedTooltips } from '@/composables/useDelegatedTooltips';
 import { trackGlossarySearch } from '@/analytics';
 
 import type { GlossaryConfig, GlossaryUpdated } from '@/types';
@@ -60,6 +61,8 @@ const state = reactive({
 
 const { data: glossaryUpdatedData, suspense: glossaryUpdatedSuspense, isSuccess: isGlossaryUpdatedFetched } = useFetchGlossaryUpdated(props.config.type);
 
+useDelegatedTooltips();
+
 /* UTILS */
 
 const getTagName = (tag: string): string | undefined => props.config.gameTags?.[tag] ?? tag;
@@ -99,14 +102,6 @@ const prepareText = (data: any, type: string, row: any, meta: object, lang: stri
 
 	return data;
 }
-
-const enableTooltips = async () => {
-	const { Tooltip } = await import("bootstrap");
-	const container = document.body;
-	new Tooltip(container, {
-		selector: '[data-bs-toggle="tooltip"]'
-	});
-};
 
 /* EVENTS */
 
@@ -377,8 +372,6 @@ onMounted(async () => {
 	dtInitHighlight(dt);
 
 	state.targetExists = !!document.querySelector("#glossary-search-nav");
-
-	enableTooltips();
 });
 </script>
 

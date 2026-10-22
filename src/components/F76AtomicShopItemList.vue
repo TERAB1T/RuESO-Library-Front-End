@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { reactive, watch, computed, watchEffect, onServerPrefetch, ref, onMounted, onBeforeUnmount } from 'vue';
+import { reactive, watch, computed, watchEffect, onServerPrefetch, ref, onMounted } from 'vue';
 import { prepareAtomicShopImage, getAtomicShopSortOrder, setAtomicShopSortOrder, atomicShopHandleImageError } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchAtomicShopItems, useFetchAtomicShopAcquisitionTypeItems, useFetchAtomicShopAcquisitionSourceItems, usePrefetchAtomicShopItem } from '@/composables/useApi';
+import { useDelegatedTooltips } from '@/composables/useDelegatedTooltips';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useDebounceFn } from '@vueuse/core';
 import { trackCatalogFilter } from '@/analytics';
@@ -215,31 +216,13 @@ const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
 	return prepareAtomicShopImage(item.mainImage?.replace(/\.(avif|webp)$/, format));
 };
 
-let tooltipInstance: any = null;
+useDelegatedTooltips();
 
-const enableTooltips = async () => {
-	const { Tooltip } = await import("bootstrap");
-	const container = document.body;
-	tooltipInstance = new Tooltip(container, {
-		selector: '[data-bs-toggle="tooltip"]'
-	});
-};
-
-onMounted(async () => {
+onMounted(() => {
 	const filterInput = document.getElementById('library-filter') as HTMLInputElement;
 	if (filterInput && state.filter) {
 		filterInput.value = state.filter;
 	}
-
-	await enableTooltips();
-});
-
-onBeforeUnmount(() => {
-	if (tooltipInstance) {
-		tooltipInstance.dispose();
-	}
-
-	document.querySelectorAll('.tooltip').forEach(el => el.remove());
 });
 </script>
 
