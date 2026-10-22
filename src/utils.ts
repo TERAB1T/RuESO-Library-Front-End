@@ -322,76 +322,37 @@ export const formatDateTime = (input: string): string => {
 	return `${yyyy}-${mm}-${dd} 00:00`;
 }
 
+const VALID_SORT_ORDERS = ['date_desc', 'date_asc', 'name_desc', 'name_asc'];
+const DEFAULT_SORT_ORDER = 'date_desc';
+
+/**
+ * Returns the sort order saved under the given localStorage key. If nothing valid is saved,
+ * saves the default ("date_desc") and returns it. Always "date_desc" during SSR.
+ */
+const getSavedSortOrder = (storageKey: string): string => {
+	if (import.meta.env.SSR) return DEFAULT_SORT_ORDER;
+
+	const saved = localStorage.getItem(storageKey);
+	if (saved && VALID_SORT_ORDERS.includes(saved)) return saved;
+
+	localStorage.setItem(storageKey, DEFAULT_SORT_ORDER);
+	return DEFAULT_SORT_ORDER;
+}
+
+const saveSortOrder = (storageKey: string, order: string) => {
+	if (!import.meta.env.SSR) {
+		localStorage.setItem(storageKey, order);
+	}
+}
+
 const atomicShopLocalStorageKey = 'atomic-shop-sort-order';
-
-/**
- * Returns the saved sort order for the atomic shop list. If no saved sort order
- * is found, sets the default sort order to "date_desc" and returns it.
- *
- * @returns The saved sort order, or "date_desc" if no saved sort order is found.
- */
-export const getAtomicShopSortOrder = (): string => {
-	const validSortOrders = ['date_desc', 'date_asc', 'name_desc', 'name_asc'];
-
-	if (!import.meta.env.SSR) {
-		let saved = localStorage.getItem(atomicShopLocalStorageKey);
-
-		if (!saved || !validSortOrders.includes(saved)) {
-			saved = "date_desc";
-			setAtomicShopSortOrder(saved);
-		}
-
-		return saved;
-	} else {
-		return "date_desc";
-	}
-}
-
-/**
- * Saves the given sort order to local storage.
- * @param order The sort order to save.
- */
-export const setAtomicShopSortOrder = (order: string) => {
-	if (!import.meta.env.SSR) {
-		localStorage.setItem(atomicShopLocalStorageKey, order);
-	}
-}
-
-
 const campLocalStorageKey = 'camp-sort-order';
 
-/**
- * Returns the saved sort order for the C.A.M.P. list. If no saved sort order
- * is found, sets the default sort order to "date_desc" and returns it.
- *
- * @returns The saved sort order, or "date_desc" if no saved sort order is found.
- */
-export const getCampSortOrder = (): string => {
-	const validSortOrders = ['date_desc', 'date_asc', 'name_desc', 'name_asc'];
+export const getAtomicShopSortOrder = (): string => getSavedSortOrder(atomicShopLocalStorageKey);
+export const setAtomicShopSortOrder = (order: string) => saveSortOrder(atomicShopLocalStorageKey, order);
 
-	if (!import.meta.env.SSR) {
-		let saved = localStorage.getItem(campLocalStorageKey);
-
-		if (!saved || !validSortOrders.includes(saved)) {
-			saved = "date_desc";
-			setCampSortOrder(saved);
-		}
-
-		return saved;
-	} else {
-		return "date_desc";
-	}
-}
-
-/**
- * Saves the given sort order to local storage.
- * @param order The sort order to save.
- */
-export const setCampSortOrder = (order: string) => {
-	if (!import.meta.env.SSR) {
-		localStorage.setItem(campLocalStorageKey, order);
-	}
-}
+export const getCampSortOrder = (): string => getSavedSortOrder(campLocalStorageKey);
+export const setCampSortOrder = (order: string) => saveSortOrder(campLocalStorageKey, order);
 
 export const atomicShopHandleImageError = (event: Event) => {
 	const target = event.target as HTMLImageElement;
