@@ -53,6 +53,12 @@ const fetchApi = async (url: string) => {
 	const response = await fetch(url, fetchParams);
 	// console.timeEnd(`fetching: ${url}`);
 
+	// A missing book or item is a valid answer, not a failure: views render their 404 page for null
+	// data, and a thrown error would be retried and turn the SSR response into a 503.
+	if (response.status === 404) {
+		return null;
+	}
+
 	if (!response.ok) {
 		throw new ApiError(url, response.status);
 	}

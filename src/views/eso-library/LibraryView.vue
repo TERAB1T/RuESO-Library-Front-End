@@ -3,6 +3,7 @@ import { reactive, ref, computed, watch, watchEffect, onServerPrefetch } from 'v
 import { useRoute } from 'vue-router';
 import BookCategories from '@/components/ESOBookCategories.vue';
 import BookList from '@/components/ESOBookList.vue';
+import NotFoundView from '@/views/NotFoundView.vue';
 import { useHead } from '@unhead/vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
@@ -31,9 +32,15 @@ const categoryInfo = computed(() =>
 const patchInfo = computed(() =>
 	state.currentPatchVersion !== '-1' ? state.patches.find(p => p.version === state.currentPatchVersion) : undefined
 );
+const isNotFound = computed(() =>
+	(route.params.categoryId !== undefined && state.categories.length > 0 && !categoryInfo.value) ||
+	(route.params.patchVersion !== undefined && state.patches.length > 0 && !patchInfo.value)
+);
 
 // A computed rather than a getter: during SSR unhead unwraps only refs.
 const headInput = computed((): ReactiveHead => {
+	if (isNotFound.value) return {};
+
 	let metaTitle = `Библиотека ESO | RuESO`;
 	let metaDescription = 'Библиотека книг из The Elder Scrolls Online';
 	let metaLink = 'https://rueso.ru/library/eso/';
@@ -134,7 +141,8 @@ onServerPrefetch(async () => {
 </script>
 
 <template>
-	<div class="container-xl">
+	<NotFoundView v-if="isNotFound" />
+	<div v-else class="container-xl">
 		<div class="library-grid" style="position: relative;">
 			<div class="library-main">
 				<div class="library-header">
