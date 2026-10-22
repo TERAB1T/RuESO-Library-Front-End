@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, watchEffect, onMounted, nextTick, onServerPrefetch } from 'vue';
+import { reactive, ref, watchEffect, onMounted, onBeforeUnmount, nextTick, onServerPrefetch } from 'vue';
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bs5';
 import { useHead } from '@unhead/vue';
@@ -372,6 +372,13 @@ onMounted(async () => {
 	dtInitHighlight(dt);
 
 	state.targetExists = !!document.querySelector("#glossary-search-nav");
+});
+
+// datatables.net-vue3 subscribes to every table event to re-emit it and never unsubscribes.
+// DataTables keeps those handlers in a module-level store, so each visit leaked the whole table.
+// Runs before the child DataTable component's own unmount, which destroys the table.
+onBeforeUnmount(() => {
+	dt?.off('.dt');
 });
 </script>
 
