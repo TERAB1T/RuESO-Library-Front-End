@@ -413,10 +413,10 @@ onBeforeRouteLeave(async () => {
 							<F76CampShopDescription :shop-info="item.shopInfo" lang="ru" />
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="ru" />
 							<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" lang="ru" />
-							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="ru" />
 							<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" :spoil-rate="item.spoilRate" lang="ru" />
 							<F76CampDisplayTable :display="item.display" lang="ru" />
 							<F76CampStorage :storage="item.storage" :spoil-rate="item.spoilRate" lang="ru" />
+							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="ru" />
 							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="ru" />
 							<F76CampSharedLimit :key="item.formId" :shared-limit="item.sharedLimit" lang="ru" />
 						</div>
@@ -434,10 +434,10 @@ onBeforeRouteLeave(async () => {
 							<F76CampShopDescription :shop-info="item.shopInfo" lang="en" />
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="en" />
 							<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" lang="en" />
-							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="en" />
 							<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" :spoil-rate="item.spoilRate" lang="en" />
 							<F76CampDisplayTable :display="item.display" lang="en" />
 							<F76CampStorage :storage="item.storage" :spoil-rate="item.spoilRate" lang="en" />
+							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="en" />
 							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="en" />
 							<F76CampSharedLimit :key="item.formId" :shared-limit="item.sharedLimit" lang="en" />
 						</div>
