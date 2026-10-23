@@ -2,7 +2,7 @@
 import { useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
 import { useHead } from '@unhead/vue';
-import { prepareCampImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
+import { prepareCampImage, prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
 import { useFetchCampItem, useFetchCampCategories, usePrefetchCampCategory, usePrefetchCampSubcategory } from '@/composables/useApi';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import F76CampUnlockConditions from '@/components/F76CampUnlockConditions.vue';
@@ -12,6 +12,7 @@ import F76CampRecipeVariants from '@/components/F76CampRecipeVariants.vue';
 import F76CampRecipeComponents from '@/components/F76CampRecipeComponents.vue';
 import F76CampDisplayTable from '@/components/F76CampDisplayTable.vue';
 import F76CampPowerInfo from '@/components/F76CampPowerInfo.vue';
+import F76CampShopDescription from '@/components/F76CampShopDescription.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
@@ -252,6 +253,12 @@ const splittedScreenshots = computed(() => {
 	return screenshotsArray.map(s => prepareCampImage(s));
 });
 
+const shopScreenshots = computed(() => (item.value.shopInfo?.screenshots ?? []).map(s => prepareAtomicShopImage(s)));
+
+const hasShopSetNote = computed(() => shopScreenshots.value.length > 0 && !!item.value.shopInfo?.isSet);
+
+const hasScreenshotsBlock = computed(() => isMobile.value || splittedScreenshots.value.length > 0 || shopScreenshots.value.length > 0);
+
 const parsedTextRu = computed(() => {
 	if (item.value.descriptionRu) return item.value.descriptionRu.replace(/\n/g, '<br>');
 	if (item.value.recipe?.descriptionRu) return item.value.recipe.descriptionRu.replace(/\n/g, '<br>');
@@ -384,7 +391,7 @@ onBeforeRouteLeave(async () => {
 						</li>
 					</ul>
 
-					<div class="tab-content" :class="splittedScreenshots.length > 0 || isMobile ? 'with-screenshots' : ''" id="categoriesTabContent">
+					<div class="tab-content" :class="hasScreenshotsBlock ? 'with-screenshots' : ''" id="categoriesTabContent">
 						<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
 							<h1 class="book-title">{{ item.nameRu }}</h1>
 							<div v-if="item.isPTS" class="alert alert-info atomic-shop-card" role="alert">
@@ -395,6 +402,7 @@ onBeforeRouteLeave(async () => {
 							</div>
 							<div class="book-main" v-html="parsedTextRu"></div>
 
+							<F76CampShopDescription :shop-info="item.shopInfo" lang="ru" />
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="ru" />
 							<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" lang="ru" />
 							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="ru" />
@@ -413,6 +421,7 @@ onBeforeRouteLeave(async () => {
 							</div>
 							<div class="book-main" v-html="parsedTextEn"></div>
 
+							<F76CampShopDescription :shop-info="item.shopInfo" lang="en" />
 							<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" lang="en" />
 							<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" lang="en" />
 							<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" lang="en" />
@@ -425,10 +434,10 @@ onBeforeRouteLeave(async () => {
 						</div>
 					</div>
 
-					<div v-if="isMobile || splittedScreenshots.length > 0" class="screenshots">
+					<div v-if="hasScreenshotsBlock" class="screenshots">
 						<div class="fo-sect-h">
 							<span class="fo-bar"></span>
-							<h3 class="fo-h3">Галерея</h3>
+							<h3 class="fo-h3">Галерея{{ hasShopSetNote ? '*' : '' }}</h3>
 						</div>
 						<div class="row g-3">
 							<div v-if="isMobile" class="col-12 col-md-4">
@@ -441,6 +450,14 @@ onBeforeRouteLeave(async () => {
 									<img :src="screenshot" class="img-fluid screenshot-img" :alt="`${item.nameRu || item.nameEn} — скриншот ${index + 1}`" @error="atomicShopHandleImageError">
 								</a>
 							</div>
+							<div v-for="(screenshot, index) in shopScreenshots" :key="`shop-${index}`" class="col-12 col-md-4">
+								<a :href="screenshot" class="screenshot-link">
+									<img :src="screenshot" class="img-fluid screenshot-img" :alt="`${item.nameRu || item.nameEn} - скриншот из магазина ${index + 1}`" loading="lazy" @error="atomicShopHandleImageError">
+								</a>
+							</div>
+						</div>
+						<div v-if="hasShopSetNote" class="shop-note">
+							*&nbsp;Эти скриншоты относятся ко всему набору из магазина, а не к отдельному предмету.
 						</div>
 					</div>
 				</div>
@@ -567,6 +584,15 @@ onBeforeRouteLeave(async () => {
 	background: var(--bs-block-bg);
 	border-bottom-left-radius: 12px;
 	border-bottom-right-radius: 12px;
+}
+
+.shop-note {
+	margin-top: 1rem;
+	font-size: 0.9rem;
+	line-height: 1.4;
+	font-style: italic;
+	color: #a1a1aa;
+	text-align: left;
 }
 
 .card {

@@ -346,6 +346,13 @@ export interface UnlockedByEntitlement {
 	slug: string | null;
 }
 
+export interface CampShopInfo {
+	descriptionEn: string | null;
+	descriptionRu: string | null;
+	screenshots: string[] | null;
+	isSet: boolean;
+}
+
 export interface ProducesAvailabilityNote {
 	en: string | null;
 	ru: string | null;
@@ -490,6 +497,7 @@ export interface CampItemWithRelations extends CampItem {
 	buffs: Buff[] | null;
 	arcadeGame: ArcadeGame | null;
 	unlockedByEntitlements: UnlockedByEntitlement[] | null;
+	shopInfo: CampShopInfo | null;
 	recipe: RecipeInfo | null;
 	recipeItems: RecipeSiblingItem[];
 }
