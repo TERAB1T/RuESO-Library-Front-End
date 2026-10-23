@@ -404,7 +404,7 @@ onBeforeUnmount(() => {
 						<span v-else>{{ gameCheckbox.label ?? gameCheckbox.id }}</span>
 					</label>
 				</template>
-				<div class="w-100 game-checks-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time><span v-else-if="isGlossaryUpdatedPending" class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder skeleton-date"></span></span></div>
+				<div class="w-100 game-checks-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time><span v-else-if="isGlossaryUpdatedPending" class="d-inline-block skeleton-date" aria-hidden="true"></span></div>
 			</div>
 
 			<div class="main-table-wrap">
@@ -453,5 +453,7 @@ onBeforeUnmount(() => {
 .game-check-server {
 	font-size: 0.65rem;
 	opacity: 0.6;
+	/* Keeps the line while the version is loading, so the game name doesn't jump up when it arrives. */
+	min-height: 1lh;
 }
 </style>

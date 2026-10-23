@@ -10,6 +10,7 @@ import type {
 	BooksResponse,
 	LastModified,
 	GlossaryUpdated,
+	Updated,
 	AtomicShopCategoryWithSubcategories,
 	AtomicShopItem,
 	AtomicShopItemsResponse,
@@ -249,37 +250,26 @@ export const useFetchCampCategories = (): UseQueryReturnType<CampCategoryWithSub
 
 // Updates
 
-export const useFetchLibraryUpdated = (): UseQueryReturnType<LastModified, Error> => {
+// One request for every section. App.vue awaits it during SSR on any page, so it is always in the
+// hydration state and section pages never wait for their date on client-side navigation.
+const useUpdatedQuery = <T>(select: (updated: Updated) => T): UseQueryReturnType<T, Error> => {
 	return useQuery({
-		queryKey: ['library', 'updated'],
-		queryFn: () => fetchApi(prepareURL('/api/library/updated')),
+		queryKey: ['updated'],
+		queryFn: () => fetchApi(prepareURL('/api/updated')),
 		staleTime: Infinity,
+		select,
 	});
 }
 
-export const useFetchGlossaryUpdated = (type: string): UseQueryReturnType<GlossaryUpdated, Error> => {
-	return useQuery({
-		queryKey: ['glossary', 'updated', type],
-		queryFn: () => fetchApi(prepareURL(`/api/glossary/${type}/updated`)),
-		staleTime: Infinity,
-	});
-}
+export const useFetchUpdated = () => useUpdatedQuery(updated => updated);
 
-export const useFetchAtomicShopUpdated = (): UseQueryReturnType<LastModified, Error> => {
-	return useQuery({
-		queryKey: ['f76_atx', 'updated'],
-		queryFn: () => fetchApi(prepareURL('/api/f76/atomicshop/updated')),
-		staleTime: Infinity,
-	});
-}
+export const useFetchLibraryUpdated = () => useUpdatedQuery<LastModified>(updated => updated.library);
 
-export const useFetchCampUpdated = (): UseQueryReturnType<LastModified, Error> => {
-	return useQuery({
-		queryKey: ['f76_camp', 'updated'],
-		queryFn: () => fetchApi(prepareURL('/api/f76/camp/updated')),
-		staleTime: Infinity,
-	});
-}
+export const useFetchGlossaryUpdated = (type: string) => useUpdatedQuery<GlossaryUpdated | undefined>(updated => updated.glossary[type]);
+
+export const useFetchAtomicShopUpdated = () => useUpdatedQuery<LastModified>(updated => updated.f76AtomicShop);
+
+export const useFetchCampUpdated = () => useUpdatedQuery<LastModified>(updated => updated.f76Camp);
 
 // Prefetches
 

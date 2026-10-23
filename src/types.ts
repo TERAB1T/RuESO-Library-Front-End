@@ -83,6 +83,13 @@ export interface GlossaryServerInfo {
 
 export type GlossaryUpdated = Record<GlossaryServer, GlossaryServerInfo | null>;
 
+export interface Updated {
+	library: LastModified;
+	f76AtomicShop: LastModified;
+	f76Camp: LastModified;
+	glossary: Record<string, GlossaryUpdated>;
+}
+
 export interface GlossaryGameTag {
 	[key: string]: string;
 }
