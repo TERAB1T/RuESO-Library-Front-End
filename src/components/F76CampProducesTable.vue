@@ -6,6 +6,7 @@ import type { ProducesMode, ProducesNode, ProducesItemNode, ProducesListNode } f
 const props = defineProps<{
 	produces: ProducesMode[] | null;
 	carryWeight: number | null;
+	spoilRate: number | null;
 	lang: 'ru' | 'en';
 }>();
 
@@ -242,6 +243,15 @@ const carryWeightText = computed<string | null>(() => {
 		: ` Maximum capacity — ${weight} lb${weight === 1 ? '' : 's'}.`;
 });
 
+const spoilText = computed<string | null>(() => {
+	const rate = props.spoilRate;
+	if (rate == null || rate >= 1 || vendingSummary.value) return null;
+	if (rate === 0) return props.lang === 'ru' ? ' Еда в нем не портится.' : ' Food does not spoil in it.';
+
+	const percent = Math.round((1 - rate) * 100);
+	return props.lang === 'ru' ? ` Еда в нем портится на ${percent}% медленнее.` : ` Food spoils ${percent}% slower in it.`;
+});
+
 const t = computed(() => props.lang === 'ru'
 	? { title: vendingSummary.value ? 'Взаимодействие' : 'Производство', mode: (i: number) => `Режим ${i + 1}`, colItem: 'Предмет', colType: 'Тип', colCount: 'Кол-во', colChance: 'Шанс', group: (n: number) => `Группа ${n}` }
 	: { title: vendingSummary.value ? 'Interaction' : 'Production', mode: (i: number) => `Mode ${i + 1}`, colItem: 'Item', colType: 'Type', colCount: 'Qty', colChance: 'Chance', group: (n: number) => `Group ${n}` }
@@ -273,6 +283,7 @@ const t = computed(() => props.lang === 'ru'
 					<template v-if="lang === 'ru'">{{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong> этот объект производит по одному предмету из списка ниже.</template>
 					<template v-else>{{ collectorPeriod.prefix }} <strong>{{ collectorPeriod.time }}</strong>, this object produces one item from the list below.</template>
 					<span v-if="carryWeightText">{{ carryWeightText }}</span>
+					<span v-if="spoilText">{{ spoilText }}</span>
 				</span>
 			</template>
 			<template v-else>
@@ -280,6 +291,7 @@ const t = computed(() => props.lang === 'ru'
 				<span v-if="intervalText" class="produces-summary-interval">
 					{{ intervalText }}
 				</span>
+				<span v-if="spoilText">{{ spoilText }}</span>
 			</template>
 		</div>
 
