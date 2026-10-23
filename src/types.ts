@@ -474,6 +474,16 @@ export interface RecipeSiblingItem {
 	slug: string | null;
 }
 
+export interface CampSharedLimitCategory extends Pick<CampCategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> {
+	count: number;
+}
+
+export interface CampSharedLimit {
+	total: number;
+	items: RecipeSiblingItem[];
+	categories: CampSharedLimitCategory[];
+}
+
 export interface CampItemWithRelations extends CampItem {
 	category: Pick<CampCategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> | null;
 	subcategory: Pick<CampSubcategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> | null;
@@ -498,6 +508,7 @@ export interface CampItemWithRelations extends CampItem {
 	arcadeGame: ArcadeGame | null;
 	unlockedByEntitlements: UnlockedByEntitlement[] | null;
 	shopInfo: CampShopInfo | null;
+	sharedLimit: CampSharedLimit | null;
 	recipe: RecipeInfo | null;
 	recipeItems: RecipeSiblingItem[];
 }

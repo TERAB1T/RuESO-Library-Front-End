@@ -13,6 +13,7 @@ import F76CampRecipeComponents from '@/components/F76CampRecipeComponents.vue';
 import F76CampDisplayTable from '@/components/F76CampDisplayTable.vue';
 import F76CampPowerInfo from '@/components/F76CampPowerInfo.vue';
 import F76CampShopDescription from '@/components/F76CampShopDescription.vue';
+import F76CampSharedLimit from '@/components/F76CampSharedLimit.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
@@ -415,6 +416,7 @@ onBeforeRouteLeave(async () => {
 							<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" lang="ru" />
 							<F76CampDisplayTable :display="item.display" lang="ru" />
 							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="ru" />
+							<F76CampSharedLimit :key="item.formId" :shared-limit="item.sharedLimit" lang="ru" />
 						</div>
 
 						<div class="tab-pane p-3" id="english-pane" role="tabpanel" aria-labelledby="english-pane" tabindex="1">
@@ -434,6 +436,7 @@ onBeforeRouteLeave(async () => {
 							<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" lang="en" />
 							<F76CampDisplayTable :display="item.display" lang="en" />
 							<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" lang="en" />
+							<F76CampSharedLimit :key="item.formId" :shared-limit="item.sharedLimit" lang="en" />
 						</div>
 
 						<div class="tab-pane p-3" id="info-pane" role="tabpanel" aria-labelledby="info-pane" tabindex="2">
