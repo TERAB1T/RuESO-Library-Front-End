@@ -13,7 +13,7 @@ const props = defineProps<{
 	lang: 'ru' | 'en';
 }>();
 
-const INITIAL_LIMIT = 25;
+const INITIAL_LIMIT = 5;
 const expanded = ref(false);
 
 const hasVariants = computed(() => props.recipeItems.length > 0 && !!props.recipe);
