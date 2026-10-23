@@ -15,7 +15,9 @@
 		"serve-express": "NODE_ENV=production bun serverExpress",
 		"serve-dev": "bun serverElysia",
 		"debug": "bun --inspect-brk serverElysia",
-		"type-check": "vue-tsc --build"
+		"type-check": "vue-tsc --build",
+		"check:ssr": "bun scripts/check-ssr.ts",
+		"check:browser": "bun scripts/check-browser.ts"
 	},
 	"dependencies": {
 		"@elysiajs/static": "^1.4.10",
@@ -53,6 +55,7 @@
 		"jiti": "^2.7.0",
 		"jsdom": "^27.4.0",
 		"npm-run-all2": "^8.0.4",
+		"playwright-core": "1.57.0",
 		"typescript": "^5.9.3",
 		"vite": "^8.3.5",
 		"vite-plugin-vue-devtools": "^8.2.1",

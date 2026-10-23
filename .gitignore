@@ -33,3 +33,6 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Regression check snapshots (scripts/check-*.ts)
+.checks/
