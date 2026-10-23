@@ -27,6 +27,17 @@ const currentPatch = computed(() => (route.params.patchVersion as string) || '-1
 
 const filter = ref('');
 
+// Pre-grouped rather than v-if inside the v-for: the client TransitionGroup drops the empty v-if
+// placeholders the server renders, which broke hydration.
+const booksByCategory = computed(() => {
+	const groups = new Map<number, Book[]>();
+	for (const book of state.books) {
+		if (!groups.has(book.catId)) groups.set(book.catId, []);
+		groups.get(book.catId)!.push(book);
+	}
+	return groups;
+});
+
 // Loading skeleton: title widths of the placeholder rows, in rem.
 const SKELETON_TITLE_WIDTHS = [14, 11, 16, 12, 15, 10, 13, 12];
 
@@ -124,17 +135,15 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 		<template v-for="category in state.categories" :key="category.id">
 			<h4>{{ category.titleRu }}</h4>
 			<TransitionGroup class="list-group list-group-flush" name="list" tag="div">
-				<template v-for="book in state.books" :key="book.id">
-					<RouterLink v-if="book.catId === category.id" class="list-group-item list-group-item-action" :to="`/library/eso/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">
-						<div class="row align-items-center g-3 booklist-row">
-							<div class="col-auto booklist-left"><img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu"></div>
-							<div class="col-auto d-flex flex-column justify-content-center booklist-right">
-								<div class="box">{{ book.titleRu }}</div>
-								<div class="box booklist-desc">{{ book.titleEn }}</div>
-							</div>
+				<RouterLink v-for="book in booksByCategory.get(category.id)" :key="book.id" class="list-group-item list-group-item-action" :to="`/library/eso/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">
+					<div class="row align-items-center g-3 booklist-row">
+						<div class="col-auto booklist-left"><img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu"></div>
+						<div class="col-auto d-flex flex-column justify-content-center booklist-right">
+							<div class="box">{{ book.titleRu }}</div>
+							<div class="box booklist-desc">{{ book.titleEn }}</div>
 						</div>
-					</RouterLink>
-				</template>
+					</div>
+				</RouterLink>
 			</TransitionGroup>
 		</template>
 	</template>
