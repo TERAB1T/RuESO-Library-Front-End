@@ -175,6 +175,12 @@ const initLightbox = () => {
 		lightbox.addFilter('itemData', (itemData, index) => {
 			const imgSrc = itemData.src || (itemData.element as HTMLAnchorElement | undefined)?.href || '';
 
+			// A screenshot's thumbnail is the full file, so its natural size is already known before the first open.
+			const thumb = (itemData.element as HTMLAnchorElement | undefined)?.querySelector('img');
+			if (thumb && thumb.naturalWidth && thumb.currentSrc === imgSrc) {
+				sizeCache.set(imgSrc, { width: thumb.naturalWidth, height: thumb.naturalHeight });
+			}
+
 			if (sizeCache.has(imgSrc)) {
 				const cached = sizeCache.get(imgSrc);
 				itemData.width = cached.width;
