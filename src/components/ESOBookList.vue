@@ -27,7 +27,10 @@ const currentPatch = computed(() => (route.params.patchVersion as string) || '-1
 
 const filter = ref('');
 
-const { data: booksData, suspense: booksSuspense, isSuccess: isBooksFetched } = useFetchBooks(currentCategory, currentPatch, currentPage, state.pageSize, filter);
+// Loading skeleton: title widths of the placeholder rows, in rem.
+const SKELETON_TITLE_WIDTHS = [14, 11, 16, 12, 15, 10, 13, 12];
+
+const { data: booksData, suspense: booksSuspense, isSuccess: isBooksFetched, isPending: isBooksPending } = useFetchBooks(currentCategory, currentPatch, currentPage, state.pageSize, filter);
 
 watchEffect(async () => {
 	if (booksData.value) {
@@ -92,7 +95,20 @@ const onChangeFilter = useDebounceFn((textFilter: string) => {
 <template>
 	<input type="search" class="form-control form-control-lg" id="library-filter" placeholder="Фильтр по названию" autocomplete="off" @input="onChangeFilter(($event.target as HTMLInputElement).value)">
 
-	<TransitionGroup v-if="!state.categories.length" class="list-group list-group-flush" name="list" tag="div">
+	<div v-if="isBooksPending" class="list-group list-group-flush skeleton placeholder-glow">
+		<span class="visually-hidden" role="status">Загрузка…</span>
+		<div v-for="(width, index) in SKELETON_TITLE_WIDTHS" :key="index" class="list-group-item" aria-hidden="true">
+			<div class="row align-items-center g-3 booklist-row">
+				<div class="col-auto booklist-left"><span class="placeholder skeleton-icon me-2"></span></div>
+				<div class="col-auto d-flex flex-column justify-content-center booklist-right">
+					<div class="box"><span class="placeholder mw-100" :style="{ width: `min(${width}rem, 45vw)` }"></span></div>
+					<div class="box booklist-desc"><span class="placeholder mw-100" :style="{ width: `min(${width * 0.75}rem, 34vw)` }"></span></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<TransitionGroup v-else-if="!state.categories.length" class="list-group list-group-flush" name="list" tag="div">
 		<RouterLink v-for="book in state.books" :key="book.id" class="list-group-item list-group-item-action" :to="`/library/eso/${book.id}-${book.slug}`" @mouseenter="prefetchBook(book.id)">
 			<div class="row align-items-center g-3 booklist-row">
 				<div class="col-auto booklist-left"><img class="me-2" :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu"></div>

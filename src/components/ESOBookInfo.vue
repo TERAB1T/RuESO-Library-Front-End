@@ -14,6 +14,9 @@ const prefetchBook = (bookId: number) => usePrefetchBook(queryClient, bookId);
 const prefetchCategory = (categoryId: number | undefined) => usePrefetchCategory(queryClient, categoryId);
 const prefetchPatch = (patchVersion: string | undefined) => usePrefetchPatch(queryClient, patchVersion);
 
+// Loading skeleton: the labels of the card are static.
+const SKELETON_LABELS = ['Категория', 'Оригинальное название', 'Добавлена'];
+
 </script>
 
 <template>
@@ -21,7 +24,7 @@ const prefetchPatch = (patchVersion: string | undefined) => usePrefetchPatch(que
 		<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
 			<div class="card">
 				<div class="card-element book-icon">
-					<img :src="prepareIcon(book.icon)" :alt="book.titleRu">
+					<img :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu">
 				</div>
 				<div class="card-element">
 					<div class="card-subtitle">Категория</div>
@@ -60,6 +63,16 @@ const prefetchPatch = (patchVersion: string | undefined) => usePrefetchPatch(que
 			</div>
 		</div>
 	</template>
+
+	<div v-else class="p-3 card-wrapper book-info-card-sticky placeholder-glow" aria-hidden="true">
+		<div class="card">
+			<div class="card-element book-icon"><span class="placeholder skeleton-icon"></span></div>
+			<div v-for="label in SKELETON_LABELS" :key="label" class="card-element">
+				<div class="card-subtitle">{{ label }}</div>
+				<span class="placeholder col-7"></span>
+			</div>
+		</div>
+	</div>
 </template>
 
 <style scoped lang="scss">

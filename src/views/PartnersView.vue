@@ -89,7 +89,7 @@ const partners: Partner[] = [
 			<div v-for="partner in partners" :key="partner.name" class="col-12 col-md-6 col-lg-4">
 				<a :href="partner.url" target="_blank" class="card h-100 text-decoration-none main-page-card" @click="trackPartnerClick(partner.name)">
 					<div class="card-img-wrapper">
-						<img :src="partner.image" class="card-img-top" :alt="partner.name">
+						<img :src="partner.image" class="card-img-top" width="728" height="300" :alt="partner.name">
 					</div>
 					<div class="card-body">
 						<h5 class="card-title">{{ partner.name }}</h5>
@@ -138,6 +138,8 @@ h1 {
 
 .card-img-wrapper {
 	width: 100%;
+	/* The partner banners are all 728×300; reserving that box keeps the card from collapsing until they load. */
+	aspect-ratio: 728 / 300;
 	overflow: hidden;
 	display: flex;
 	align-items: center;

@@ -44,7 +44,7 @@ watch(() => state.sortOrder, (newValue) => {
 	setAtomicShopSortOrder(newValue);
 });
 
-const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched } = useFetchAtomicShopItems(
+const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched, isPending: isItemsPending } = useFetchAtomicShopItems(
 	currentCategory,
 	currentSubcategory,
 	currentPage,
@@ -56,7 +56,7 @@ const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched } = 
 	isCategoryMode
 );
 
-const { data: acquisitionTypeData, suspense: acquisitionTypeSuspense, isSuccess: isAcquisitionTypeItemsFetched } = useFetchAtomicShopAcquisitionTypeItems(
+const { data: acquisitionTypeData, suspense: acquisitionTypeSuspense, isSuccess: isAcquisitionTypeItemsFetched, isPending: isAcquisitionTypeItemsPending } = useFetchAtomicShopAcquisitionTypeItems(
 	currentAcquisitionType,
 	currentPage,
 	state.pageSize,
@@ -67,7 +67,7 @@ const { data: acquisitionTypeData, suspense: acquisitionTypeSuspense, isSuccess:
 	isAcquisitionTypeMode
 );
 
-const { data: acquisitionSourceData, suspense: acquisitionSourceSuspense, isSuccess: isAcquisitionSourceItemsFetched } = useFetchAtomicShopAcquisitionSourceItems(
+const { data: acquisitionSourceData, suspense: acquisitionSourceSuspense, isSuccess: isAcquisitionSourceItemsFetched, isPending: isAcquisitionSourceItemsPending } = useFetchAtomicShopAcquisitionSourceItems(
 	currentAcquisitionType,
 	currentAcquisitionNumber,
 	currentPage,
@@ -83,6 +83,12 @@ const isItemsFetchedForCurrentMode = computed(() => {
 	if (isAcquisitionSourceMode.value) return isAcquisitionSourceItemsFetched.value;
 	if (isAcquisitionTypeMode.value) return isAcquisitionTypeItemsFetched.value;
 	return isItemsFetched.value;
+});
+
+const isItemsPendingForCurrentMode = computed(() => {
+	if (isAcquisitionSourceMode.value) return isAcquisitionSourceItemsPending.value;
+	if (isAcquisitionTypeMode.value) return isAcquisitionTypeItemsPending.value;
+	return isItemsPending.value;
 });
 
 const applyItemsData = () => {
@@ -218,6 +224,9 @@ const getImageSrc = (item: AtomicShopItem, isHovered: boolean) => {
 
 useDelegatedTooltips();
 
+// Loading skeleton: two rows of cards on desktop.
+const SKELETON_CARD_COUNT = 6;
+
 onMounted(() => {
 	const filterInput = document.getElementById('library-filter') as HTMLInputElement;
 	if (filterInput && state.filter) {
@@ -241,6 +250,19 @@ onMounted(() => {
 		</div>
 	</div>
 
+	<div v-if="isItemsPendingForCurrentMode" class="row g-4 mb-4 skeleton placeholder-glow">
+		<span class="visually-hidden" role="status">Загрузка…</span>
+		<div v-for="n in SKELETON_CARD_COUNT" :key="n" class="col-12 col-md-6 col-lg-4" aria-hidden="true">
+			<div class="card h-100 atomic-shop-card">
+				<div class="card-img-wrapper"></div>
+				<div class="card-body d-flex flex-column">
+					<h5 class="card-title mb-2"><span class="placeholder col-9"></span></h5>
+					<p class="card-text mb-2"><span class="placeholder col-6"></span></p>
+					<p class="card-text small mt-auto mb-0"><span class="placeholder col-5"></span></p>
+				</div>
+			</div>
+		</div>
+	</div>
 	<template v-for="(group, index) in itemGroups" :key="group.key">
 		<h4 v-if="group.title" class="item-group-title" :class="{ 'mt-0': index === 0 }">{{ group.title }}</h4>
 		<div class="row g-4 mb-4">

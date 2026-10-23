@@ -43,7 +43,7 @@ watch(() => state.sortOrder, (newValue) => {
 	setCampSortOrder(newValue);
 });
 
-const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched } = useFetchCampItems(
+const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched, isPending: isItemsPending } = useFetchCampItems(
 	currentCategory,
 	currentSubcategory,
 	currentPage,
@@ -164,6 +164,9 @@ const getImageSrc = (item: CampItem, isHovered: boolean, thumbSize?: number) => 
 
 useDelegatedTooltips();
 
+// Loading skeleton: two rows of cards on desktop.
+const SKELETON_CARD_COUNT = 6;
+
 onMounted(() => {
 	const filterInput = document.getElementById('library-filter') as HTMLInputElement;
 	if (filterInput && state.filter) {
@@ -187,7 +190,20 @@ onMounted(() => {
 		</div>
 	</div>
 
-	<div class="row g-4 mb-4">
+	<div v-if="isItemsPending" class="row g-4 mb-4 skeleton placeholder-glow">
+		<span class="visually-hidden" role="status">Загрузка…</span>
+		<div v-for="n in SKELETON_CARD_COUNT" :key="n" class="col-12 col-md-6 col-lg-4" aria-hidden="true">
+			<div class="card h-100 atomic-shop-card">
+				<div class="card-img-wrapper"></div>
+				<div class="card-body d-flex flex-column">
+					<h5 class="card-title mb-2"><span class="placeholder col-9"></span></h5>
+					<p class="card-text mb-2"><span class="placeholder col-6"></span></p>
+					<p class="card-text small mt-auto mb-0"><span class="placeholder col-5"></span></p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div v-else class="row g-4 mb-4">
 		<div v-for="item in state.items" :key="item.formId" class="col-12 col-md-6 col-lg-4">
 			<RouterLink :to="`/f76-camp/${item.formId}-${item.slug}`" class="card h-100 text-decoration-none atomic-shop-card" @mouseenter="hoveredItem = item.formId; prefetchCampItem(item.formId)" @mouseleave="hoveredItem = null">
 				<div v-if="item.isPTS" class="pts-badge-wrapper" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Доступно только на публичном тестовом сервере.">

@@ -11,6 +11,9 @@ import { trackLibraryDownload } from '@/analytics';
 
 import type { LibraryMobileTab } from '@/types';
 
+// Loading skeleton: widths of the placeholder menu items, in %.
+const SKELETON_MENU_WIDTHS = [62, 48, 70, 55, 66, 44, 58, 50, 64, 46];
+
 const route = useRoute();
 
 const props = defineProps<{
@@ -18,6 +21,9 @@ const props = defineProps<{
 	patches: any[]
 	mobileTab: LibraryMobileTab
 	lastUpdated: string
+	categoriesLoading?: boolean
+	patchesLoading?: boolean
+	lastUpdatedLoading?: boolean
 }>();
 
 const emit = defineEmits<{
@@ -100,7 +106,7 @@ const prefetchPatch = (patchVersion: string) => usePrefetchPatch(queryClient, pa
 			<div class="d-none d-lg-block">
 				<div class="library-updated text-muted small">
 					Последнее обновление:
-					<time v-if="props.lastUpdated" :datetime="formatDateTime(props.lastUpdated)">{{ props.lastUpdated }}</time>
+					<time v-if="props.lastUpdated" :datetime="formatDateTime(props.lastUpdated)">{{ props.lastUpdated }}</time><span v-else-if="props.lastUpdatedLoading" class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder skeleton-date"></span></span>
 				</div>
 
 				<div class="d-flex justify-content-center download-links">
@@ -127,11 +133,17 @@ const prefetchPatch = (patchVersion: string) => usePrefetchPatch(queryClient, pa
 
 			<div class="tab-content" id="categoriesTabContent">
 				<div class="tab-pane list-group list-group-flush eso-category-list" :class="{ 'active': showCategoriesPane }" id="book-categories-pane" role="tabpanel" aria-labelledby="book-categories-pane" tabindex="0">
+					<template v-if="props.categoriesLoading">
+						<div v-for="(width, index) in SKELETON_MENU_WIDTHS" :key="index" class="list-group-item skeleton placeholder-glow" aria-hidden="true"><span class="placeholder" :style="{ width: `${width}%` }"></span></div>
+					</template>
 					<RouterLink v-for="category in sortedCategories" :key="category.id" class="list-group-item list-group-item-action" :class="{ 'active': state.currentCategoryId === category.id }" :to="state.currentCategoryId === category.id ? '/library/eso' : `/library/eso/category/${category.id}-${category.slug}`" @mouseenter="prefetchCategory(category.id)" @click="onSelectMobileLink">
 						{{ category.titleRu }}
 					</RouterLink>
 				</div>
 				<div class="tab-pane list-group list-group-flush eso-category-list" :class="{ 'active': showPatchesPane }" id="book-patches-pane" role="tabpanel" aria-labelledby="book-patches-pane" tabindex="0">
+					<template v-if="props.patchesLoading">
+						<div v-for="(width, index) in SKELETON_MENU_WIDTHS" :key="index" class="list-group-item skeleton placeholder-glow" aria-hidden="true"><span class="placeholder" :style="{ width: `${width}%` }"></span></div>
+					</template>
 					<RouterLink v-for="patch in props.patches" :key="patch.version" class="list-group-item list-group-item-action" :class="{ 'active': state.currentPatchVersion === patch.version }" :to="state.currentPatchVersion === patch.version ? '/library/eso' : `/library/eso/patch/${patch.version}-${patch.slug}`" @mouseenter="prefetchPatch(patch.version)" @click="onSelectMobileLink">
 						{{ patch.version }} ({{ patch.nameRu }})
 					</RouterLink>

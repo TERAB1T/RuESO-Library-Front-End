@@ -555,6 +555,7 @@ table.dataTable pre {
 
 	.navbar-brand img {
 		height: 40px;
+		width: auto;
 	}
 
 	.navbar #glossary-search-nav input {
@@ -598,4 +599,65 @@ table.dataTable pre {
 	.navbar {
 		padding: 0.5rem 0;
 	}
+}
+/* Skeleton loaders, built from Bootstrap placeholders (.placeholder inside .placeholder-glow).
+   The markup sits inside each page with the page's own classes, so it takes the real layout.
+   It holds its space from the start but only fades in when loading takes longer than ~150 ms:
+   most navigations finish sooner, and a skeleton flashing for a moment looks worse than nothing. */
+.skeleton {
+	animation: skeleton-appear 0.2s ease-out 0.15s both;
+	pointer-events: none;
+	user-select: none;
+}
+
+@keyframes skeleton-appear {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.skeleton,
+	.skeleton .placeholder {
+		animation: none;
+	}
+}
+
+/* A neutral grey instead of Bootstrap's currentColor, which would make e.g. card titles gold. */
+.skeleton .placeholder {
+	border-radius: 4px;
+	background-color: #a1a1aa;
+}
+
+/* Large blocks (images) at full strength would be the brightest thing on the dark page. */
+.skeleton .skeleton-square,
+.skeleton .skeleton-main-image {
+	background-color: #52525b;
+}
+
+.skeleton-date {
+	width: 5.5em;
+}
+
+.skeleton-square {
+	display: block;
+	width: 100%;
+	aspect-ratio: 1;
+}
+
+.skeleton-main-image {
+	display: inline-block;
+	width: 200px;
+	max-width: 100%;
+	aspect-ratio: 1;
+}
+
+.skeleton-icon {
+	display: inline-block;
+	width: 64px;
+	height: 64px;
 }

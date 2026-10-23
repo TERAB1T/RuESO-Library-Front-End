@@ -16,6 +16,9 @@ import type { Book, BreadcrumbItem } from '@/types';
 const route = useRoute();
 const router = useRouter();
 
+// Loading skeleton: line widths of the text, two short paragraphs.
+const SKELETON_TEXT_LINES = ['col-12', 'col-11', 'col-12', 'col-10', 'col-4', 'col-12', 'col-11', 'col-12', 'col-7'];
+
 const currentBookId = computed(() => Number(route.params.bookId) || 1);
 
 const { data: bookData, suspense: bookSuspense, isSuccess: isBookFetched, isError: isBookError } = useFetchBook(currentBookId);
@@ -171,8 +174,31 @@ const parsedTextEn = computed(() =>
 
 <template>
 	<div class="container-xl">
-		<div v-if="!isBookFetched && !isBookError" class="loading-state" style="margin: auto;">
-			<!-- TODO: Add skeleton -->
+		<div v-if="!isBookFetched && !isBookError" class="skeleton placeholder-glow">
+			<span class="visually-hidden" role="status">Загрузка…</span>
+			<Breadcrumb :items="breadcrumbItems" />
+
+			<div class="row" aria-hidden="true">
+				<div class="col-lg-8 order-2 order-lg-1">
+					<ul class="nav nav-tabs">
+						<li class="nav-item"><span class="nav-link active">Русская<span class="hide-mobile"> версия</span></span></li>
+						<li class="nav-item"><span class="nav-link">Английская<span class="hide-mobile"> версия</span></span></li>
+						<li class="nav-item hide-tab"><span class="nav-link">Информация</span></li>
+					</ul>
+
+					<div class="tab-content">
+						<div class="p-3">
+							<h1 class="book-title"><span class="placeholder col-6"></span></h1>
+							<div class="book-main">
+								<div v-for="(width, index) in SKELETON_TEXT_LINES" :key="index"><span class="placeholder" :class="width"></span></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-4 order-2 order-lg-2 hide-info">
+					<BookInfo :book="{} as Book" :currentBookId="currentBookId" />
+				</div>
+			</div>
 		</div>
 
 		<div v-else-if="isBookError" class="error-state alert alert-danger mt-4">

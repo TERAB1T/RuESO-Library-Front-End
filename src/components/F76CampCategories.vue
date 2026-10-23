@@ -10,13 +10,18 @@ import { trackFilterEnabled } from '@/analytics';
 
 import type { CampCategoryWithSubcategories, CampMobileTab } from '@/types';
 
+// Loading skeleton: widths of the placeholder menu items, in %.
+const SKELETON_MENU_WIDTHS = [62, 48, 70, 55, 66, 44, 58, 50, 64, 46];
+
 const route = useRoute();
 const router = useRouter();
 
 const props = defineProps<{
 	categories: CampCategoryWithSubcategories[],
 	mobileTab: CampMobileTab,
-	lastUpdated: string
+	lastUpdated: string,
+	categoriesLoading?: boolean,
+	lastUpdatedLoading?: boolean
 }>();
 
 const emit = defineEmits<{
@@ -116,12 +121,15 @@ const togglePTS = () => {
 			<div class="d-none d-lg-block">
 				<div class="library-updated text-muted small">
 					Последнее обновление:
-					<time v-if="props.lastUpdated" :datetime="formatDateTime(props.lastUpdated)">{{ props.lastUpdated }}</time>
+					<time v-if="props.lastUpdated" :datetime="formatDateTime(props.lastUpdated)">{{ props.lastUpdated }}</time><span v-else-if="props.lastUpdatedLoading" class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder skeleton-date"></span></span>
 				</div>
 			</div>
 
 			<div class="list-group list-group-flush mb-3">
 				<h5 class="list-group-item h5-list-group-item d-none d-lg-block">Категории</h5>
+				<template v-if="props.categoriesLoading">
+					<div v-for="(width, index) in SKELETON_MENU_WIDTHS" :key="index" class="list-group-item skeleton placeholder-glow" aria-hidden="true"><span class="placeholder" :style="{ width: `${width}%` }"></span></div>
+				</template>
 				<div v-for="category in props.categories" :key="category.formId" class="category-wrapper">
 					<div class="d-flex align-items-stretch category-item">
 						<button v-if="hasSubcategories(category)" @click="toggleCategory(category.formId, $event)" class="btn btn-sm category-toggle" :class="{

@@ -42,6 +42,10 @@ const acquisitionSourceInfo = computed(() =>
 		? state.acquisition.find(group => group.type === state.currentAcquisitionType)?.sources.find(s => s.number === state.currentAcquisitionNumber)
 		: undefined
 );
+const isSourceTargetPending = computed(() => state.currentAcquisitionNumber !== -1 && isAcquisitionPending.value);
+const isCategoryTargetPending = computed(() =>
+	(state.currentCategoryFormId !== '-1' || state.currentSubcategoryFormId !== '-1') && isCategoriesPending.value
+);
 const isNotFound = computed(() =>
 	(state.categories.length > 0 && (
 		(state.currentSubcategoryFormId !== '-1' && !subcategoryInfo.value) ||
@@ -140,9 +144,9 @@ const headInput = computed((): ReactiveHead => {
 
 useHead(headInput);
 
-const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchAtomicShopCategories();
-const { data: acquisitionData, suspense: acquisitionSuspense, isSuccess: isAcquisitionFetched } = useFetchAtomicShopAcquisition();
-const { data: atomicShopUpdatedData, suspense: atomicShopUpdatedSuspense, isSuccess: isAtomicShopUpdatedFetched } = useFetchAtomicShopUpdated();
+const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched, isPending: isCategoriesPending } = useFetchAtomicShopCategories();
+const { data: acquisitionData, suspense: acquisitionSuspense, isSuccess: isAcquisitionFetched, isPending: isAcquisitionPending } = useFetchAtomicShopAcquisition();
+const { data: atomicShopUpdatedData, suspense: atomicShopUpdatedSuspense, isSuccess: isAtomicShopUpdatedFetched, isPending: isAtomicShopUpdatedPending } = useFetchAtomicShopUpdated();
 
 watchEffect(() => {
 	if (categoriesData.value) {
@@ -219,8 +223,15 @@ onServerPrefetch(async () => {
 						<h2>{{ acquisitionSourceHeading }}</h2>
 						<p class="library-intro">{{ acquisitionSourceDescription }}</p>
 					</template>
+					<template v-else-if="isSourceTargetPending">
+						<h2 class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder col-6"></span></h2>
+						<p class="library-intro skeleton placeholder-glow" aria-hidden="true"><span class="d-block"><span class="placeholder col-10"></span></span><span class="d-block d-md-none"><span class="placeholder col-7"></span></span></p>
+					</template>
 					<template v-else-if="state.currentAcquisitionType !== '-1'">
 						<h2>Атомная лавка: {{ ACQUISITION_TYPE_LABELS[state.currentAcquisitionType as string] || state.currentAcquisitionType }}</h2>
+					</template>
+					<template v-else-if="isCategoryTargetPending">
+						<h2 class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder col-6"></span></h2>
 					</template>
 					<template v-else>
 						<h2>Атомная лавка Fallout 76</h2>
@@ -230,7 +241,7 @@ onServerPrefetch(async () => {
 
 				<div class="d-lg-none d-flex justify-content-between align-items-center">
 					<div class="text-muted small fst-italic">
-						<span class="d-none d-md-inline">Последнее обновление: </span><span class="d-md-none">Обновлено: </span><time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time>
+						<span class="d-none d-md-inline">Последнее обновление: </span><span class="d-md-none">Обновлено: </span><time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time><span v-else-if="isAtomicShopUpdatedPending" class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder skeleton-date"></span></span>
 					</div>
 				</div>
 
@@ -252,7 +263,7 @@ onServerPrefetch(async () => {
 			</div>
 
 			<div class="atomic-shop-sidebar book-categories-column d-lg-block" :class="{ 'd-none': mobileTab === 'items' }">
-				<F76AtomicShopCategories :categories="state.categories" :acquisition="state.acquisition" :lastUpdated="state.lastUpdated" v-model:mobile-tab="mobileTab" />
+				<F76AtomicShopCategories :categories="state.categories" :acquisition="state.acquisition" :lastUpdated="state.lastUpdated" :categories-loading="isCategoriesPending" :acquisition-loading="isAcquisitionPending" :last-updated-loading="isAtomicShopUpdatedPending" v-model:mobile-tab="mobileTab" />
 			</div>
 		</div>
 	</div>

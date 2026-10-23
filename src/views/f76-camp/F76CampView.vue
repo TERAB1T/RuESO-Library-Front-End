@@ -34,6 +34,9 @@ const subcategoryInfo = computed(() =>
 		? state.categories.flatMap(cat => cat.subcategories).find(sub => sub.formId === state.currentSubcategoryFormId)
 		: undefined
 );
+const isListTargetPending = computed(() =>
+	(state.currentCategoryFormId !== '-1' || state.currentSubcategoryFormId !== '-1') && isCategoriesPending.value
+);
 const isNotFound = computed(() => state.categories.length > 0 && (
 	(state.currentSubcategoryFormId !== '-1' && !subcategoryInfo.value) ||
 	(state.currentSubcategoryFormId === '-1' && state.currentCategoryFormId !== '-1' && !categoryInfo.value)
@@ -87,8 +90,8 @@ const headInput = computed((): ReactiveHead => {
 
 useHead(headInput);
 
-const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCampCategories();
-const { data: campUpdatedData, suspense: campUpdatedSuspense, isSuccess: isCampUpdatedFetched } = useFetchCampUpdated();
+const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched, isPending: isCategoriesPending } = useFetchCampCategories();
+const { data: campUpdatedData, suspense: campUpdatedSuspense, isSuccess: isCampUpdatedFetched, isPending: isCampUpdatedPending } = useFetchCampUpdated();
 
 watchEffect(() => {
 	if (categoriesData.value) {
@@ -143,6 +146,9 @@ onServerPrefetch(async () => {
 					<template v-else-if="categoryInfo && categoryInfo.nameRu">
 						<h2>Предметы C.A.M.P.: {{ categoryInfo.nameRu.toLowerCase() }}</h2>
 					</template>
+					<template v-else-if="isListTargetPending">
+						<h2 class="skeleton placeholder-glow" aria-hidden="true"><span class="d-block"><span class="placeholder col-8"></span></span><span class="d-block d-md-none"><span class="placeholder col-5"></span></span></h2>
+					</template>
 					<template v-else>
 						<h2>Предметы C.A.M.P. Fallout 76</h2>
 						<p class="library-intro">{{ HOME_DESCRIPTION }}</p>
@@ -151,7 +157,7 @@ onServerPrefetch(async () => {
 
 				<div class="d-lg-none d-flex justify-content-between align-items-center">
 					<div class="text-muted small fst-italic">
-						<span class="d-none d-md-inline">Последнее обновление: </span><span class="d-md-none">Обновлено: </span><time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time>
+						<span class="d-none d-md-inline">Последнее обновление: </span><span class="d-md-none">Обновлено: </span><time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time><span v-else-if="isCampUpdatedPending" class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder skeleton-date"></span></span>
 					</div>
 				</div>
 
@@ -170,7 +176,7 @@ onServerPrefetch(async () => {
 			</div>
 
 			<div class="camp-sidebar book-categories-column d-lg-block" :class="{ 'd-none': mobileTab === 'items' }">
-				<F76CampCategories :categories="state.categories" :lastUpdated="state.lastUpdated" v-model:mobile-tab="mobileTab" />
+				<F76CampCategories :categories="state.categories" :lastUpdated="state.lastUpdated" :categories-loading="isCategoriesPending" :last-updated-loading="isCampUpdatedPending" v-model:mobile-tab="mobileTab" />
 			</div>
 		</div>
 	</div>

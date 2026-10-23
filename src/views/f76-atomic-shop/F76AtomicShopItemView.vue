@@ -20,6 +20,10 @@ import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbIte
 
 const route = useRoute();
 
+// Loading skeleton: line widths of the description and the info card labels, which are static.
+const SKELETON_TEXT_LINES = ['col-12', 'col-11', 'col-12', 'col-9', 'col-10', 'col-6'];
+const SKELETON_INFO_LABELS = ['Категория', 'Оригинальное название', 'Form ID', 'Editor ID'];
+
 let lightbox: PhotoSwipeLightbox | null = null;
 let BootstrapModal: any = null;
 
@@ -334,8 +338,48 @@ useCopyOnClick(copyContainerRef);
 
 <template>
 	<div class="container-xl">
-		<div v-if="!isItemFetched && !isItemError" class="loading-state" style="margin: auto;">
-			<!-- TODO: Add skeleton -->
+		<div v-if="!isItemFetched && !isItemError" class="skeleton placeholder-glow">
+			<span class="visually-hidden" role="status">Загрузка…</span>
+			<Breadcrumb :items="breadcrumbItems" />
+
+			<div class="row" aria-hidden="true">
+				<div class="col-lg-8">
+					<ul class="nav nav-tabs">
+						<li class="nav-item"><span class="nav-link active">Русская<span class="hide-mobile"> версия</span></span></li>
+						<li class="nav-item"><span class="nav-link">Английская<span class="hide-mobile"> версия</span></span></li>
+						<li class="nav-item hide-tab"><span class="nav-link">Информация</span></li>
+					</ul>
+
+					<div class="tab-content" :class="{ 'with-screenshots': isMobile }">
+						<div class="p-3">
+							<h1 class="book-title"><span class="placeholder col-7"></span></h1>
+							<div class="book-main">
+								<div v-for="(width, index) in SKELETON_TEXT_LINES" :key="index"><span class="placeholder" :class="width"></span></div>
+							</div>
+						</div>
+					</div>
+
+					<div v-if="isMobile" class="screenshots">
+						<div class="fo-sect-h">
+							<span class="fo-bar"></span>
+							<h3 class="fo-h3">Галерея</h3>
+						</div>
+						<span class="placeholder skeleton-square"></span>
+					</div>
+				</div>
+
+				<div v-if="!isMobile" class="col-lg-4">
+					<div class="p-3 card-wrapper book-info-card-sticky">
+						<div class="card">
+							<div class="card-element book-icon"><span class="placeholder skeleton-main-image"></span></div>
+							<div v-for="label in SKELETON_INFO_LABELS" :key="label" class="card-element">
+								<div class="card-subtitle">{{ label }}</div>
+								<span class="placeholder col-6"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<div v-else-if="isItemError" class="error-state alert alert-danger mt-4">
@@ -435,7 +479,7 @@ useCopyOnClick(copyContainerRef);
 						<div v-if="hasGallery" class="row g-3">
 							<div v-if="isMobile" class="col-12 col-md-4">
 								<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
-									<img :src="prepareAtomicShopImage(item.mainImage)" class="img-fluid screenshot-img" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
+									<img :src="prepareAtomicShopImage(item.mainImage)" class="img-fluid screenshot-img" width="512" height="512" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
 								</a>
 							</div>
 							<div v-for="(screenshot, index) in splittedScreenshots" :key="index" class="col-12 col-md-4">
@@ -461,7 +505,7 @@ useCopyOnClick(copyContainerRef);
 								<div class="card">
 									<div v-if="!isMobile" class="card-element book-icon">
 										<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
-											<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" loading="lazy" @error="atomicShopHandleImageError">
+											<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" width="200" height="200" loading="lazy" @error="atomicShopHandleImageError">
 										</a>
 									</div>
 									<div v-if="categoryInfo" class="card-element">
@@ -614,8 +658,10 @@ useCopyOnClick(copyContainerRef);
 	top: 90px;
 }
 
+/* Item images are square; the width/height attributes reserve the box before the image loads. */
 .main-image {
 	max-width: 200px;
+	height: auto;
 }
 
 .screenshot-link {

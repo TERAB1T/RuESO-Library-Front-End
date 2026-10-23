@@ -38,7 +38,7 @@ useHead({
 			<div class="col-12 col-md-6 col-lg-3">
 				<a href="https://elderscrolls.net/tes-online/rueso/" target="_blank" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
-						<img src="/public/img/main-card-rueso.jpg" class="card-img-top" alt="Модификация RuESO">
+						<img src="/public/img/main-card-rueso.jpg" class="card-img-top" width="600" height="334" alt="Модификация RuESO">
 					</div>
 					<div class="card-body">
 						<h5 class="card-title">Модификация RuESO</h5>
@@ -49,7 +49,7 @@ useHead({
 			<div class="col-12 col-md-6 col-lg-3">
 				<RouterLink to="/library/eso" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
-						<img src="/public/img/main-card-library.jpg" class="card-img-top" alt="Библиотека ESO">
+						<img src="/public/img/main-card-library.jpg" class="card-img-top" width="600" height="334" alt="Библиотека ESO">
 					</div>
 					<div class="card-body">
 						<h5 class="card-title">Библиотека ESO</h5>
@@ -60,7 +60,7 @@ useHead({
 
 			<div class="col-12 col-md-6 col-lg-3"><a href="https://furniture.rueso.ru" target="_blank" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
-						<img src="/public/img/main-card-furniture.jpg" class="card-img-top" alt="Предметы обстановки ESO">
+						<img src="/public/img/main-card-furniture.jpg" class="card-img-top" width="600" height="334" alt="Предметы обстановки ESO">
 					</div>
 					<div class="card-body">
 						<h5 class="card-title">Предметы обстановки ESO</h5>
@@ -70,7 +70,7 @@ useHead({
 
 			<div class="col-12 col-md-6 col-lg-3"><a href="https://elderscrolls.net/tes-online/crown-crates/" target="_blank" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
-						<img src="/public/img/main-card-crowncrates.jpg" class="card-img-top" alt="Кронные ящики ESO">
+						<img src="/public/img/main-card-crowncrates.jpg" class="card-img-top" width="600" height="334" alt="Кронные ящики ESO">
 					</div>
 					<div class="card-body">
 						<h5 class="card-title">Кронные ящики ESO</h5>
@@ -81,7 +81,7 @@ useHead({
 			<div class="col-12 col-md-6 col-lg-3">
 				<RouterLink to="/glossary-tes" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
-						<img src="/public/img/main-card-glossary.jpg" class="card-img-top" alt="База текстов TES">
+						<img src="/public/img/main-card-glossary.jpg" class="card-img-top" width="600" height="334" alt="База текстов TES">
 					</div>
 					<div class="card-body">
 						<h5 class="card-title">База текстов TES</h5>
@@ -93,7 +93,7 @@ useHead({
 			<div class="col-12 col-md-6 col-lg-3">
 				<RouterLink to="/glossary-fallout" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
-						<img src="/public/img/main-card-fallout.jpg" class="card-img-top" alt="База текстов Fallout">
+						<img src="/public/img/main-card-fallout.jpg" class="card-img-top" width="600" height="334" alt="База текстов Fallout">
 					</div>
 					<div class="card-body">
 						<h5 class="card-title">База текстов Fallout</h5>
@@ -105,7 +105,7 @@ useHead({
 			<div class="col-12 col-md-6 col-lg-3">
 				<RouterLink to="/f76-atomic-shop" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
-						<img src="/public/img/main-card-atomic-shop.jpg" class="card-img-top" alt="Атомная лавка Fallout 76">
+						<img src="/public/img/main-card-atomic-shop.jpg" class="card-img-top" width="600" height="334" alt="Атомная лавка Fallout 76">
 					</div>
 					<div class="card-body">
 						<h5 class="card-title">Атомная лавка Fallout 76</h5>
@@ -117,7 +117,7 @@ useHead({
 			<div class="col-12 col-md-6 col-lg-3">
 				<RouterLink to="/f76-camp" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
-						<img src="/public/img/main-card-camp.jpg" class="card-img-top" alt="База предметов C.A.M.P. Fallout 76">
+						<img src="/public/img/main-card-camp.jpg" class="card-img-top" width="600" height="334" alt="База предметов C.A.M.P. Fallout 76">
 					</div>
 					<div class="card-body">
 						<h5 class="card-title">Предметы C.A.M.P. Fallout 76</h5>
@@ -149,6 +149,8 @@ useHead({
 
 .card-img-wrapper {
 	width: 100%;
+	/* The card images are all 600×334; reserving that box keeps the card from collapsing until they load. */
+	aspect-ratio: 600 / 334;
 	overflow: hidden;
 	display: flex;
 	align-items: center;

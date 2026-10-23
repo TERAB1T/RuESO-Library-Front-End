@@ -32,6 +32,10 @@ const categoryInfo = computed(() =>
 const patchInfo = computed(() =>
 	state.currentPatchVersion !== '-1' ? state.patches.find(p => p.version === state.currentPatchVersion) : undefined
 );
+const isListTargetPending = computed(() =>
+	(route.params.categoryId !== undefined && isCategoriesPending.value) ||
+	(route.params.patchVersion !== undefined && isPatchesPending.value)
+);
 const isNotFound = computed(() =>
 	(route.params.categoryId !== undefined && state.categories.length > 0 && !categoryInfo.value) ||
 	(route.params.patchVersion !== undefined && state.patches.length > 0 && !patchInfo.value)
@@ -85,9 +89,9 @@ const headInput = computed((): ReactiveHead => {
 
 useHead(headInput);
 
-const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched } = useFetchCategories();
-const { data: patchesData, suspense: patchesSuspense, isSuccess: isPatchesFetched } = useFetchPatches();
-const { data: libraryUpdatedData, suspense: libraryUpdatedSuspense, isSuccess: isLibraryUpdatedFetched } = useFetchLibraryUpdated();
+const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategoriesFetched, isPending: isCategoriesPending } = useFetchCategories();
+const { data: patchesData, suspense: patchesSuspense, isSuccess: isPatchesFetched, isPending: isPatchesPending } = useFetchPatches();
+const { data: libraryUpdatedData, suspense: libraryUpdatedSuspense, isSuccess: isLibraryUpdatedFetched, isPending: isLibraryUpdatedPending } = useFetchLibraryUpdated();
 
 watchEffect(() => {
 	if (categoriesData.value) {
@@ -154,6 +158,10 @@ onServerPrefetch(async () => {
 						<h1>Библиотека ESO: {{ patchInfo.nameRu }}</h1>
 						<p class="library-intro">Книги, добавленные в игру с патчем {{ patchInfo.version }}, который {{ formatDateToMonthYear(patchInfo.date) }}.</p>
 					</template>
+					<template v-else-if="isListTargetPending">
+						<h1 class="skeleton placeholder-glow" aria-hidden="true"><span class="d-block"><span class="placeholder col-8"></span></span><span class="d-block d-md-none"><span class="placeholder col-5"></span></span></h1>
+						<p class="library-intro skeleton placeholder-glow" aria-hidden="true"><span class="d-block"><span class="placeholder col-10"></span></span><span class="d-block d-md-none"><span class="placeholder col-7"></span></span></p>
+					</template>
 					<template v-else>
 						<h1>Библиотека The Elder Scrolls Online</h1>
 						<p class="library-intro">Полное собрание книг из игры The Elder Scrolls Online.</p>
@@ -162,7 +170,7 @@ onServerPrefetch(async () => {
 
 				<div class="d-lg-none d-flex justify-content-between align-items-center">
 					<div class="text-muted small fst-italic">
-						<span class="d-none d-md-inline">Последнее обновление: </span><span class="d-md-none">Обновлено: </span><time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time>
+						<span class="d-none d-md-inline">Последнее обновление: </span><span class="d-md-none">Обновлено: </span><time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time><span v-else-if="isLibraryUpdatedPending" class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder skeleton-date"></span></span>
 					</div>
 
 					<div class="d-flex mobile-download-links">
@@ -198,7 +206,7 @@ onServerPrefetch(async () => {
 			</div>
 
 			<div class="library-sidebar book-categories-column d-lg-block" :class="{ 'd-none': mobileTab === 'books' }">
-				<BookCategories :categories="state.categories" :patches="state.patches" :last-updated="state.lastUpdated" v-model:mobile-tab="mobileTab" />
+				<BookCategories :categories="state.categories" :patches="state.patches" :last-updated="state.lastUpdated" :categories-loading="isCategoriesPending" :patches-loading="isPatchesPending" :last-updated-loading="isLibraryUpdatedPending" v-model:mobile-tab="mobileTab" />
 			</div>
 		</div>
 	</div>

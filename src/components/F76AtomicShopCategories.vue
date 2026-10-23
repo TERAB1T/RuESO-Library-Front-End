@@ -14,13 +14,19 @@ import type { AtomicShopCategoryWithSubcategories, AcquisitionSource, Acquisitio
 const ACQUISITION_TYPE_ORDER = ['atx', 'season', 'miniseason'];
 const NON_FILTERABLE_ACQUISITION_TYPES = ['season', 'miniseason'];
 
+// Loading skeleton: widths of the placeholder menu items, in %.
+const SKELETON_MENU_WIDTHS = [62, 48, 70, 55, 66, 44, 58, 50, 64, 46];
+
 const route = useRoute();
 
 const props = defineProps<{
 	categories: AtomicShopCategoryWithSubcategories[],
 	acquisition: AcquisitionSourcesByType[],
 	mobileTab: AtomicShopMobileTab,
-	lastUpdated: string
+	lastUpdated: string,
+	categoriesLoading?: boolean,
+	acquisitionLoading?: boolean,
+	lastUpdatedLoading?: boolean
 }>();
 
 const emit = defineEmits<{
@@ -238,7 +244,7 @@ const onFilterClick = (filter: 'pts' | 'support', enabled: boolean) => {
 			<div class="d-none d-lg-block">
 				<div class="library-updated text-muted small">
 					Последнее обновление:
-					<time v-if="props.lastUpdated" :datetime="formatDateTime(props.lastUpdated)">{{ props.lastUpdated }}</time>
+					<time v-if="props.lastUpdated" :datetime="formatDateTime(props.lastUpdated)">{{ props.lastUpdated }}</time><span v-else-if="props.lastUpdatedLoading" class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder skeleton-date"></span></span>
 				</div>
 			</div>
 
@@ -254,6 +260,9 @@ const onFilterClick = (filter: 'pts' | 'support', enabled: boolean) => {
 			<div class="tab-content" id="atomicShopSidebarTabContent">
 				<div class="tab-pane" :class="{ 'active': showCategoriesPane }" id="atomic-shop-categories-pane" role="tabpanel" aria-labelledby="atomic-shop-categories-pane" tabindex="0">
 					<div class="list-group list-group-flush mb-3">
+						<template v-if="props.categoriesLoading">
+							<div v-for="(width, index) in SKELETON_MENU_WIDTHS" :key="index" class="list-group-item skeleton placeholder-glow" aria-hidden="true"><span class="placeholder" :style="{ width: `${width}%` }"></span></div>
+						</template>
 						<div v-for="category in props.categories" :key="category.formId" class="category-wrapper">
 							<div class="d-flex align-items-stretch category-item">
 								<button v-if="hasSubcategories(category)" @click="toggleCategory(category.formId, $event)" class="btn btn-sm category-toggle" :class="{
@@ -296,6 +305,9 @@ const onFilterClick = (filter: 'pts' | 'support', enabled: boolean) => {
 
 				<div class="tab-pane" :class="{ 'active': showAcquisitionPane }" id="atomic-shop-acquisition-pane" role="tabpanel" aria-labelledby="atomic-shop-acquisition-pane" tabindex="0">
 					<div class="list-group list-group-flush mb-3">
+						<template v-if="props.acquisitionLoading">
+							<div v-for="(width, index) in SKELETON_MENU_WIDTHS" :key="index" class="list-group-item skeleton placeholder-glow" aria-hidden="true"><span class="placeholder" :style="{ width: `${width}%` }"></span></div>
+						</template>
 						<div v-for="group in sortedAcquisitionTypes" :key="group.type" class="category-wrapper">
 							<div class="d-flex align-items-stretch category-item">
 								<button v-if="hasMultipleSources(group)" @click="toggleAcquisitionType(group.type, $event)" class="btn btn-sm category-toggle" :class="{

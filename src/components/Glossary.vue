@@ -59,7 +59,7 @@ const state = reactive({
 	lastUpdated: "",
 });
 
-const { data: glossaryUpdatedData, suspense: glossaryUpdatedSuspense, isSuccess: isGlossaryUpdatedFetched } = useFetchGlossaryUpdated(props.config.type);
+const { data: glossaryUpdatedData, suspense: glossaryUpdatedSuspense, isSuccess: isGlossaryUpdatedFetched, isPending: isGlossaryUpdatedPending } = useFetchGlossaryUpdated(props.config.type);
 
 useDelegatedTooltips();
 
@@ -396,7 +396,7 @@ onBeforeUnmount(() => {
 					<div v-if="index === config.dividerIndex" class="w-100 game-checks-divider"></div>
 					<input type="checkbox" class="btn-check" :id="`btn-check-${getGameValue(gameCheckbox.id)}`" :name="getGameValue(gameCheckbox.id)" @change="onCheckboxChanged" v-model="checkedGames" :value="getGameValue(gameCheckbox.id)" :disabled="gameCheckbox.disabled">
 					<label class="btn btn-outline-secondary" :for="`btn-check-${getGameValue(gameCheckbox.id)}`" data-bs-toggle="tooltip" data-bs-placement="bottom" :data-bs-title="gameCheckbox.name">
-						<img width="32px" :src="`/public/${gameCheckbox.icon}`">
+						<img width="32px" height="32px" :src="`/public/${gameCheckbox.icon}`">
 						<span v-if="gameCheckbox.server" class="game-check-text">
 							<span>{{ gameCheckbox.label }}</span>
 							<small class="game-check-server">{{ glossaryUpdatedData?.[gameCheckbox.server]?.version ?? glossaryUpdatedData?.[gameCheckbox.server]?.lastModified }}</small>
@@ -404,7 +404,7 @@ onBeforeUnmount(() => {
 						<span v-else>{{ gameCheckbox.label ?? gameCheckbox.id }}</span>
 					</label>
 				</template>
-				<div class="w-100 game-checks-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time></div>
+				<div class="w-100 game-checks-updated">Последнее обновление: <time v-if="state.lastUpdated" :datetime="formatDateTime(state.lastUpdated)">{{ state.lastUpdated }}</time><span v-else-if="isGlossaryUpdatedPending" class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder skeleton-date"></span></span></div>
 			</div>
 
 			<div class="main-table-wrap">
