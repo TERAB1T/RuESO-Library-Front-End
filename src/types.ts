@@ -113,6 +113,13 @@ export interface BreadcrumbItem {
 	to?: string;
 }
 
+export interface ItemGallerySlide {
+	href: string;
+	src: string;
+	srcset?: string;
+	alt: string;
+}
+
 // F76 Atomic Shop
 
 export interface AtomicShopCategory {

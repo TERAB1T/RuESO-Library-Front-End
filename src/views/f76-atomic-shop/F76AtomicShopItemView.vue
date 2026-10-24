@@ -1,28 +1,33 @@
 <script setup lang="ts">
-import { RouterLink, useRoute, onBeforeRouteLeave } from 'vue-router';
+import { useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, onBeforeUnmount, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
 import { useHead } from '@unhead/vue';
 import { prepareAtomicShopImage, prepareAtomicShopVideo, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
-import { useFetchAtomicShopItem, useFetchAtomicShopCategories, usePrefetchAtomicShopCategory, usePrefetchAtomicShopSubcategory, usePrefetchAtomicShopAcquisitionSource } from '@/composables/useApi';
+import { useFetchAtomicShopItem, useFetchAtomicShopCategories } from '@/composables/useApi';
 import F76AtomicShopCampUnlocked from '@/components/F76AtomicShopCampUnlocked.vue';
+import F76AtomicShopInfoCard from '@/components/F76AtomicShopInfoCard.vue';
+import F76ItemGallery from '@/components/F76ItemGallery.vue';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
-import { useQueryClient } from '@tanstack/vue-query';
-import { useWindowSize } from '@vueuse/core';
 import { useSupportText } from '@/composables/useSupportText';
 import { useCopyOnClick } from '@/composables/useCopyOnClick';
-import { trackSupportGuideOpen } from '@/analytics';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import 'photoswipe/style.css';
 
 import type { ReactiveHead } from '@unhead/vue';
-import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbItem } from '@/types';
+import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbItem, ItemGallerySlide } from '@/types';
 
 const route = useRoute();
 
 // Loading skeleton: line widths of the description and the info card labels, which are static.
 const SKELETON_TEXT_LINES = ['col-12', 'col-11', 'col-12', 'col-9', 'col-10', 'col-6'];
 const SKELETON_INFO_LABELS = ['Категория', 'Оригинальное название', 'Form ID', 'Editor ID'];
+
+const LANGS = ['ru', 'en'] as const;
+const PTS_NOTICE = {
+	ru: 'Сейчас этот предмет доступен только на публичном тестовом сервере.',
+	en: 'This item is currently available only on the Public Test Server.',
+};
 
 let lightbox: PhotoSwipeLightbox | null = null;
 let BootstrapModal: any = null;
@@ -36,7 +41,7 @@ const { data: categoriesData, suspense: categoriesSuspense, isSuccess: isCategor
 const item = computed(() => itemData.value ?? {} as AtomicShopItem);
 const categories = computed(() => categoriesData.value ?? [] as AtomicShopCategoryWithSubcategories[]);
 
-const { generateSupportText, generateSupportListText, generateSupportUrlText } = useSupportText(item);
+const { generateSupportText, generateSupportListText } = useSupportText(item);
 
 const isNotFound = computed(() =>
 	isItemFetched.value && !item.value.nameRu
@@ -54,23 +59,6 @@ const subcategoryInfo = computed(() => {
 		if (subcategory) return subcategory;
 	}
 	return null;
-});
-
-const acquisitionSourceInfo = computed(() => {
-	const source = item.value.acquisitionSource;
-	if (!source || (source.type !== 'season' && source.type !== 'miniseason')) return null;
-	return source;
-});
-
-const acquisitionSourceTypeLabel = computed(() =>
-	acquisitionSourceInfo.value?.type === 'miniseason' ? 'Мини-сезон' : 'Сезон'
-);
-
-const acquisitionSourceLabel = computed(() => {
-	const source = acquisitionSourceInfo.value;
-	if (!source) return '';
-	if (source.nameRu) return source.nameRu;
-	return source.type === 'season' ? `Сезон ${source.number}` : 'Мини-сезон';
 });
 
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
@@ -234,35 +222,11 @@ onServerPrefetch(async () => {
 	await categoriesSuspense();
 });
 
-const queryClient = useQueryClient();
-const prefetchCategory = (categoryFormId: string | undefined) => usePrefetchAtomicShopCategory(queryClient, categoryFormId);
-const prefetchSubcategory = (subcategoryFormId: string | undefined) => usePrefetchAtomicShopSubcategory(queryClient, subcategoryFormId);
-const prefetchAcquisitionSource = (type: string | undefined, number: number | undefined) => usePrefetchAtomicShopAcquisitionSource(queryClient, type, number);
-
-const { width } = useWindowSize();
-const isMobile = computed(() => width.value <= 991);
-let teleportDisabled = ref(true);
-
-const infoTabTrigger = ref<HTMLElement | null>(null);
+const lang = ref<'ru' | 'en'>('ru');
 
 onMounted(async () => {
-	const { Tab, Modal } = await import("bootstrap");
+	const { Modal } = await import("bootstrap");
 	BootstrapModal = Modal;
-
-	watch(isMobile, (newValue) => {
-		if (!newValue) {
-			const infoTab = document.querySelector('#info-tab');
-			if (infoTab?.classList.contains('active')) {
-				const firstTab = document.querySelector('#russian-tab');
-				if (firstTab) {
-					const tab = new Tab(firstTab as HTMLElement);
-					tab.show();
-				}
-			}
-		}
-
-		teleportDisabled.value = !newValue;
-	}, { immediate: true });
 
 	initLightbox();
 });
@@ -278,7 +242,18 @@ const splittedScreenshots = computed(() => {
 	return screenshotsArray.map(s => prepareAtomicShopImage(s));
 });
 
-const hasGallery = computed(() => isMobile.value || splittedScreenshots.value.length > 0);
+// Desktop only: on mobile the gallery is the slider above the text.
+const hasGallery = computed(() => splittedScreenshots.value.length > 0);
+
+const gallerySlides = computed((): ItemGallerySlide[] => {
+	const name = item.value.nameRu || item.value.nameEn;
+	const mainImage = prepareAtomicShopImage(item.value.mainImage);
+
+	return [
+		{ href: mainImage, src: mainImage, alt: name || 'Atomic Shop Item' },
+		...splittedScreenshots.value.map((screenshot, index) => ({ href: screenshot, src: screenshot, alt: `${name} - скриншот ${index + 1}` })),
+	];
+});
 
 const videoRef = ref<HTMLVideoElement | null>(null);
 let videoObserver: IntersectionObserver | null = null;
@@ -299,21 +274,16 @@ watch(videoRef, (video) => {
 
 onBeforeUnmount(() => videoObserver?.disconnect());
 
-const parsedTextRu = computed(() =>
-	(item.value.descriptionRu ?? '').replace(/\n/g, '<br>')
-);
-
-const parsedTextEn = computed(() =>
-	(item.value.descriptionEn ?? '').replace(/\n/g, '<br>')
-);
+const parsedText = computed(() => ({
+	ru: (item.value.descriptionRu ?? '').replace(/\n/g, '<br>'),
+	en: (item.value.descriptionEn ?? '').replace(/\n/g, '<br>'),
+}));
 
 watch(() => item.value.mainImage, () => {
 	initLightbox();
 });
 
-const showTeleport = ref(true);
-
-onBeforeRouteLeave(async () => {
+onBeforeRouteLeave(() => {
 	if (BootstrapModal) {
 		const modalEl = document.getElementById('supportModal');
 		const modal = modalEl ? BootstrapModal.getInstance(modalEl) : null;
@@ -324,12 +294,6 @@ onBeforeRouteLeave(async () => {
 		lightbox.destroy();
 		lightbox = null;
 	}
-
-	showTeleport.value = false;
-
-	return new Promise(resolve => {
-		nextTick(() => resolve(true));
-	});
 });
 
 const copyContainerRef = ref<HTMLElement | null>(null);
@@ -347,28 +311,28 @@ useCopyOnClick(copyContainerRef);
 					<ul class="nav nav-tabs">
 						<li class="nav-item"><span class="nav-link active">Русская<span class="hide-mobile"> версия</span></span></li>
 						<li class="nav-item"><span class="nav-link">Английская<span class="hide-mobile"> версия</span></span></li>
-						<li class="nav-item hide-tab"><span class="nav-link">Информация</span></li>
 					</ul>
 
-					<div class="tab-content" :class="{ 'with-screenshots': isMobile }">
+					<div class="tab-content">
 						<div class="p-3">
 							<h1 class="book-title"><span class="placeholder col-7"></span></h1>
+							<div class="item-media d-lg-none">
+								<span class="placeholder skeleton-square skeleton-slide"></span>
+								<div class="card">
+									<div v-for="label in SKELETON_INFO_LABELS" :key="label" class="card-element">
+										<div class="card-subtitle">{{ label }}</div>
+										<span class="placeholder col-4"></span>
+									</div>
+								</div>
+							</div>
 							<div class="book-main">
 								<div v-for="(width, index) in SKELETON_TEXT_LINES" :key="index"><span class="placeholder" :class="width"></span></div>
 							</div>
 						</div>
 					</div>
-
-					<div v-if="isMobile" class="screenshots">
-						<div class="fo-sect-h">
-							<span class="fo-bar"></span>
-							<h3 class="fo-h3">Галерея</h3>
-						</div>
-						<span class="placeholder skeleton-square"></span>
-					</div>
 				</div>
 
-				<div v-if="!isMobile" class="col-lg-4">
+				<div class="col-lg-4 d-none d-lg-block">
 					<div class="p-3 card-wrapper book-info-card-sticky">
 						<div class="card">
 							<div class="card-element book-icon"><span class="placeholder skeleton-main-image"></span></div>
@@ -430,62 +394,53 @@ useCopyOnClick(copyContainerRef);
 
 			<div class="row" id="main-item-container">
 				<div class="col-lg-8">
-					<ul class="nav nav-tabs" id="bookTab" role="tablist">
+					<ul class="nav nav-tabs" role="tablist">
 						<li class="nav-item" role="presentation">
-							<button class="nav-link active" id="russian-tab" data-bs-toggle="tab" data-bs-target="#russian-pane" type="button" role="tab" aria-controls="russian-pane" aria-selected="true">Русская<span class="hide-mobile"> версия</span></button>
+							<button class="nav-link" :class="{ active: lang === 'ru' }" id="ru-tab" type="button" role="tab" aria-controls="item-content" :aria-selected="lang === 'ru'" @click="lang = 'ru'">Русская<span class="hide-mobile"> версия</span></button>
 						</li>
 						<li class="nav-item" role="presentation">
-							<button class="nav-link" id="english-tab" data-bs-toggle="tab" data-bs-target="#english-pane" type="button" role="tab" aria-controls="english-pane" aria-selected="false">Английская<span class="hide-mobile"> версия</span></button>
-						</li>
-						<li class="nav-item hide-tab" role="presentation">
-							<button ref="infoTabTrigger" class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab" aria-controls="info-pane" aria-selected="false">Информация</button>
+							<button class="nav-link" :class="{ active: lang === 'en' }" id="en-tab" type="button" role="tab" aria-controls="item-content" :aria-selected="lang === 'en'" @click="lang = 'en'">Английская<span class="hide-mobile"> версия</span></button>
 						</li>
 					</ul>
 
-					<div class="tab-content" :class="hasGallery || item.video ? 'with-screenshots' : ''" id="categoriesTabContent">
-						<div class="tab-pane show active p-3" id="russian-pane" role="tabpanel" aria-labelledby="russian-pane" tabindex="0">
-							<h1 class="book-title">{{ item.nameRu }}</h1>
-							<div v-if="item.isPTS" class="alert alert-info atomic-shop-card" role="alert">
-								<div class="pts-badge-wrapper" style="top:calc(50% - 20px);">
-									<div class="pts-badge">PTS</div>
-								</div>
-								<div style="margin-left:55px;">Сейчас этот предмет доступен только на публичном тестовом сервере.</div>
-							</div>
-							<div class="book-main" v-html="parsedTextRu"></div>
-							<F76AtomicShopCampUnlocked :key="item.formId" :camp-unlocked-items="item.campUnlockedItems" lang="ru" />
-						</div>
+					<div class="tab-content" :class="{ 'with-screenshots': hasGallery || item.video, 'with-video': item.video }" id="item-content" role="tabpanel" :aria-labelledby="`${lang}-tab`">
+						<div class="p-3">
+							<h1 v-show="lang === 'ru'" class="book-title">{{ item.nameRu }}</h1>
+							<h1 v-show="lang === 'en'" class="book-title">{{ item.nameEn }}</h1>
 
-						<div class="tab-pane p-3" id="english-pane" role="tabpanel" aria-labelledby="english-pane" tabindex="1">
-							<h1 class="book-title">{{ item.nameEn }}</h1>
-							<div v-if="item.isPTS" class="alert alert-info atomic-shop-card" role="alert">
-								<div class="pts-badge-wrapper" style="top:calc(50% - 20px);">
-									<div class="pts-badge">PTS</div>
-								</div>
-								<div style="margin-left:55px;">This item is currently available only on the Public Test Server.</div>
+							<!-- Mobile: images and the info card come before the text; desktop shows them beside and below it. -->
+							<div class="item-media d-lg-none">
+								<F76ItemGallery class="item-media-gallery" :slides="gallerySlides" />
+								<F76AtomicShopInfoCard :item="item" :category-info="categoryInfo" :subcategory-info="subcategoryInfo" />
 							</div>
-							<div class="book-main" v-html="parsedTextEn"></div>
-							<F76AtomicShopCampUnlocked :key="item.formId" :camp-unlocked-items="item.campUnlockedItems" lang="en" />
-						</div>
 
-						<div class="tab-pane p-3" id="info-pane" role="tabpanel" aria-labelledby="info-pane" tabindex="2">
+							<!-- Both languages stay in the server HTML; the tabs only toggle visibility. -->
+							<div v-for="l in LANGS" v-show="lang === l" :key="l">
+								<div v-if="item.isPTS" class="alert alert-info atomic-shop-card" role="alert">
+									<div class="pts-badge-wrapper" style="top:calc(50% - 20px);">
+										<div class="pts-badge">PTS</div>
+									</div>
+									<div style="margin-left:55px;">{{ PTS_NOTICE[l] }}</div>
+								</div>
+								<div class="book-main" v-html="parsedText[l]"></div>
+								<F76AtomicShopCampUnlocked :key="item.formId" :camp-unlocked-items="item.campUnlockedItems" :lang="l" />
+							</div>
 						</div>
 					</div>
 
-					<div v-if="hasGallery || item.video" class="screenshots">
-						<div v-if="hasGallery" class="fo-sect-h">
-							<span class="fo-bar"></span>
-							<h3 class="fo-h3">Галерея</h3>
-						</div>
-						<div v-if="hasGallery" class="row g-3">
-							<div v-if="isMobile" class="col-12 col-md-4">
-								<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
-									<img :src="prepareAtomicShopImage(item.mainImage)" class="img-fluid screenshot-img" width="512" height="512" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" loading="lazy" @error="atomicShopHandleImageError">
-								</a>
+					<!-- On mobile the gallery is the slider above, so only the video remains here. -->
+					<div v-if="hasGallery || item.video" class="screenshots" :class="{ 'd-none d-lg-block': !item.video }">
+						<div v-if="hasGallery" class="desktop-gallery d-none d-lg-block">
+							<div class="fo-sect-h">
+								<span class="fo-bar"></span>
+								<h3 class="fo-h3">Галерея</h3>
 							</div>
-							<div v-for="(screenshot, index) in splittedScreenshots" :key="index" class="col-12 col-md-4">
-								<a :href="screenshot" class="screenshot-link">
-									<img :src="screenshot" class="img-fluid screenshot-img" :alt="`${item.nameRu || item.nameEn} - скриншот ${index + 1}`" @error="atomicShopHandleImageError">
-								</a>
+							<div class="row g-3">
+								<div v-for="(screenshot, index) in splittedScreenshots" :key="index" class="col-12 col-md-4">
+									<a :href="screenshot" class="screenshot-link">
+										<img :src="screenshot" class="img-fluid screenshot-img" :alt="`${item.nameRu || item.nameEn} - скриншот ${index + 1}`" loading="lazy" @error="atomicShopHandleImageError">
+									</a>
+								</div>
 							</div>
 						</div>
 						<div v-if="item.video" class="item-video-section">
@@ -498,61 +453,8 @@ useCopyOnClick(copyContainerRef);
 					</div>
 				</div>
 
-				<div class="col-lg-4">
-					<Teleport v-if="showTeleport" defer to="#info-pane" :disabled="teleportDisabled || !isMobile">
-						<template v-if="item.nameRu">
-							<div class="p-3 card-wrapper book-info-card-sticky">
-								<div class="card">
-									<div v-if="!isMobile" class="card-element book-icon">
-										<a :href="prepareAtomicShopImage(item.mainImage)" class="screenshot-link">
-											<img :src="prepareAtomicShopImage(item.mainImage)" :alt="item.nameRu || item.nameEn || 'Atomic Shop Item'" class="main-image" width="200" height="200" loading="lazy" @error="atomicShopHandleImageError">
-										</a>
-									</div>
-									<div v-if="categoryInfo" class="card-element">
-										<div class="card-subtitle">Категория</div>
-										<RouterLink :to="`/f76-atomic-shop/category/${categoryInfo.formId}-${categoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchCategory(categoryInfo.formId)">
-											{{ categoryInfo.nameRu }}
-										</RouterLink>
-										<span v-if="subcategoryInfo">
-											<svg class="breadcrumb-separator" viewBox="0 0 320 512" fill="currentColor">
-												<path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z" />
-											</svg>
-											<RouterLink :to="`/f76-atomic-shop/subcategory/${subcategoryInfo.formId}-${subcategoryInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchSubcategory(subcategoryInfo.formId)">
-												{{ subcategoryInfo.nameRu }}
-											</RouterLink>
-										</span>
-									</div>
-									<div v-if="acquisitionSourceInfo" class="card-element">
-										<div class="card-subtitle">{{ acquisitionSourceTypeLabel }}</div>
-										<RouterLink :to="`/f76-atomic-shop/${acquisitionSourceInfo.type}/${acquisitionSourceInfo.number}-${acquisitionSourceInfo.slug}`" class="text-decoration-none" @mouseenter="prefetchAcquisitionSource(acquisitionSourceInfo.type, acquisitionSourceInfo.number)">
-											{{ acquisitionSourceLabel }}
-										</RouterLink>
-									</div>
-									<div class="card-element">
-										<div class="card-subtitle">Оригинальное название</div>
-										{{ item.nameEn || '—' }}
-									</div>
-									<div class="card-element">
-										<div class="card-subtitle">Продается в службе поддержки</div>
-										<div v-if="!item.supportItem && !item.supportBundles">
-											Нет
-										</div>
-										<div v-else>
-											<button type="button" class="btn btn-link modal-trigger" data-bs-toggle="modal" data-bs-target="#supportModal" aria-haspopup="dialog" @click="trackSupportGuideOpen(item.formId)" v-html="generateSupportUrlText"></button>
-										</div>
-									</div>
-									<div class="card-element">
-										<div class="card-subtitle">Form ID</div>
-										{{ item.formId }}
-									</div>
-									<div class="card-element">
-										<div class="card-subtitle">Editor ID</div>
-										{{ item.editorId }}
-									</div>
-								</div>
-							</div>
-						</template>
-					</Teleport>
+				<div class="col-lg-4 d-none d-lg-block">
+					<F76AtomicShopInfoCard :item="item" :category-info="categoryInfo" :subcategory-info="subcategoryInfo" with-image />
 				</div>
 			</div>
 		</template>
@@ -560,25 +462,11 @@ useCopyOnClick(copyContainerRef);
 </template>
 
 <style scoped lang="scss">
-.breadcrumb-separator {
-	color: #71717a;
-	width: 0.7rem;
-	height: 0.7rem;
-	margin: 0 0.5rem;
-	flex-shrink: 0;
-}
+// For the info card skeleton, which mirrors F76AtomicShopInfoCard.
+@use '@/assets/styles/f76-info-card';
 
 .tab-content {
 	padding: 0.5rem 1.2rem 1rem;
-
-	&.with-screenshots {
-		border-bottom-left-radius: 0%;
-		border-bottom-right-radius: 0%;
-	}
-}
-
-.hide-tab {
-	display: none;
 }
 
 .book-title {
@@ -593,8 +481,19 @@ useCopyOnClick(copyContainerRef);
 	line-height: 1.6;
 }
 
-.card-wrapper {
-	padding-top: 0 !important;
+.item-media {
+	margin-bottom: 1.5rem;
+	padding-bottom: 0.4rem;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-media-gallery {
+	margin-bottom: 0.75rem;
+}
+
+.skeleton-slide {
+	width: min(100%, 26rem);
+	margin-bottom: 0.75rem;
 }
 
 .screenshots {
@@ -602,10 +501,6 @@ useCopyOnClick(copyContainerRef);
 	background: var(--bs-block-bg);
 	border-bottom-left-radius: 12px;
 	border-bottom-right-radius: 12px;
-}
-
-.row + .item-video-section {
-	margin-top: 2rem;
 }
 
 /* Videos are either 1:1 or 16:9; capping the height suits both without knowing the ratio in advance. */
@@ -618,50 +513,10 @@ useCopyOnClick(copyContainerRef);
 	background: #000;
 }
 
-.card {
-	padding: 1.25rem !important;
-	text-align: center;
-	margin: 0 0 0 15px;
-	border: none;
-	background: var(--bs-block-bg);
-}
-
-.card-element {
-	padding: 1rem 0;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-	text-align: center;
-}
-
-.card-element:last-child {
-	border-bottom: none;
-}
-
-.card-subtitle {
-	font-size: 13px;
-	margin-bottom: 0.3rem;
-	color: #a1a1aa;
-	font-weight: 500;
-}
-
-.book-icon {
-	border: none;
-}
-
 .book-main .alert {
 	font-size: 14px;
 	line-height: 1.5;
 	color: #ffffff;
-}
-
-.book-info-card-sticky {
-	position: sticky;
-	top: 90px;
-}
-
-/* Item images are square; the width/height attributes reserve the box before the image loads. */
-.main-image {
-	max-width: 200px;
-	height: auto;
 }
 
 .screenshot-link {
@@ -686,17 +541,6 @@ useCopyOnClick(copyContainerRef);
 	}
 }
 
-.modal-trigger {
-	text-decoration: underline dotted;
-	text-decoration-color: currentColor;
-	text-underline-offset: 4px;
-	text-decoration-thickness: 0.5px;
-
-	padding: 0;
-	border: none;
-	margin-top: -4px;
-}
-
 :deep(.support-item-name) {
 	background-color: hsl(from #4cb6eb h s l / 10%);
 	border: 1px solid hsl(from #4cb6eb h s l / 30%);
@@ -712,24 +556,31 @@ useCopyOnClick(copyContainerRef);
 	}
 }
 
-@media (max-width: 991.98px) {
-	.card-wrapper {
-		margin-top: 0;
-		padding: 0 0 10px !important;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+// The screenshots block joins the text block from below: on desktop when it has a gallery or a video,
+// on mobile only for the video (the gallery is the slider there).
+@media (min-width: 992px) {
+	.tab-content.with-screenshots {
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
 	}
 
-	.card {
-		margin: 0;
-		padding: 0 !important;
+	.desktop-gallery + .item-video-section {
+		margin-top: 2rem;
+	}
+}
+
+@media (max-width: 991.98px) {
+	.tab-content.with-video {
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.book-title {
+		margin-bottom: 1rem;
 	}
 
 	.screenshots {
 		padding: 0 2.2rem 1.25rem;
-	}
-
-	.hide-tab {
-		display: block;
 	}
 }
 
@@ -750,7 +601,6 @@ useCopyOnClick(copyContainerRef);
 
 @media (max-width: 575.98px) {
 	.nav-tabs {
-		justify-content: space-between;
 		flex-wrap: nowrap;
 	}
 

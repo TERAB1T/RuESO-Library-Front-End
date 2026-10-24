@@ -1,0 +1,98 @@
+// Info card of the Atomic Shop and C.A.M.P. item pages, included into each card's scoped styles.
+// Desktop: a sticky centered card beside the text. Mobile: a compact label/value list under the gallery.
+
+.breadcrumb-separator {
+	color: #71717a;
+	width: 0.7rem;
+	height: 0.7rem;
+	margin: 0 0.5rem;
+	flex-shrink: 0;
+}
+
+.card-wrapper {
+	padding-top: 0 !important;
+}
+
+.book-info-card-sticky {
+	position: sticky;
+	top: 90px;
+}
+
+.card {
+	padding: 1.25rem !important;
+	text-align: center;
+	margin: 0 0 0 15px;
+	border: none;
+	background: var(--bs-block-bg);
+}
+
+.card-element {
+	padding: 1rem 0;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	text-align: center;
+}
+
+.card-element:last-child {
+	border-bottom: none;
+}
+
+.card-subtitle {
+	font-size: 13px;
+	margin-bottom: 0.3rem;
+	color: #a1a1aa;
+	font-weight: 500;
+}
+
+.book-icon {
+	border: none;
+}
+
+/* Item images are square; the width/height attributes reserve the box before the image loads. */
+.main-image {
+	max-width: 200px;
+	height: auto;
+}
+
+.screenshot-link {
+	display: block;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+@media (max-width: 991.98px) {
+	.card-wrapper {
+		position: static;
+		padding: 0 !important;
+	}
+
+	.card {
+		margin: 0;
+		padding: 0 !important;
+		background: none;
+	}
+
+	// A narrow label column and a wide value column; each wraps only within itself.
+	// The label column's minimum fits its longest words ("Максимальное", "Оригинальное").
+	.card-element {
+		display: grid;
+		grid-template-columns: minmax(6.5rem, 1fr) minmax(0, 2fr);
+		column-gap: 1rem;
+		align-items: baseline;
+		padding: 0.6rem 0;
+		font-size: 0.95rem;
+		text-align: left;
+	}
+
+	.card-subtitle {
+		margin: 0;
+	}
+
+	.card-value {
+		overflow-wrap: anywhere;
+	}
+
+	// A smaller left margin: when the category wraps, the separator starts the second line.
+	.breadcrumb-separator {
+		margin-left: 0.35rem;
+	}
+}
