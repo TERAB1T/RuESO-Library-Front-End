@@ -87,8 +87,8 @@ const SURVIVAL_LABELS: Record<string, [ru: string, en: string]> = {
 };
 
 const CONDITION_LABELS: Record<string, [ru: string, en: string]> = {
-	ghoul: ['для гулей', 'for ghouls'],
-	notGhoul: ['кроме гулей', 'not for ghouls'],
+	ghoul: ['только для гулей', 'ghouls only'],
+	notGhoul: ['только для людей', 'humans only'],
 	night: ['ночью', 'at night'],
 	ally: ['при наличии союзника', 'with an ally'],
 };
@@ -205,8 +205,7 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 								<span class="subitem-label">{{ ru ? 'Эффекты' : 'Effects' }}</span>
 								<ul class="subitem-value subitem-list">
 									<li v-for="(e, i) in sortedEffects" :key="i">
-										{{ effectText(e) }}
-										<span v-if="effectNote(e)" class="subitem-note">{{ effectNote(e) }}</span>
+										{{ effectText(e) }}<span v-if="effectNote(e)" class="subitem-note"> — {{ effectNote(e) }}</span>
 									</li>
 								</ul>
 							</div>
@@ -339,8 +338,6 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 }
 
 .subitem-note {
-	display: block;
-	font-size: 0.8rem;
 	color: #a1a1aa;
 }
 
