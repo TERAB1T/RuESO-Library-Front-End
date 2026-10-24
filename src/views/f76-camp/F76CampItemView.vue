@@ -2,7 +2,7 @@
 import { useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
 import { useHead } from '@unhead/vue';
-import { prepareCampImage, prepareAtomicShopImage, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
+import { prepareCampImage, prepareAtomicShopImage, generateMetaDescription, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
 import { useFetchCampItem, useFetchCampCategories } from '@/composables/useApi';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import F76CampUnlockConditions from '@/components/F76CampUnlockConditions.vue';
@@ -98,6 +98,13 @@ const headInput = computed((): ReactiveHead => {
 
 	let metaTitle = `${itemData.nameRu} | C.A.M.P. F76`;
 	let metaDescription = generateMetaDescriptionAtomicShop(itemData.shopInfo?.descriptionRu || itemData.descriptionRu || itemData.recipe?.descriptionRu || '');
+	if (!metaDescription) {
+		// Without any game text the description is built from the item's data, so pages don't get identical or empty snippets.
+		const facts = [`${itemData.nameRu} — объект${itemData.category?.nameRu ? ` из раздела «${itemData.category.nameRu}»` : ''} для C.A.M.P. в Fallout 76.`];
+		if (itemData.powerGenerated > 0) facts.push(`Вырабатывает ${itemData.powerGenerated} ед. энергии.`);
+		else if (itemData.requiresPower && itemData.powerRequired > 0) facts.push(`Потребляет ${itemData.powerRequired} ед. энергии.`);
+		metaDescription = generateMetaDescription(facts.join(' '));
+	}
 	let metaLink = `https://rueso.ru/f76-camp/${itemData.formId}-${itemData.slug}`;
 	let metaIcon = `https://rueso.ru${prepareCampImage(itemData.mainImage)}`;
 
