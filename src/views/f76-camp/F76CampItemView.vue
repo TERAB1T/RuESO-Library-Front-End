@@ -11,7 +11,6 @@ import F76CampProducesTable from '@/components/F76CampProducesTable.vue';
 import F76CampRecipeVariants from '@/components/F76CampRecipeVariants.vue';
 import F76CampDisplayTable from '@/components/F76CampDisplayTable.vue';
 import F76CampPowerInfo from '@/components/F76CampPowerInfo.vue';
-import F76CampShopDescription from '@/components/F76CampShopDescription.vue';
 import F76CampSharedLimit from '@/components/F76CampSharedLimit.vue';
 import F76CampStorage from '@/components/F76CampStorage.vue';
 import F76CampInfoCard from '@/components/F76CampInfoCard.vue';
@@ -274,13 +273,21 @@ const gallerySlides = computed((): ItemGallerySlide[] => {
 	];
 });
 
+// One description: the shop text first, then the game's own (or the recipe's) text.
 const parsedText = computed(() => {
-	const { descriptionRu, descriptionEn, recipe } = item.value;
+	const { descriptionRu, descriptionEn, recipe, shopInfo } = item.value;
+	const join = (...parts: (string | null | undefined)[]) => parts.filter(Boolean).join('\n\n').replace(/\n/g, '<br>');
 	return {
-		ru: (descriptionRu || recipe?.descriptionRu || '').replace(/\n/g, '<br>'),
-		en: (descriptionEn || recipe?.descriptionEn || '').replace(/\n/g, '<br>'),
+		ru: join(shopInfo?.descriptionRu || shopInfo?.descriptionEn, descriptionRu || recipe?.descriptionRu),
+		en: join(shopInfo?.descriptionEn || shopInfo?.descriptionRu, descriptionEn || recipe?.descriptionEn),
 	};
 });
+
+const SHOP_SET_WARNING = {
+	ru: 'Часть этого описания относится ко всему набору из магазина, а не к отдельному предмету.',
+	en: 'Part of this description applies to the whole shop bundle, not to an individual item.',
+};
+const hasShopDescriptionSetNote = computed(() => !!item.value.shopInfo?.isSet && !!(item.value.shopInfo.descriptionRu || item.value.shopInfo.descriptionEn));
 
 watch(() => item.value.mainImage, () => {
 	initLightbox();
@@ -387,8 +394,8 @@ onBeforeRouteLeave(() => {
 									<div style="margin-left:55px;">{{ PTS_NOTICE[l] }}</div>
 								</div>
 								<div class="book-main" v-html="parsedText[l]"></div>
+								<div v-if="hasShopDescriptionSetNote" class="shop-description-note">{{ SHOP_SET_WARNING[l] }}</div>
 
-								<F76CampShopDescription :shop-info="item.shopInfo" :lang="l" />
 								<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" :lang="l" />
 								<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" :lang="l" />
 								<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" :spoil-rate="item.spoilRate" :lang="l" />
@@ -472,6 +479,14 @@ onBeforeRouteLeave(() => {
 	background: var(--bs-block-bg);
 	border-bottom-left-radius: 12px;
 	border-bottom-right-radius: 12px;
+}
+
+.shop-description-note {
+	margin-top: 1rem;
+	font-size: 0.9rem;
+	line-height: 1.4;
+	font-style: italic;
+	color: #a1a1aa;
 }
 
 .shop-note {
