@@ -120,21 +120,23 @@ const effectNote = (e: CampSubItemEffect) => {
 
 const consumable = computed(() => subItem.value?.details?.consumable ?? null);
 
-// Survival stats first in a fixed order, then plain effects, then effects with a condition, otherwise in the game's order.
-// Effects of one perk stay together (at its first effect) in rank order.
+// Unconditional survival stats (fixed order), then other unconditional effects, then everything with a condition.
+// Conditional effects sharing a condition (or a perk) stay together at the first of them; perk levels go up; otherwise the game's order.
 const SURVIVAL_ORDER = ['hunger', 'thirst', 'rads', 'disease', 'feral'];
-const effectGroup = (e: CampSubItemEffect) =>
-	e.kind ? SURVIVAL_ORDER.indexOf(e.kind) : SURVIVAL_ORDER.length + (e.requiresPerk || e.condition ? 1 : 0);
+const conditionKey = (e: CampSubItemEffect) =>
+	e.requiresPerk || e.condition ? `${e.requiresPerk?.name?.en ?? ''}|${e.condition ?? ''}` : null;
+const survivalRank = (e: CampSubItemEffect) => (e.kind ? SURVIVAL_ORDER.indexOf(e.kind) : SURVIVAL_ORDER.length);
 const sortedEffects = computed(() => {
 	const effects = consumable.value?.effects ?? [];
-	const perkKey = (e: CampSubItemEffect) => e.requiresPerk?.name?.en ?? null;
-	const position = (e: CampSubItemEffect, i: number) => {
-		const key = perkKey(e);
-		return key ? effects.findIndex(x => perkKey(x) === key) : i;
-	};
-	return effects.map((e, i) => ({ e, i, pos: position(e, i) }))
-		.sort((a, b) => effectGroup(a.e) - effectGroup(b.e) || a.pos - b.pos
-			|| (a.e.requiresPerk?.rank ?? 0) - (b.e.requiresPerk?.rank ?? 0) || a.i - b.i)
+	const keyed = effects.map((e, i) => ({ e, i, key: conditionKey(e) }));
+	const firstIndex = (key: string) => keyed.find(x => x.key === key)!.i;
+	const group = (x: typeof keyed[number]) => (x.key ? 2 : x.e.kind ? 0 : 1);
+	return keyed
+		.sort((a, b) => group(a) - group(b)
+			|| (a.key && b.key ? firstIndex(a.key) - firstIndex(b.key) : 0)
+			|| survivalRank(a.e) - survivalRank(b.e)
+			|| (a.e.requiresPerk?.rank ?? 0) - (b.e.requiresPerk?.rank ?? 0)
+			|| a.i - b.i)
 		.map(x => x.e);
 });
 
