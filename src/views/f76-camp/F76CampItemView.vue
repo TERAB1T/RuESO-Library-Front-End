@@ -97,7 +97,7 @@ const headInput = computed((): ReactiveHead => {
 	if (!itemData.nameRu) return {};
 
 	let metaTitle = `${itemData.nameRu} | C.A.M.P. F76`;
-	let metaDescription = generateMetaDescriptionAtomicShop(itemData.descriptionRu as string);
+	let metaDescription = generateMetaDescriptionAtomicShop(itemData.shopInfo?.descriptionRu || itemData.descriptionRu || itemData.recipe?.descriptionRu || '');
 	let metaLink = `https://rueso.ru/f76-camp/${itemData.formId}-${itemData.slug}`;
 	let metaIcon = `https://rueso.ru${prepareCampImage(itemData.mainImage)}`;
 
