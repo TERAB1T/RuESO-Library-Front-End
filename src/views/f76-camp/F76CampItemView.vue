@@ -235,6 +235,9 @@ const lang = ref<'ru' | 'en'>('ru');
 // Item clicked in a collector or storage table; its card opens in a modal.
 const selectedSubItem = ref<{ formId: string; name: string | null } | null>(null);
 const selectSubItem = (formId: string, name: string | null) => { selectedSubItem.value = { formId, name }; };
+// The page shows a skeleton while the next item loads, so the modal unmounts before it reports being closed;
+// a selection left over would reopen it on the new page.
+watch(currentItemFormId, () => { selectedSubItem.value = null; });
 
 onMounted(async () => {
 	const { Modal } = await import("bootstrap");

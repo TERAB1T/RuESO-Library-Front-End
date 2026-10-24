@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, toRef, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, onMounted, ref, toRef, watch } from 'vue';
+import { RouterLink, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useFetchCampSubItem, usePrefetchCampItem } from '@/composables/useApi';
 import { prepareCampImage, atomicShopHandleImageError, pluralizeRu, formatDurationSeconds } from '@/utils';
@@ -22,35 +22,19 @@ const queryClient = useQueryClient();
 const prefetchCampItem = (formId: string) => usePrefetchCampItem(queryClient, formId);
 
 const modalEl = ref<HTMLElement | null>(null);
-let modal: { show(): void; hide(): void; dispose(): void } | null = null;
-
-// Navigating with the modal open would remount the page under it and leave the backdrop behind, so links close it first.
-const router = useRouter();
-let pendingPath: string | null = null;
-
-const goTo = (path: string) => {
-	pendingPath = path;
-	modal?.hide();
-};
-
-const onHidden = () => {
-	emit('closed');
-	if (pendingPath) router.push(pendingPath);
-	pendingPath = null;
-};
+let modal: { show(): void; hide(): void } | null = null;
 
 onMounted(async () => {
 	const { Modal } = await import('bootstrap');
 	if (!modalEl.value) return;
 	modal = new Modal(modalEl.value);
-	modalEl.value.addEventListener('hidden.bs.modal', onHidden);
+	modalEl.value.addEventListener('hidden.bs.modal', () => emit('closed'));
 	if (props.formId) modal.show();
 });
 
-onBeforeUnmount(() => {
-	modalEl.value?.removeEventListener('hidden.bs.modal', onHidden);
-	modal?.dispose();
-});
+// Same as the Atomic Shop support modal; the update guard also covers moving to another item (same route).
+onBeforeRouteLeave(() => modal?.hide());
+onBeforeRouteUpdate(() => modal?.hide());
 
 watch(() => props.formId, formId => {
 	if (formId) modal?.show();
@@ -103,7 +87,7 @@ const SURVIVAL_LABELS: Record<string, [ru: string, en: string]> = {
 };
 
 const CONDITION_LABELS: Record<string, [ru: string, en: string]> = {
-	ghoul: ['только для гулей', 'ghouls only'],
+	ghoul: ['для гулей', 'for ghouls'],
 	notGhoul: ['кроме гулей', 'not for ghouls'],
 	night: ['ночью', 'at night'],
 	ally: ['при наличии союзника', 'with an ally'],
@@ -125,15 +109,34 @@ const effectText = (e: CampSubItemEffect) => {
 
 const effectNote = (e: CampSubItemEffect) => {
 	const notes: string[] = [];
+	// Game terms: Perk = «способность», a perk card rank = «уровень».
 	if (e.requiresPerk) {
-		const rank = e.requiresPerk.rank ? (ru.value ? `, ранг ${e.requiresPerk.rank}` : `, rank ${e.requiresPerk.rank}`) : '';
-		notes.push(ru.value ? `с перком «${loc(e.requiresPerk.name)}»${rank}` : `with the ${loc(e.requiresPerk.name)} perk${rank}`);
+		const rank = e.requiresPerk.rank ? (ru.value ? ` (уровень ${e.requiresPerk.rank})` : ` (rank ${e.requiresPerk.rank})`) : '';
+		notes.push(ru.value ? `со способностью «${loc(e.requiresPerk.name)}»${rank}` : `with the ${loc(e.requiresPerk.name)} perk${rank}`);
 	}
 	if (e.condition) notes.push(ru.value ? CONDITION_LABELS[e.condition]![0] : CONDITION_LABELS[e.condition]![1]);
 	return notes.join(', ');
 };
 
 const consumable = computed(() => subItem.value?.details?.consumable ?? null);
+
+// Survival stats first in a fixed order, then plain effects, then effects with a condition, otherwise in the game's order.
+// Effects of one perk stay together (at its first effect) in rank order.
+const SURVIVAL_ORDER = ['hunger', 'thirst', 'rads', 'disease', 'feral'];
+const effectGroup = (e: CampSubItemEffect) =>
+	e.kind ? SURVIVAL_ORDER.indexOf(e.kind) : SURVIVAL_ORDER.length + (e.requiresPerk || e.condition ? 1 : 0);
+const sortedEffects = computed(() => {
+	const effects = consumable.value?.effects ?? [];
+	const perkKey = (e: CampSubItemEffect) => e.requiresPerk?.name?.en ?? null;
+	const position = (e: CampSubItemEffect, i: number) => {
+		const key = perkKey(e);
+		return key ? effects.findIndex(x => perkKey(x) === key) : i;
+	};
+	return effects.map((e, i) => ({ e, i, pos: position(e, i) }))
+		.sort((a, b) => effectGroup(a.e) - effectGroup(b.e) || a.pos - b.pos
+			|| (a.e.requiresPerk?.rank ?? 0) - (b.e.requiresPerk?.rank ?? 0) || a.i - b.i)
+		.map(x => x.e);
+});
 
 const spoilText = computed(() => {
 	const c = consumable.value;
@@ -193,10 +196,15 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 								<span class="subitem-value">{{ typeLabel }}</span>
 							</div>
 
+							<div class="subitem-row">
+								<span class="subitem-label">{{ ru ? 'Оригинальное название' : 'Original name' }}</span>
+								<span class="subitem-value">{{ subItem.nameEn || '—' }}</span>
+							</div>
+
 							<div v-if="consumable && consumable.effects.length" class="subitem-row">
 								<span class="subitem-label">{{ ru ? 'Эффекты' : 'Effects' }}</span>
 								<ul class="subitem-value subitem-list">
-									<li v-for="(e, i) in consumable.effects" :key="i">
+									<li v-for="(e, i) in sortedEffects" :key="i">
 										{{ effectText(e) }}
 										<span v-if="effectNote(e)" class="subitem-note">{{ effectNote(e) }}</span>
 									</li>
@@ -239,7 +247,7 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 								<span class="subitem-label">{{ ru ? 'Также встречается' : 'Also found in' }}</span>
 								<ul class="subitem-value subitem-list">
 									<li v-for="i in usedElsewhere" :key="i.formId">
-										<a :href="`/f76-camp/${i.formId}-${i.slug}`" @click.prevent="goTo(`/f76-camp/${i.formId}-${i.slug}`)" @mouseenter="prefetchCampItem(i.formId)">{{ pick(i.nameRu, i.nameEn) }}</a>
+										<RouterLink :to="`/f76-camp/${i.formId}-${i.slug}`" @mouseenter="prefetchCampItem(i.formId)">{{ pick(i.nameRu, i.nameEn) }}</RouterLink>
 									</li>
 								</ul>
 							</div>
