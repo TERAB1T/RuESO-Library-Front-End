@@ -235,9 +235,6 @@ const lang = ref<'ru' | 'en'>('ru');
 // Item clicked in a collector or storage table; its card opens in a modal.
 const selectedSubItem = ref<{ formId: string; name: string | null } | null>(null);
 const selectSubItem = (formId: string, name: string | null) => { selectedSubItem.value = { formId, name }; };
-// The page shows a skeleton while the next item loads, so the modal unmounts before it reports being closed;
-// a selection left over would reopen it on the new page.
-watch(currentItemFormId, () => { selectedSubItem.value = null; });
 
 onMounted(async () => {
 	const { Modal } = await import("bootstrap");
@@ -322,6 +319,9 @@ onBeforeRouteLeave(() => {
 
 <template>
 	<div class="container-xl">
+		<!-- Outside the loading/content branches: it stays mounted while the next item loads, so it can finish closing. -->
+		<F76CampSubItemModal :form-id="selectedSubItem?.formId ?? null" :row-name="selectedSubItem?.name ?? null" :current-item-form-id="item.formId" :lang="lang" @closed="selectedSubItem = null" />
+
 		<div v-if="!isItemFetched && !isItemError" class="skeleton placeholder-glow">
 			<span class="visually-hidden" role="status">Загрузка…</span>
 
@@ -375,8 +375,6 @@ onBeforeRouteLeave(() => {
 		<NotFoundView v-else-if="isNotFound" />
 
 		<template v-else>
-			<F76CampSubItemModal :form-id="selectedSubItem?.formId ?? null" :row-name="selectedSubItem?.name ?? null" :current-item-form-id="item.formId" :lang="lang" @closed="selectedSubItem = null" />
-
 			<Breadcrumb :items="breadcrumbItems" />
 
 			<div class="row" id="main-item-container">

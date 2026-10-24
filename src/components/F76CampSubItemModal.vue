@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, toRef, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { RouterLink, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useFetchCampSubItem, usePrefetchCampItem } from '@/composables/useApi';
@@ -16,7 +16,17 @@ const props = defineProps<{
 
 const emit = defineEmits<{ closed: [] }>();
 
-const { data: subItem, isPending } = useFetchCampSubItem(toRef(props, 'formId'));
+// The page clears its selection as soon as it moves to another item, while the modal is still fading out;
+// the last item is kept so the closing modal doesn't go blank.
+const shownFormId = ref(props.formId);
+const shownRowName = ref(props.rowName);
+watch(() => props.formId, formId => {
+	if (!formId) return;
+	shownFormId.value = formId;
+	shownRowName.value = props.rowName;
+});
+
+const { data: subItem, isPending } = useFetchCampSubItem(shownFormId);
 
 const queryClient = useQueryClient();
 const prefetchCampItem = (formId: string) => usePrefetchCampItem(queryClient, formId);
@@ -62,7 +72,7 @@ const typeLabels: Record<string, [ru: string, en: string]> = {
 	HAT: ['Головной убор', 'Hat'],
 };
 
-const title = computed(() => props.rowName || pick(subItem.value?.nameRu, subItem.value?.nameEn) || '');
+const title = computed(() => shownRowName.value || pick(subItem.value?.nameRu, subItem.value?.nameEn) || '');
 const typeLabel = computed(() => {
 	const type = subItem.value?.type;
 	const pair = type ? typeLabels[type] : undefined;
@@ -70,8 +80,8 @@ const typeLabel = computed(() => {
 });
 
 const imageFile = computed(() => {
-	if (!props.formId) return null;
-	const numeric = parseInt(props.formId, 16) & 0x00FFFFFF;
+	if (!shownFormId.value) return null;
+	const numeric = parseInt(shownFormId.value, 16) & 0x00FFFFFF;
 	return numeric.toString(16).padStart(8, '0') + '.webp';
 });
 const imageSrc = computed(() => prepareCampImage(imageFile.value, 512));
@@ -183,7 +193,7 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 					</div>
 
 					<div class="subitem-props">
-						<div v-if="isPending && formId" class="skeleton placeholder-glow">
+						<div v-if="isPending && shownFormId" class="skeleton placeholder-glow">
 							<span class="placeholder col-4"></span>
 							<span class="placeholder col-12"></span>
 							<span class="placeholder col-10"></span>
