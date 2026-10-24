@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { prepareCampImage, atomicShopHandleImageError, pluralizeRu, formatDurationSeconds } from '@/utils';
+import { useQueryClient } from '@tanstack/vue-query';
+import { usePrefetchCampSubItem } from '@/composables/useApi';
 import type { ProducesMode, ProducesNode, ProducesItemNode, ProducesListNode } from '@/types';
 
 const props = defineProps<{
@@ -9,6 +11,12 @@ const props = defineProps<{
 	spoilRate: number | null;
 	lang: 'ru' | 'en';
 }>();
+
+const emit = defineEmits<{ selectItem: [formId: string, name: string | null] }>();
+
+const queryClient = useQueryClient();
+const prefetchSubItem = (formId: string) => usePrefetchCampSubItem(queryClient, formId.replace(/^0x/i, ''));
+const selectItem = (item: ProducesItemNode) => emit('selectItem', item.formId.replace(/^0x/i, ''), pick(item.ru, item.en) ?? null);
 
 const hasProduces = computed(() => !!props.produces && props.produces.length > 0);
 const hasMultipleModes = computed(() => (props.produces?.length ?? 0) > 1);
@@ -307,7 +315,8 @@ const t = computed(() => props.lang === 'ru'
 			<tbody>
 				<template v-for="(group, index) in activeRows" :key="index">
 					<tr v-if="!(group.isUngrouped && activeRows.length === 1)" class="produces-row produces-row-group-header">
-						<td colspan="3" class="produces-td-group-label">
+						<!-- No colspan: the type column is hidden on mobile, so the header keeps the same cells as item rows. -->
+						<td class="produces-td-group-label">
 							<template v-if="!group.isUngrouped">
 								{{ t.group(group.groupNumber ?? 0) }}
 								<span v-if="group.label" class="produces-group-name">— {{ group.label }}</span>
@@ -317,14 +326,18 @@ const t = computed(() => props.lang === 'ru'
 							</template>
 							<span v-if="group.availabilityNote" class="produces-note">{{ group.availabilityNote }}</span>
 						</td>
+						<td class="produces-td-type"></td>
+						<td class="produces-td-count"></td>
 						<td class="produces-td-chance">{{ group.probability !== null ? formatPercent(group.probability) : '' }}</td>
 					</tr>
 
-					<tr v-for="(item, ii) in group.items" :key="`${index}-${ii}`" class="produces-row produces-row-item">
+					<tr v-for="(item, ii) in group.items" :key="`${index}-${ii}`" class="produces-row produces-row-item" :class="{ 'produces-row-clickable': item.type !== 'opaque' }"
+						@click="item.type !== 'opaque' && selectItem(item)" @mouseenter="item.type !== 'opaque' && prefetchSubItem(item.formId)">
 						<td class="produces-td-item">
 							<img :src="prepareCampImage(formIdToImageFilename(item.formId), 100)" class="produces-icon" :alt="pick(item.ru, item.en) || ''" loading="lazy" @error="atomicShopHandleImageError">
 							<div class="produces-item-text">
-								<span class="produces-name">{{ pick(item.ru, item.en) }}</span>
+								<button v-if="item.type !== 'opaque'" type="button" class="produces-name produces-name-button" @click.stop="selectItem(item)">{{ pick(item.ru, item.en) }}</button>
+								<span v-else class="produces-name">{{ pick(item.ru, item.en) }}</span>
 								<span v-if="item.availabilityNote" class="produces-note">{{ pick(item.availabilityNote.ru, item.availabilityNote.en) }}</span>
 							</div>
 						</td>
@@ -341,6 +354,26 @@ const t = computed(() => props.lang === 'ru'
 </template>
 
 <style scoped lang="scss">
+.produces-row-clickable {
+	cursor: pointer;
+
+	&:hover .produces-name-button {
+		text-decoration: underline;
+	}
+}
+
+.produces-name.produces-name-button {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--bs-link-color);
+	text-align: left;
+}
+
+.produces-row-clickable:hover .produces-name.produces-name-button {
+	color: var(--bs-link-hover-color);
+}
+
 .produces-block {
 	margin-top: 2.25rem;
 }

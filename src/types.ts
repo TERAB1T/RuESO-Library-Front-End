@@ -531,3 +531,43 @@ export interface CampItemWithRelations extends CampItem {
 	recipe: RecipeInfo | null;
 	recipeItems: RecipeSiblingItem[];
 }
+
+export type CampSubItemEffectKind = 'hunger' | 'thirst' | 'rads' | 'disease' | 'feral';
+export type CampSubItemEffectCondition = 'ghoul' | 'notGhoul' | 'night' | 'ally';
+
+export interface CampSubItemEffect {
+	kind: CampSubItemEffectKind | null;
+	mgefFormId: string;
+	description: LocalizedName | null;
+	magnitude: number;
+	duration: number;
+	requiresPerk: { formId: string; name: LocalizedName | null; rank: number | null } | null;
+	condition: CampSubItemEffectCondition | null;
+}
+
+export interface CampSubItemDetails {
+	components?: { formId: string; name: LocalizedName | null; count: number }[];
+	consumable?: {
+		effects: CampSubItemEffect[];
+		spoilMinutes: number | null;
+		ferments: boolean;
+		spoilsInto: { formId: string; name: LocalizedName | null } | null;
+		addiction: { name: LocalizedName | null; chance: number } | null;
+	};
+	ammo?: { formId: string; name: LocalizedName | null };
+}
+
+export interface CampSubItem {
+	formId: string;
+	editorId: string | null;
+	formType: string;
+	type: string | null;
+	nameEn: string | null;
+	nameRu: string | null;
+	descriptionEn: string | null;
+	descriptionRu: string | null;
+	weight: number | null;
+	value: number | null;
+	details: CampSubItemDetails | null;
+	usedIn: RecipeSiblingItem[];
+}

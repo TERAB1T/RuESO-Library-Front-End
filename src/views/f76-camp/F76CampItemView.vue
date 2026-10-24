@@ -13,6 +13,7 @@ import F76CampDisplayTable from '@/components/F76CampDisplayTable.vue';
 import F76CampPowerInfo from '@/components/F76CampPowerInfo.vue';
 import F76CampSharedLimit from '@/components/F76CampSharedLimit.vue';
 import F76CampStorage from '@/components/F76CampStorage.vue';
+import F76CampSubItemModal from '@/components/F76CampSubItemModal.vue';
 import F76CampInfoCard from '@/components/F76CampInfoCard.vue';
 import F76ItemGallery from '@/components/F76ItemGallery.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
@@ -231,6 +232,10 @@ onServerPrefetch(async () => {
 
 const lang = ref<'ru' | 'en'>('ru');
 
+// Item clicked in a collector or storage table; its card opens in a modal.
+const selectedSubItem = ref<{ formId: string; name: string | null } | null>(null);
+const selectSubItem = (formId: string, name: string | null) => { selectedSubItem.value = { formId, name }; };
+
 onMounted(async () => {
 	const { Modal } = await import("bootstrap");
 	BootstrapModal = Modal;
@@ -316,6 +321,7 @@ onBeforeRouteLeave(() => {
 	<div class="container-xl">
 		<div v-if="!isItemFetched && !isItemError" class="skeleton placeholder-glow">
 			<span class="visually-hidden" role="status">Загрузка…</span>
+
 			<Breadcrumb :items="breadcrumbItems" />
 
 			<div class="row" aria-hidden="true">
@@ -366,6 +372,8 @@ onBeforeRouteLeave(() => {
 		<NotFoundView v-else-if="isNotFound" />
 
 		<template v-else>
+			<F76CampSubItemModal :form-id="selectedSubItem?.formId ?? null" :row-name="selectedSubItem?.name ?? null" :current-item-form-id="item.formId" :lang="lang" @closed="selectedSubItem = null" />
+
 			<Breadcrumb :items="breadcrumbItems" />
 
 			<div class="row" id="main-item-container">
@@ -403,9 +411,9 @@ onBeforeRouteLeave(() => {
 
 								<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" :lang="l" />
 								<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" :lang="l" />
-								<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" :spoil-rate="item.spoilRate" :lang="l" />
+								<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" :spoil-rate="item.spoilRate" :lang="l" @select-item="selectSubItem" />
 								<F76CampDisplayTable :display="item.display" :lang="l" />
-								<F76CampStorage :storage="item.storage" :spoil-rate="item.spoilRate" :lang="l" />
+								<F76CampStorage :storage="item.storage" :spoil-rate="item.spoilRate" :lang="l" @select-item="selectSubItem" />
 								<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" :lang="l" />
 								<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" :lang="l" />
 								<F76CampSharedLimit :key="item.formId" :shared-limit="item.sharedLimit" :lang="l" />

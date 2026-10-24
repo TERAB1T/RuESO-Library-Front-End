@@ -20,7 +20,8 @@ import type {
 	CampCategoryWithSubcategories,
 	CampItem,
 	CampItemWithRelations,
-	CampItemsResponse
+	CampItemsResponse,
+	CampSubItem
 } from '@/types';
 import type { UseQueryReturnType } from '@tanstack/vue-query'
 import type { ComputedRef, Ref } from 'vue';
@@ -370,4 +371,21 @@ export const usePrefetchCampSubcategory = useDebounceFn((queryClient: any, subca
 	prefetchFirstPage(queryClient,
 		['f76_camp_items', '-1', subcategoryFormId, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS }],
 		campListPath('-1', subcategoryFormId), sortOrder, toBool(isPTS));
+}, DEBOUNCE_DELAY);
+
+export const useFetchCampSubItem = (formId: Ref<string | null>): UseQueryReturnType<CampSubItem, Error> => {
+	return useQuery({
+		queryKey: ['f76_camp_subitem', formId],
+		queryFn: () => fetchApi(prepareURL(`/api/f76/camp/subitems/${formId.value}`)),
+		staleTime: DEFAULT_STALE_TIME,
+		enabled: computed(() => !!formId.value)
+	});
+}
+
+export const usePrefetchCampSubItem = useDebounceFn((queryClient: any, formId: string) => {
+	queryClient.prefetchQuery({
+		queryKey: ['f76_camp_subitem', formId],
+		queryFn: () => fetchApi(prepareURL(`/api/f76/camp/subitems/${formId}`)),
+		staleTime: DEFAULT_STALE_TIME,
+	});
 }, DEBOUNCE_DELAY);

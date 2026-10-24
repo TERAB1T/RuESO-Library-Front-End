@@ -2,6 +2,8 @@
 import { computed } from 'vue';
 import { prepareCampImage, atomicShopHandleImageError, pluralizeRu, formatDurationSeconds } from '@/utils';
 
+import { useQueryClient } from '@tanstack/vue-query';
+import { usePrefetchCampSubItem } from '@/composables/useApi';
 import type { CampStorageInfo } from '@/types';
 
 const props = defineProps<{
@@ -9,6 +11,11 @@ const props = defineProps<{
 	spoilRate: number | null;
 	lang: 'ru' | 'en';
 }>();
+
+const emit = defineEmits<{ selectItem: [formId: string, name: string | null] }>();
+
+const queryClient = useQueryClient();
+const prefetchSubItem = (formId: string) => usePrefetchCampSubItem(queryClient, formId.replace(/^0x/i, ''));
 
 type Layout = 'text' | 'lists' | 'table';
 
@@ -193,10 +200,11 @@ const visible = computed(() => {
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="item in storage.items" :key="item.formId" class="storage-row">
+					<tr v-for="item in storage.items" :key="item.formId" class="storage-row storage-row-clickable"
+						@click="emit('selectItem', item.formId.replace(/^0x/i, ''), pick(item.ru, item.en) ?? null)" @mouseenter="prefetchSubItem(item.formId)">
 						<td class="storage-td-item">
 							<img :src="prepareCampImage(formIdToImageFilename(item.formId), 100)" class="storage-icon" :alt="pick(item.ru, item.en) || ''" loading="lazy" @error="atomicShopHandleImageError">
-							<span class="storage-name">{{ pick(item.ru, item.en) }}</span>
+							<button type="button" class="storage-name storage-name-button" @click.stop="emit('selectItem', item.formId.replace(/^0x/i, ''), pick(item.ru, item.en) ?? null)">{{ pick(item.ru, item.en) }}</button>
 						</td>
 						<td class="storage-td-type">{{ typeLabel(item.type) }}</td>
 					</tr>
@@ -249,6 +257,26 @@ const visible = computed(() => {
 .storage-row td {
 	padding: 0.45rem 0.5rem;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.storage-row-clickable {
+	cursor: pointer;
+
+	&:hover .storage-name-button {
+		text-decoration: underline;
+	}
+}
+
+.storage-name.storage-name-button {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--bs-link-color);
+	text-align: left;
+}
+
+.storage-row-clickable:hover .storage-name.storage-name-button {
+	color: var(--bs-link-hover-color);
 }
 
 .storage-row:hover {
