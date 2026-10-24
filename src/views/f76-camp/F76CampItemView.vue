@@ -273,13 +273,18 @@ const gallerySlides = computed((): ItemGallerySlide[] => {
 	];
 });
 
-// One description: the shop text first, then the game's own (or the recipe's) text.
+const SURFACE_RULE = {
+	dirt: { ru: 'Можно разместить только на земле.', en: 'Can only be placed in dirt.' },
+	water: { ru: 'Можно разместить только в воде.', en: 'Can only be placed in water.' },
+};
+
+// One description: the shop text first, then the game's own (or the recipe's) text, then the placement rule.
 const parsedText = computed(() => {
-	const { descriptionRu, descriptionEn, recipe, shopInfo } = item.value;
+	const { descriptionRu, descriptionEn, recipe, shopInfo, surface } = item.value;
 	const join = (...parts: (string | null | undefined)[]) => parts.filter(Boolean).join('\n\n').replace(/\n/g, '<br>');
 	return {
-		ru: join(shopInfo?.descriptionRu || shopInfo?.descriptionEn, descriptionRu || recipe?.descriptionRu),
-		en: join(shopInfo?.descriptionEn || shopInfo?.descriptionRu, descriptionEn || recipe?.descriptionEn),
+		ru: join(shopInfo?.descriptionRu || shopInfo?.descriptionEn, descriptionRu || recipe?.descriptionRu, surface && SURFACE_RULE[surface].ru),
+		en: join(shopInfo?.descriptionEn || shopInfo?.descriptionRu, descriptionEn || recipe?.descriptionEn, surface && SURFACE_RULE[surface].en),
 	};
 });
 

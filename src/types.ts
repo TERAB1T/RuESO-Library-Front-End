@@ -527,6 +527,7 @@ export interface CampItemWithRelations extends CampItem {
 	sharedLimit: CampSharedLimit | null;
 	storage: CampStorageInfo | null;
 	spoilRate: number | null;
+	surface: 'dirt' | 'water' | null;
 	recipe: RecipeInfo | null;
 	recipeItems: RecipeSiblingItem[];
 }
