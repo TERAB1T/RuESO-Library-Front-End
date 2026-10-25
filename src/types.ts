@@ -528,11 +528,17 @@ export interface CampItemWithRelations extends CampItem {
 	storage: CampStorageInfo | null;
 	spoilRate: number | null;
 	surface: 'dirt' | 'water' | null;
+	weather: CampWeatherInfo | null;
 	recipe: RecipeInfo | null;
 	recipeItems: RecipeSiblingItem[];
 }
 
-export type CampSubItemEffectKind = 'hunger' | 'thirst' | 'rads' | 'disease' | 'feral';
+export interface CampWeatherInfo {
+	type: 'radiation' | 'rain' | 'sandstorm' | 'other';
+	intenseEffects: boolean;
+}
+
+export type CampSubItemEffectKind ='hunger' | 'thirst' | 'rads' | 'disease' | 'feral';
 export type CampSubItemEffectCondition = 'ghoul' | 'notGhoul' | 'night' | 'ally';
 
 export interface CampSubItemEffect {

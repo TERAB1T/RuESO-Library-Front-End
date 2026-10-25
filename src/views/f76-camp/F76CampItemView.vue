@@ -11,6 +11,7 @@ import F76CampProducesTable from '@/components/F76CampProducesTable.vue';
 import F76CampRecipeVariants from '@/components/F76CampRecipeVariants.vue';
 import F76CampDisplayTable from '@/components/F76CampDisplayTable.vue';
 import F76CampPowerInfo from '@/components/F76CampPowerInfo.vue';
+import F76CampWeather from '@/components/F76CampWeather.vue';
 import F76CampSharedLimit from '@/components/F76CampSharedLimit.vue';
 import F76CampStorage from '@/components/F76CampStorage.vue';
 import F76CampSubItemModal from '@/components/F76CampSubItemModal.vue';
@@ -420,6 +421,7 @@ onBeforeRouteLeave(() => {
 								<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" :spoil-rate="item.spoilRate" :lang="l" @select-item="selectSubItem" />
 								<F76CampDisplayTable :display="item.display" :lang="l" />
 								<F76CampStorage :storage="item.storage" :spoil-rate="item.spoilRate" :unique="!item.sharedLimit && item.campMaxValue === 1" :lang="l" @select-item="selectSubItem" />
+								<F76CampWeather :weather="item.weather" :lang="l" />
 								<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" :lang="l" />
 								<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" :lang="l" />
 								<F76CampSharedLimit :key="item.formId" :shared-limit="item.sharedLimit" :lang="l" />
