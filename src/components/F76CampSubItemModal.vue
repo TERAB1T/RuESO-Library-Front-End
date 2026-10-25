@@ -251,7 +251,7 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 
 							<div v-if="valueText" class="subitem-row">
 								<span class="subitem-label">{{ ru ? 'Цена' : 'Value' }}</span>
-								<span class="subitem-value">{{ valueText }}</span>
+								<span class="subitem-value subitem-caps" :title="valueText">{{ subItem.value }}<span class="visually-hidden"> {{ valueText }}</span></span>
 							</div>
 
 							<div v-if="usedElsewhere.length" class="subitem-row">
@@ -337,6 +337,18 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 .subitem-value {
 	flex: 1;
 	min-width: 0;
+}
+
+.subitem-caps::after {
+	content: '';
+	display: inline-block;
+	width: 1.1rem;
+	height: 1rem;
+	background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4.9 -2.55 62.25 55.65"><path fill="%23ffffcb" d="M36.6 19.2 Q40.9 19.2 41.55 13.35 41.55 7.4 35.75 7.4 L32.85 7.4 Q23.4 7.4 12.05 22.5 9.15 27.1 9.15 31.75 L9.15 32.8 Q9.15 43.15 21.25 43.15 28.3 43.15 36.6 32.8 36.15 32.2 36.15 31.75 L35.75 31.75 Q27.75 38.7 23.3 38.7 L22.95 38.7 Q17.6 38.7 16.65 32.5 L16.65 30.65 Q16.65 21.45 29.95 11.45 31.35 10.75 32.45 10.75 L33.3 10.75 Q33.75 10.75 34.5 11.85 32.45 15.25 32.45 17.0 33.5 19.2 36.15 19.2 L36.6 19.2 M53.6 18.45 Q53.6 21.6 57.35 24.75 L57.35 25.85 Q53.6 29.2 53.6 32.5 L54.85 36.15 Q54.85 37.2 50.25 39.1 47.35 41.65 47.35 45.75 46.7 46.55 41.15 46.8 38.8 47.8 36.15 51.65 L34.1 52.0 Q34.1 50.9 28.65 50.5 27.25 50.5 23.75 53.1 L22.05 53.1 Q18.6 49.45 16.25 49.45 L10.4 49.8 Q9.65 49.1 7.5 44.65 5.15 42.85 0.45 42.05 L0.1 40.95 0.45 37.65 Q-0.1 34.2 -4.5 31.75 -4.9 31.1 -4.9 30.3 -2.9 28.15 -2.9 26.6 L-2.9 24.0 Q-2.9 23.15 -4.9 20.0 L-0.35 15.15 Q0.45 13.75 0.45 12.65 L0.1 9.25 Q1.6 8.25 6.25 7.1 8.45 5.15 9.6 1.6 L11.3 0.8 Q12.75 1.6 14.6 1.6 18.4 1.6 22.05 -2.15 L23.75 -2.55 Q23.75 -1.1 28.65 0.1 L30.75 0.1 34.9 -1.1 35.75 -1.1 Q39.8 4.1 43.2 4.1 L46.15 4.1 Q47.55 4.1 48.6 10.05 52.05 13.35 54.45 13.35 L54.85 15.15 Q53.6 17.5 53.6 18.45"/></svg>') no-repeat center / contain;
+	margin-left: 4px;
+	vertical-align: middle;
+	position: relative;
+	top: -1px;
 }
 
 .subitem-list {
