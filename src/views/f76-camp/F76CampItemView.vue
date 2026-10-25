@@ -293,15 +293,15 @@ const parsedText = computed(() => {
 	};
 });
 
-const SHOP_SET_WARNING = {
-	ru: 'Часть этого описания относится ко всему набору из магазина, а не к отдельному предмету.',
-	en: 'Part of this description applies to the whole shop bundle, not to an individual item.',
-};
-// Only when the shop text is mixed with the item's own: a description made of the shop text alone is the shop's in full.
-const hasShopDescriptionSetNote = computed(() => {
-	const { shopInfo, descriptionRu, descriptionEn, recipe, surface } = item.value;
-	if (!shopInfo?.isSet || !(shopInfo.descriptionRu || shopInfo.descriptionEn)) return false;
-	return !!(descriptionRu || descriptionEn || recipe?.descriptionRu || recipe?.descriptionEn || surface);
+const hasShopDescriptionSetNote = computed(() => !!item.value.shopInfo?.isSet && !!(item.value.shopInfo.descriptionRu || item.value.shopInfo.descriptionEn));
+
+// The bundle note covers only the shop text; the item's own and the recipe's text describe the single item.
+const shopSetWarning = computed(() => {
+	const { descriptionRu, descriptionEn, recipe, surface } = item.value;
+	const mixed = !!(descriptionRu || descriptionEn || recipe?.descriptionRu || recipe?.descriptionEn || surface);
+	return mixed
+		? { ru: 'Часть этого описания относится ко всему набору из магазина, а не к отдельному предмету.', en: 'Part of this description applies to the whole shop bundle, not to an individual item.' }
+		: { ru: 'Это описание относится ко всему набору из магазина, а не к отдельному предмету.', en: 'This description applies to the whole shop bundle, not to an individual item.' };
 });
 
 watch(() => item.value.mainImage, () => {
@@ -413,7 +413,7 @@ onBeforeRouteLeave(() => {
 									<div style="margin-left:55px;">{{ PTS_NOTICE[l] }}</div>
 								</div>
 								<div class="book-main" v-html="parsedText[l]"></div>
-								<div v-if="hasShopDescriptionSetNote" class="shop-description-note">{{ SHOP_SET_WARNING[l] }}</div>
+								<div v-if="hasShopDescriptionSetNote" class="shop-description-note">{{ shopSetWarning[l] }}</div>
 
 								<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" :lang="l" />
 								<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" :lang="l" />
