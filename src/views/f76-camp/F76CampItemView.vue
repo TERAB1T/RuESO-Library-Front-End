@@ -297,7 +297,12 @@ const SHOP_SET_WARNING = {
 	ru: 'Часть этого описания относится ко всему набору из магазина, а не к отдельному предмету.',
 	en: 'Part of this description applies to the whole shop bundle, not to an individual item.',
 };
-const hasShopDescriptionSetNote = computed(() => !!item.value.shopInfo?.isSet && !!(item.value.shopInfo.descriptionRu || item.value.shopInfo.descriptionEn));
+// Only when the shop text is mixed with the item's own: a description made of the shop text alone is the shop's in full.
+const hasShopDescriptionSetNote = computed(() => {
+	const { shopInfo, descriptionRu, descriptionEn, recipe, surface } = item.value;
+	if (!shopInfo?.isSet || !(shopInfo.descriptionRu || shopInfo.descriptionEn)) return false;
+	return !!(descriptionRu || descriptionEn || recipe?.descriptionRu || recipe?.descriptionEn || surface);
+});
 
 watch(() => item.value.mainImage, () => {
 	initLightbox();
@@ -414,7 +419,7 @@ onBeforeRouteLeave(() => {
 								<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" :lang="l" />
 								<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" :spoil-rate="item.spoilRate" :lang="l" @select-item="selectSubItem" />
 								<F76CampDisplayTable :display="item.display" :lang="l" />
-								<F76CampStorage :storage="item.storage" :spoil-rate="item.spoilRate" :lang="l" @select-item="selectSubItem" />
+								<F76CampStorage :storage="item.storage" :spoil-rate="item.spoilRate" :unique="!item.sharedLimit && item.campMaxValue === 1" :lang="l" @select-item="selectSubItem" />
 								<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" :lang="l" />
 								<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" :lang="l" />
 								<F76CampSharedLimit :key="item.formId" :shared-limit="item.sharedLimit" :lang="l" />

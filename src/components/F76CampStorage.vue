@@ -9,6 +9,8 @@ import type { CampStorageInfo } from '@/types';
 const props = defineProps<{
 	storage: CampStorageInfo | null;
 	spoilRate: number | null;
+	// only one such object can be built, so there is nothing for the capacity to be shared with
+	unique?: boolean;
 	lang: 'ru' | 'en';
 }>();
 
@@ -84,17 +86,19 @@ const capacity = computed((): string | null => {
 
 	const items = ru.value ? pluralizeRu(limit, ['предмет', 'предмета', 'предметов']) : (limit === 1 ? 'item' : 'items');
 
-	if (props.storage!.group === 'Vending' && g.pool)
-		return ru.value
-			? `Одновременно можно выставить на продажу до ${limit} ${items} (общий лимит для ${g.pool[0]} в C.A.M.P.).`
-			: `Up to ${limit} ${items} can be listed for sale at once (shared by ${g.pool[1]} in the C.A.M.P.).`;
+	const pool = props.unique ? undefined : g.pool;
 
-	if (!g.pool)
+	if (props.storage!.group === 'Vending' && pool)
+		return ru.value
+			? `Одновременно можно выставить на продажу до ${limit} ${items} (общий лимит для ${pool[0]} в C.A.M.P.).`
+			: `Up to ${limit} ${items} can be listed for sale at once (shared by ${pool[1]} in the C.A.M.P.).`;
+
+	if (!pool)
 		return ru.value ? `Максимальная вместимость — ${limit} ${items}.` : `Maximum capacity: ${limit} ${items}.`;
 
 	return ru.value
-		? `Максимальная вместимость — ${limit} ${items} (общая для ${g.pool[0]} в C.A.M.P.).`
-		: `Maximum capacity: ${limit} ${items} (shared by ${g.pool[1]} in the C.A.M.P.).`;
+		? `Максимальная вместимость — ${limit} ${items} (общая для ${pool[0]} в C.A.M.P.).`
+		: `Maximum capacity: ${limit} ${items} (shared by ${pool[1]} in the C.A.M.P.).`;
 });
 
 // The lead sentence of the text layout: what the object does.
