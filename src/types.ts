@@ -490,6 +490,15 @@ export interface CampStorageInfo {
 	chargeRate?: number;
 }
 
+export interface CampGivenItem {
+	formId: string;
+	editorId: string | null;
+	en: string | null;
+	ru: string | null;
+	type: string | null;
+	count: number;
+}
+
 export interface CampSharedLimitCategory extends Pick<CampCategory, 'formId' | 'nameEn' | 'nameRu' | 'slug'> {
 	count: number;
 }
@@ -526,6 +535,7 @@ export interface CampItemWithRelations extends CampItem {
 	shopInfo: CampShopInfo | null;
 	sharedLimit: CampSharedLimit | null;
 	storage: CampStorageInfo | null;
+	givesItems: CampGivenItem[] | null;
 	spoilRate: number | null;
 	surface: 'dirt' | 'water' | null;
 	weather: CampWeatherInfo | null;

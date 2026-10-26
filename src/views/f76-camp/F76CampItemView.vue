@@ -14,6 +14,7 @@ import F76CampPowerInfo from '@/components/F76CampPowerInfo.vue';
 import F76CampWeather from '@/components/F76CampWeather.vue';
 import F76CampSharedLimit from '@/components/F76CampSharedLimit.vue';
 import F76CampStorage from '@/components/F76CampStorage.vue';
+import F76CampGivesItems from '@/components/F76CampGivesItems.vue';
 import F76CampSubItemModal from '@/components/F76CampSubItemModal.vue';
 import F76CampInfoCard from '@/components/F76CampInfoCard.vue';
 import F76ItemGallery from '@/components/F76ItemGallery.vue';
@@ -233,7 +234,7 @@ onServerPrefetch(async () => {
 
 const lang = ref<'ru' | 'en'>('ru');
 
-// Item clicked in a collector or storage table; its card opens in a modal.
+// Item clicked in a collector, storage or given-items table; its card opens in a modal.
 const selectedSubItem = ref<{ formId: string; name: string | null } | null>(null);
 const selectSubItem = (formId: string, name: string | null) => { selectedSubItem.value = { formId, name }; };
 
@@ -421,6 +422,7 @@ onBeforeRouteLeave(() => {
 								<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" :spoil-rate="item.spoilRate" :lang="l" @select-item="selectSubItem" />
 								<F76CampDisplayTable :display="item.display" :lang="l" />
 								<F76CampStorage :storage="item.storage" :spoil-rate="item.spoilRate" :unique="!item.sharedLimit && item.campMaxValue === 1" :lang="l" @select-item="selectSubItem" />
+								<F76CampGivesItems :items="item.givesItems" :lang="l" @select-item="selectSubItem" />
 								<F76CampWeather :weather="item.weather" :lang="l" />
 								<F76CampPowerInfo :requires-power="item.requiresPower" :power-required="item.powerRequired" :power-connectable="item.powerConnectable" :power-generated="item.powerGenerated" :power-radiated="item.powerRadiated" :lang="l" />
 								<F76CampRecipeVariants :key="item.formId" :recipe="item.recipe" :recipe-items="item.recipeItems" :lang="l" />
