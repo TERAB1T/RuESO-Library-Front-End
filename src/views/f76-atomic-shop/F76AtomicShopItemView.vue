@@ -92,7 +92,7 @@ const headInput = computed((): ReactiveHead => {
 	const itemData = item.value;
 	if (!itemData.nameRu) return {};
 
-	let metaTitle = `${itemData.nameRu} | Атомная лавка F76`;
+	let metaTitle = `${itemData.nameRu} | Атомная лавка Fallout 76`;
 	let metaDescription = generateMetaDescriptionAtomicShop(itemData.descriptionRu as string);
 	let metaLink = `https://rueso.ru/f76-atomic-shop/${itemData.formId}-${itemData.slug}`;
 	let metaIcon = `https://rueso.ru${prepareAtomicShopImage(itemData.mainImage?.replace(".avif", ".webp"))}`;

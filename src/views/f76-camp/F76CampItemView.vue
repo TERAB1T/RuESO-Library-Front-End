@@ -97,7 +97,7 @@ const headInput = computed((): ReactiveHead => {
 	const itemData = item.value;
 	if (!itemData.nameRu) return {};
 
-	let metaTitle = `${itemData.nameRu} | C.A.M.P. F76`;
+	let metaTitle = `${itemData.nameRu} | C.A.M.P. Fallout 76`;
 	let metaDescription = generateMetaDescriptionAtomicShop(itemData.shopInfo?.descriptionRu || itemData.descriptionRu || itemData.recipe?.descriptionRu || '');
 	if (!metaDescription) {
 		// Without any game text the description is built from the item's data, so pages don't get identical or empty snippets.
