@@ -53,13 +53,13 @@ const headInput = computed((): ReactiveHead => {
 
 	if (subcategoryInfo.value) {
 		const subcategory = subcategoryInfo.value;
-		metaTitle = `${subcategory.nameRu} | C.A.M.P. F76`;
+		metaTitle = `${subcategory.nameRu} | C.A.M.P. Fallout 76`;
 		metaLink = `${metaLink}/subcategory/${subcategory.formId}-${subcategory.slug}`;
 		metaDescription = `Все предметы для C.A.M.P. Fallout 76 из подкатегории «${subcategory.nameRu}».`;
 	}
 	else if (categoryInfo.value) {
 		const category = categoryInfo.value;
-		metaTitle = `${category.nameRu} | C.A.M.P. F76`;
+		metaTitle = `${category.nameRu} | C.A.M.P. Fallout 76`;
 		metaLink = `${metaLink}/category/${category.formId}-${category.slug}`;
 		metaDescription = `Все предметы для C.A.M.P. Fallout 76 из категории «${category.nameRu}».`;
 	}
@@ -141,16 +141,16 @@ onServerPrefetch(async () => {
 			<div class="camp-main">
 				<div class="library-header">
 					<template v-if="subcategoryInfo && subcategoryInfo.nameRu">
-						<h2>Предметы C.A.M.P.: {{ subcategoryInfo.nameRu.toLowerCase() }}</h2>
+						<h1>Предметы C.A.M.P.: {{ subcategoryInfo.nameRu.toLowerCase() }}</h1>
 					</template>
 					<template v-else-if="categoryInfo && categoryInfo.nameRu">
-						<h2>Предметы C.A.M.P.: {{ categoryInfo.nameRu.toLowerCase() }}</h2>
+						<h1>Предметы C.A.M.P.: {{ categoryInfo.nameRu.toLowerCase() }}</h1>
 					</template>
 					<template v-else-if="isListTargetPending">
-						<h2 class="skeleton placeholder-glow" aria-hidden="true"><span class="d-block"><span class="placeholder col-8"></span></span><span class="d-block d-md-none"><span class="placeholder col-5"></span></span></h2>
+						<h1 class="skeleton placeholder-glow" aria-hidden="true"><span class="d-block"><span class="placeholder col-8"></span></span><span class="d-block d-md-none"><span class="placeholder col-5"></span></span></h1>
 					</template>
 					<template v-else>
-						<h2>Предметы C.A.M.P. Fallout 76</h2>
+						<h1>Предметы C.A.M.P. Fallout 76</h1>
 						<p class="library-intro">{{ HOME_DESCRIPTION }}</p>
 					</template>
 				</div>
@@ -214,11 +214,11 @@ onServerPrefetch(async () => {
 	margin-top: 20px;
 }
 
-h2 {
+h1 {
 	font-size: 2rem;
 }
 
-h2:last-child {
+h1:last-child {
 	margin-bottom: 1.5rem;
 }
 
@@ -229,10 +229,10 @@ h2:last-child {
 }
 
 @media (max-width: 991.98px) {
-	h2 {
+	h1 {
 		font-size: calc(1.325rem + .9vw);
 	}
-	h2:last-child {
+	h1:last-child {
 		margin-bottom: 0.5rem;
 	}
 	.library-intro {

@@ -97,23 +97,23 @@ const headInput = computed((): ReactiveHead => {
 	let metaIcon = `https://rueso.ru/public/img/main-card-atomic-shop.jpg`;
 
 	if (subcategoryInfo.value) {
-		metaTitle = `${subcategoryInfo.value.nameRu} | Атомная лавка F76`;
+		metaTitle = `${subcategoryInfo.value.nameRu} | Атомная лавка Fallout 76`;
 		metaLink = `${metaLink}/subcategory/${subcategoryInfo.value.formId}-${subcategoryInfo.value.slug}`;
 		metaDescription = `Полный каталог товаров из подкатегории «${subcategoryInfo.value.nameRu}» Атомной лавки Fallout 76.`;
 	}
 	else if (categoryInfo.value) {
-		metaTitle = `${categoryInfo.value.nameRu} | Атомная лавка F76`;
+		metaTitle = `${categoryInfo.value.nameRu} | Атомная лавка Fallout 76`;
 		metaLink = `${metaLink}/category/${categoryInfo.value.formId}-${categoryInfo.value.slug}`;
 		metaDescription = `Полный каталог товаров из категории «${categoryInfo.value.nameRu}» Атомной лавки Fallout 76.`;
 	}
 	else if (acquisitionSourceInfo.value) {
-		metaTitle = `${acquisitionSourceHeading.value} | Атомная лавка F76`;
+		metaTitle = `${acquisitionSourceHeading.value} | Атомная лавка Fallout 76`;
 		metaLink = `${metaLink}/${state.currentAcquisitionType}/${acquisitionSourceInfo.value.number}-${acquisitionSourceInfo.value.slug}`;
 		metaDescription = acquisitionSourceDescription.value || metaDescription;
 	}
 	else if (state.currentAcquisitionType !== '-1') {
 		const label = ACQUISITION_TYPE_LABELS[state.currentAcquisitionType as string] || state.currentAcquisitionType;
-		metaTitle = `${label} | Атомная лавка F76`;
+		metaTitle = `${label} | Атомная лавка Fallout 76`;
 		metaLink = `${metaLink}/${state.currentAcquisitionType}`;
 		metaDescription = `Полный каталог товаров из раздела «${label}» Атомной лавки Fallout 76.`;
 	}
@@ -214,27 +214,27 @@ onServerPrefetch(async () => {
 			<div class="atomic-shop-main">
 				<div class="library-header">
 					<template v-if="subcategoryInfo && subcategoryInfo.nameRu">
-						<h2>Атомная лавка: {{ subcategoryInfo.nameRu === 'S.P.E.C.I.A.L.' ? subcategoryInfo.nameRu : subcategoryInfo.nameRu.toLowerCase() }}</h2>
+						<h1>Атомная лавка: {{ subcategoryInfo.nameRu === 'S.P.E.C.I.A.L.' ? subcategoryInfo.nameRu : subcategoryInfo.nameRu.toLowerCase() }}</h1>
 					</template>
 					<template v-else-if="categoryInfo && categoryInfo.nameRu">
-						<h2>Атомная лавка: {{ categoryInfo.nameRu === 'C.A.M.P.' ? categoryInfo.nameRu : categoryInfo.nameRu.toLowerCase() }}</h2>
+						<h1>Атомная лавка: {{ categoryInfo.nameRu === 'C.A.M.P.' ? categoryInfo.nameRu : categoryInfo.nameRu.toLowerCase() }}</h1>
 					</template>
 					<template v-else-if="acquisitionSourceInfo">
-						<h2>{{ acquisitionSourceHeading }}</h2>
+						<h1>{{ acquisitionSourceHeading }}</h1>
 						<p class="library-intro">{{ acquisitionSourceDescription }}</p>
 					</template>
 					<template v-else-if="isSourceTargetPending">
-						<h2 class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder col-6"></span></h2>
+						<h1 class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder col-6"></span></h1>
 						<p class="library-intro skeleton placeholder-glow" aria-hidden="true"><span class="d-block"><span class="placeholder col-10"></span></span><span class="d-block d-md-none"><span class="placeholder col-7"></span></span></p>
 					</template>
 					<template v-else-if="state.currentAcquisitionType !== '-1'">
-						<h2>Атомная лавка: {{ ACQUISITION_TYPE_LABELS[state.currentAcquisitionType as string] || state.currentAcquisitionType }}</h2>
+						<h1>Атомная лавка: {{ ACQUISITION_TYPE_LABELS[state.currentAcquisitionType as string] || state.currentAcquisitionType }}</h1>
 					</template>
 					<template v-else-if="isCategoryTargetPending">
-						<h2 class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder col-6"></span></h2>
+						<h1 class="skeleton placeholder-glow" aria-hidden="true"><span class="placeholder col-6"></span></h1>
 					</template>
 					<template v-else>
-						<h2>Атомная лавка Fallout 76</h2>
+						<h1>Атомная лавка Fallout 76</h1>
 						<p class="library-intro">{{ HOME_DESCRIPTION }}</p>
 					</template>
 				</div>
@@ -301,7 +301,7 @@ onServerPrefetch(async () => {
 	margin-top: 20px;
 }
 
-h2 {
+h1 {
 	font-size: 2rem;
 }
 
@@ -312,7 +312,7 @@ h2 {
 }
 
 @media (max-width: 991.98px) {
-	h2 {
+	h1 {
 		font-size: calc(1.325rem + .9vw);
 	}
 	.library-intro {
