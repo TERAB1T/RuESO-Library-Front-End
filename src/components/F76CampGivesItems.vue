@@ -52,7 +52,7 @@ const select = (item: CampGivenItem) => emit('selectItem', item.formId.replace(/
 			<h3 class="fo-h3">{{ ru ? 'Взаимодействие' : 'Interaction' }}</h3>
 		</div>
 
-		<p class="gives-text">{{ ru ? 'При взаимодействии с этим объектом игрок получает:' : 'Interacting with this object gives the player:' }}</p>
+		<p class="gives-text">{{ ru ? 'При первом взаимодействии с этим объектом игрок получает:' : 'The first interaction with this object gives the player:' }}</p>
 		<table class="gives-table">
 			<thead>
 				<tr>
