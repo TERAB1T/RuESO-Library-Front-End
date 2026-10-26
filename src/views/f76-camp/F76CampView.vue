@@ -48,19 +48,19 @@ const headInput = computed((): ReactiveHead => {
 
 	let metaTitle = `Предметы C.A.M.P. | Fallout 76`;
 	let metaDescription = HOME_DESCRIPTION;
-	let metaLink = 'https://rueso.ru/f76-camp/';
+	let metaLink = 'https://rueso.ru/f76-camp';
 	let metaIcon = `https://rueso.ru/public/img/main-card-camp.jpg`;
 
 	if (subcategoryInfo.value) {
 		const subcategory = subcategoryInfo.value;
 		metaTitle = `${subcategory.nameRu} | C.A.M.P. F76`;
-		metaLink = `${metaLink}subcategory/${subcategory.formId}-${subcategory.slug}`;
+		metaLink = `${metaLink}/subcategory/${subcategory.formId}-${subcategory.slug}`;
 		metaDescription = `Все предметы для C.A.M.P. Fallout 76 из подкатегории «${subcategory.nameRu}».`;
 	}
 	else if (categoryInfo.value) {
 		const category = categoryInfo.value;
 		metaTitle = `${category.nameRu} | C.A.M.P. F76`;
-		metaLink = `${metaLink}category/${category.formId}-${category.slug}`;
+		metaLink = `${metaLink}/category/${category.formId}-${category.slug}`;
 		metaDescription = `Все предметы для C.A.M.P. Fallout 76 из категории «${category.nameRu}».`;
 	}
 

@@ -47,20 +47,20 @@ const headInput = computed((): ReactiveHead => {
 
 	let metaTitle = `Библиотека ESO | RuESO`;
 	let metaDescription = 'Библиотека книг из The Elder Scrolls Online';
-	let metaLink = 'https://rueso.ru/library/eso/';
+	let metaLink = 'https://rueso.ru/library/eso';
 	let metaIcon = `https://rueso.ru/public/img/main-card-library.jpg`;
 
 	if (categoryInfo.value) {
 		metaTitle = `${categoryInfo.value.titleRu} | Библиотека ESO`;
 		metaDescription = categoryInfo.value.descRu;
-		metaLink = `${metaLink}category/${categoryInfo.value.id}-${categoryInfo.value.slug}`;
+		metaLink = `${metaLink}/category/${categoryInfo.value.id}-${categoryInfo.value.slug}`;
 		metaIcon = `https://rueso.ru${prepareIcon(categoryInfo.value.icon)}`;
 	}
 
 	if (patchInfo.value) {
 		metaTitle = `${uppercaseFirstLetter(patchInfo.value.nameRu)} | Библиотека ESO`;
 		metaDescription = `Книги, добавленные в игру с патчем ${patchInfo.value.version}, который ${formatDateToMonthYear(patchInfo.value.date)}.`;
-		metaLink = `${metaLink}patch/${patchInfo.value.version}-${patchInfo.value.slug}`;
+		metaLink = `${metaLink}/patch/${patchInfo.value.version}-${patchInfo.value.slug}`;
 	}
 
 	return {

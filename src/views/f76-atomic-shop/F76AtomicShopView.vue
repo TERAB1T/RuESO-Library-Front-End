@@ -93,28 +93,28 @@ const headInput = computed((): ReactiveHead => {
 
 	let metaTitle = `Атомная лавка | Fallout 76`;
 	let metaDescription = HOME_DESCRIPTION;
-	let metaLink = 'https://rueso.ru/f76-atomic-shop/';
+	let metaLink = 'https://rueso.ru/f76-atomic-shop';
 	let metaIcon = `https://rueso.ru/public/img/main-card-atomic-shop.jpg`;
 
 	if (subcategoryInfo.value) {
 		metaTitle = `${subcategoryInfo.value.nameRu} | Атомная лавка F76`;
-		metaLink = `${metaLink}subcategory/${subcategoryInfo.value.formId}-${subcategoryInfo.value.slug}`;
+		metaLink = `${metaLink}/subcategory/${subcategoryInfo.value.formId}-${subcategoryInfo.value.slug}`;
 		metaDescription = `Полный каталог товаров из подкатегории «${subcategoryInfo.value.nameRu}» Атомной лавки Fallout 76.`;
 	}
 	else if (categoryInfo.value) {
 		metaTitle = `${categoryInfo.value.nameRu} | Атомная лавка F76`;
-		metaLink = `${metaLink}category/${categoryInfo.value.formId}-${categoryInfo.value.slug}`;
+		metaLink = `${metaLink}/category/${categoryInfo.value.formId}-${categoryInfo.value.slug}`;
 		metaDescription = `Полный каталог товаров из категории «${categoryInfo.value.nameRu}» Атомной лавки Fallout 76.`;
 	}
 	else if (acquisitionSourceInfo.value) {
 		metaTitle = `${acquisitionSourceHeading.value} | Атомная лавка F76`;
-		metaLink = `${metaLink}${state.currentAcquisitionType}/${acquisitionSourceInfo.value.number}-${acquisitionSourceInfo.value.slug}`;
+		metaLink = `${metaLink}/${state.currentAcquisitionType}/${acquisitionSourceInfo.value.number}-${acquisitionSourceInfo.value.slug}`;
 		metaDescription = acquisitionSourceDescription.value || metaDescription;
 	}
 	else if (state.currentAcquisitionType !== '-1') {
 		const label = ACQUISITION_TYPE_LABELS[state.currentAcquisitionType as string] || state.currentAcquisitionType;
 		metaTitle = `${label} | Атомная лавка F76`;
-		metaLink = `${metaLink}${state.currentAcquisitionType}`;
+		metaLink = `${metaLink}/${state.currentAcquisitionType}`;
 		metaDescription = `Полный каталог товаров из раздела «${label}» Атомной лавки Fallout 76.`;
 	}
 

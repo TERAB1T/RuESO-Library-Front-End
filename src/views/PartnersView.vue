@@ -4,7 +4,7 @@ import { trackPartnerClick } from '@/analytics';
 
 const metaTitle = 'Партнеры сайта | RuESO';
 const metaDescription = 'Проекты, сообщества и площадки, которые мы рекомендуем и с которыми дружим.';
-const metaLink = 'https://rueso.ru/partners/';
+const metaLink = 'https://rueso.ru/partners';
 const metaIcon = 'https://rueso.ru/public/img/main-card-rueso.jpg';
 
 useHead({
