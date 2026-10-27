@@ -131,14 +131,14 @@ const prefetchCrate = (crateId: number) => usePrefetchCrownCrate(queryClient, cr
 	gap: 1rem;
 	font-size: 1.5rem;
 	font-weight: 600;
-	color: var(--bs-primary);
+	color: var(--bs-heading-color);
 	margin: 2rem 0 1.25rem;
 
 	&::after {
 		content: '';
 		flex: 1;
 		height: 1px;
-		background: linear-gradient(to right, rgba(var(--bs-primary-rgb), 0.5), transparent);
+		background: linear-gradient(to right, rgba(var(--bs-heading-color), 0.5), transparent);
 	}
 }
 
