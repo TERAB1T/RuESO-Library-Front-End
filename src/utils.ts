@@ -79,6 +79,43 @@ export const prepareIcon = (icon: string) => {
 	return icon.replace(/\/?esoui\/(.*?)\.dds/gi, '/public/img/eso/esoui/$1.png').toLowerCase();
 }
 
+export const prepareCrownCrateImage = (path: string) => `/public/img/eso-crowncrates/${path}`;
+
+export const CROWN_GEMS_ICON = '/public/img/eso/esoui/art/currency/currency_crown_gems.png';
+
+// Section headings of the old elderscrolls.net pages; colors are brightened GetCrownCrateTierQualityColor values.
+// chance — the odds (%) of getting a reward of the tier from one crate, as the game's help shows them;
+// chanceText overrides how it is printed.
+export const CROWN_CRATE_TIERS: Record<number, { ru: string; en: string; color: string; chance: number; chanceText?: string }> = {
+	7: { ru: 'Исключительные награды', en: 'Radiant Apex', color: '#ff6a4d', chance: 2, chanceText: '<2%' },
+	6: { ru: 'Блистательные награды', en: 'Apex', color: '#ff9533', chance: 2 },
+	5: { ru: 'Легендарные награды', en: 'Legendary', color: '#f2cc2e', chance: 14 },
+	4: { ru: 'Эпические награды', en: 'Epic', color: '#b05cf2', chance: 21 },
+	3: { ru: 'Превосходные награды', en: 'Superior', color: '#4d9bff', chance: 86 },
+	2: { ru: 'Хорошие награды', en: 'Fine', color: '#4fd12e', chance: 72 },
+	1: { ru: 'Обычные награды', en: 'Common', color: '#d9d9d9', chance: 98 },
+};
+
+export const crownCrateTier = (tier: number) => CROWN_CRATE_TIERS[tier] ?? { ru: `Тир ${tier}`, en: `Tier ${tier}`, color: 'inherit', chance: 0 };
+
+// Game text → HTML: escaped, |cRRGGBB…|r colors (|r may be missing at the end), line breaks.
+export const formatEsoText = (text: string | null | undefined): string => {
+	if (!text) return '';
+	return escapeHtml(text)
+		.replace(/\|c([0-9a-f]{6})(.*?)(?:\|r|$)/gis, '<span style="color: #$1">$2</span>')
+		.replace(/\r?\n/g, '<br>');
+}
+
+const SALE_SEASONS_RU: Record<string, string> = { spring: 'весной', summer: 'летом', autumn: 'осенью', winter: 'зимой' };
+
+// «весной 2019 года», «зимой 2018–2019 годов» (winter of saleYear lasts until February of the next year).
+export const formatCrownCrateSale = (season: string | null, year: number | null): string | null => {
+	if (!season || !year) return null;
+	return season === 'winter'
+		? `${SALE_SEASONS_RU[season]} ${year}–${year + 1} годов`
+		: `${SALE_SEASONS_RU[season]} ${year} года`;
+}
+
 export const prepareAtomicShopVideo = (video: string) => `/public/video/f76/${video}`;
 
 export const prepareAtomicShopImage = (icon: any) => {

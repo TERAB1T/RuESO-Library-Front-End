@@ -21,7 +21,9 @@ import type {
 	CampItem,
 	CampItemWithRelations,
 	CampItemsResponse,
-	CampSubItem
+	CampSubItem,
+	CrownCrate,
+	CrownCrateListItem
 } from '@/types';
 import type { UseQueryReturnType } from '@tanstack/vue-query'
 import type { ComputedRef, Ref } from 'vue';
@@ -241,6 +243,22 @@ export const useFetchCampItems = (categoryFormId: ComputedRef<string>, subcatego
 	});
 }
 
+export const useFetchCrownCrates = (): UseQueryReturnType<CrownCrateListItem[], Error> => {
+	return useQuery({
+		queryKey: ['eso_crown_crates'],
+		queryFn: () => fetchApi(prepareURL('/api/eso/crown-crates')),
+		staleTime: DEFAULT_STALE_TIME,
+	});
+}
+
+export const useFetchCrownCrate = (crateId: ComputedRef<number>): UseQueryReturnType<CrownCrate, Error> => {
+	return useQuery({
+		queryKey: ['eso_crown_crate', crateId],
+		queryFn: () => fetchApi(prepareURL(`/api/eso/crown-crates/${crateId.value}`)),
+		staleTime: DEFAULT_STALE_TIME,
+	});
+}
+
 export const useFetchCampCategories = (): UseQueryReturnType<CampCategoryWithSubcategories[], Error> => {
 	return useQuery({
 		queryKey: ['f76_camp_categories'],
@@ -272,6 +290,8 @@ export const useFetchAtomicShopUpdated = () => useUpdatedQuery<LastModified>(upd
 
 export const useFetchCampUpdated = () => useUpdatedQuery<LastModified>(updated => updated.f76Camp);
 
+export const useFetchCrownCratesUpdated = () => useUpdatedQuery<LastModified>(updated => updated.esoCrownCrates);
+
 // Prefetches
 
 export const usePrefetchBook = useDebounceFn((queryClient: any, bookId: number) => {
@@ -302,6 +322,14 @@ export const usePrefetchPatch = useDebounceFn((queryClient: any, patchVersion: s
 	});
 }, DEBOUNCE_DELAY);
 
+
+export const usePrefetchCrownCrate = useDebounceFn((queryClient: any, crateId: number) => {
+	queryClient.prefetchQuery({
+		queryKey: ['eso_crown_crate', crateId],
+		queryFn: () => fetchApi(prepareURL(`/api/eso/crown-crates/${crateId}`)),
+		staleTime: DEFAULT_STALE_TIME,
+	});
+}, DEBOUNCE_DELAY);
 
 export const usePrefetchAtomicShopItem = useDebounceFn((queryClient: any, itemFormId: string) => {
 	queryClient.prefetchQuery({

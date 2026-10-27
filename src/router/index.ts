@@ -6,6 +6,8 @@ import BookView from '@/views/eso-library/BookView.vue'
 import GlossaryTESView from '@/views/glossaries/GlossaryTESView.vue'
 import GlossaryFalloutView from '@/views/glossaries/GlossaryFalloutView.vue'
 import BooksExportView from '@/views/eso-library/BooksExportView.vue'
+import CrownCratesView from '@/views/eso-crown-crates/CrownCratesView.vue'
+import CrownCrateView from '@/views/eso-crown-crates/CrownCrateView.vue'
 import F76AtomicShopView from '@/views/f76-atomic-shop/F76AtomicShopView.vue'
 import F76AtomicShopItemView from '@/views/f76-atomic-shop/F76AtomicShopItemView.vue'
 import F76CampView from '@/views/f76-camp/F76CampView.vue'
@@ -60,6 +62,16 @@ export default function createAppRouter() {
 						next();
 					}
 				}
+			},
+			{
+				path: '/eso-crown-crates',
+				name: 'crown-crates',
+				component: CrownCratesView,
+			},
+			{
+				path: '/eso-crown-crates/:crateId(\\d+):slug?',
+				name: 'crown-crate',
+				component: CrownCrateView,
 			},
 			{
 				path: '/glossary-tes',

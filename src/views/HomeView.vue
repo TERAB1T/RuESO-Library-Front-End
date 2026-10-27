@@ -68,7 +68,7 @@ useHead({
 					</div>
 				</a></div>
 
-			<div class="col-12 col-md-6 col-lg-3"><a href="https://elderscrolls.net/tes-online/crown-crates/" target="_blank" class="card h-100 text-decoration-none main-page-card">
+			<div class="col-12 col-md-6 col-lg-3"><RouterLink to="/eso-crown-crates" class="card h-100 text-decoration-none main-page-card">
 					<div class="card-img-wrapper">
 						<img src="/public/img/main-card-crowncrates.jpg" class="card-img-top" width="600" height="334" alt="Кронные ящики ESO">
 					</div>
@@ -76,7 +76,7 @@ useHead({
 						<h5 class="card-title">Кронные ящики ESO</h5>
 						<p class="card-text">Содержимое кронных ящиков из The Elder Scrolls Online, которые можно приобрести в кронном магазине.</p>
 					</div>
-				</a></div>
+				</RouterLink></div>
 
 			<div class="col-12 col-md-6 col-lg-3">
 				<RouterLink to="/glossary-tes" class="card h-100 text-decoration-none main-page-card">

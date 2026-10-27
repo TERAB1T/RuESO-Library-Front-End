@@ -12,6 +12,7 @@ export async function buildPageList(api: string): Promise<string[]> {
 	const book = (await json("/library/books?page=1&page_size=1")).books[0];
 	const libraryCategory = (await json("/library/categories"))[0];
 	const patch = (await json("/library/patches"))[0];
+	const crate = (await json("/eso/crown-crates"))[0];
 
 	const campCategory = campCategories.find((c: any) => c.subcategories.length);
 	const atxCategory = atxCategories.find((c: any) => c.subcategories.length);
@@ -28,10 +29,11 @@ export async function buildPageList(api: string): Promise<string[]> {
 		`/f76-atomic-shop/category/${atxCategory.formId}-${atxCategory.slug}`,
 		`/f76-atomic-shop/subcategory/${atxCategory.subcategories[0].formId}-${atxCategory.subcategories[0].slug}`,
 		"/f76-atomic-shop/season", ...(season ? [`/f76-atomic-shop/season/${season.number}-${season.slug}`] : []),
+		"/eso-crown-crates", `/eso-crown-crates/${crate.id}-${crate.slug}`,
 	];
 }
 
 export const MUST_404 = [
 	"/nonexistent", "/library/eso/999999-x", "/library/eso/category/99999-x", "/library/eso/patch/99.9-x",
-	"/f76-camp/deadbeef-x", "/f76-camp/category/deadbeef-x", "/f76-atomic-shop/deadbeef-x", "/f76-atomic-shop/season/999-x",
+	"/f76-camp/deadbeef-x", "/f76-camp/category/deadbeef-x", "/f76-atomic-shop/deadbeef-x", "/f76-atomic-shop/season/999-x", "/eso-crown-crates/999-x", "/eso-crown-crates/3-crown-crate",
 ];

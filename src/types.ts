@@ -85,6 +85,7 @@ export type GlossaryUpdated = Record<GlossaryServer, GlossaryServerInfo | null>;
 
 export interface Updated {
 	library: LastModified;
+	esoCrownCrates: LastModified;
 	f76AtomicShop: LastModified;
 	f76Camp: LastModified;
 	glossary: Record<string, GlossaryUpdated>;
@@ -586,4 +587,67 @@ export interface CampSubItem {
 	value: number | null;
 	details: CampSubItemDetails | null;
 	usedIn: RecipeSiblingItem[];
+}
+
+// ESO crown crates
+
+export type CrownCrateSection = 'seasonal' | 'special';
+export type CrownCrateSaleSeason = 'spring' | 'summer' | 'autumn' | 'winter';
+
+export interface CrownCrateListItem {
+	id: number;
+	slug: string;
+	nameEn: string;
+	nameRu: string;
+	section: CrownCrateSection;
+	// Winter of saleYear runs from December of saleYear to February of saleYear + 1.
+	saleSeason: CrownCrateSaleSeason | null;
+	saleYear: number | null;
+	isPTS: boolean;
+	addedVersion: string;
+	cardBack: string;
+	// Card back shown on hover.
+	cardBackGlow: string;
+	image: string | null;
+	rewardsCount: number;
+}
+
+// Tiers: 1 COMMON … 7 RADIANT APEX.
+export interface CrownCrateCard {
+	card: number;
+	tiers: number[];
+}
+
+export interface CrownCrateReward {
+	productId: number;
+	tier: number;
+	position: number;
+	collectibleId: number | null;
+	itemId: number | null;
+	nameEn: string;
+	nameRu: string;
+	typeEn: string;
+	typeRu: string;
+	descriptionEn: string | null;
+	descriptionRu: string | null;
+	flavorEn: string | null;
+	flavorRu: string | null;
+	cooldownMs: number | null;
+	count: number;
+	// Gem price (0 — can't be bought for gems) and gems received for a duplicate.
+	price: number;
+	extraction: number;
+	card: string;
+	cardSmall: string;
+	image: string | null;
+	icon: string | null;
+}
+
+export interface CrownCrate extends CrownCrateListItem {
+	descriptionEn: string | null;
+	descriptionRu: string | null;
+	noteEn: string | null;
+	noteRu: string | null;
+	cards: CrownCrateCard[];
+	rewards: CrownCrateReward[];
 }
