@@ -315,7 +315,7 @@ onServerPrefetch(async () => {
 
 .rewards-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(max(140px, calc((100% - 6rem) / 7)), 1fr));
 	gap: 1.5rem 1rem;
 }
 
