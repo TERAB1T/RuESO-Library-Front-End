@@ -184,8 +184,11 @@ export const parsePseudoCode = (text: string): string => {
 	const replaceHireling = (match: string, icon: string, text: string): string =>
 		`<h5><img src="${escapeHtml(prepareIcon(icon))}" width="40" alt="${escapeAttrQuotes(text)}">  ${text}</h5>`;
 
-	const replaceImage = (match: string, image: string, width: string, height: string): string =>
-		`<img src="${escapeHtml(prepareIcon(image))}" style="width: ${escapeHtml(width)}px; height: ${escapeHtml(height)}px;">`;
+	// [IMG=path:w:h] — images inside book texts; [IMG=path] — natural size (books the game shows as an image).
+	const replaceImage = (match: string, image: string, width?: string, height?: string): string =>
+		width && height
+			? `<img src="${escapeHtml(prepareIcon(image))}" style="width: ${escapeHtml(width)}px; height: ${escapeHtml(height)}px;">`
+			: `<img src="${escapeHtml(prepareIcon(image))}" style="max-width: 100%;">`;
 
 	text = text
 		.replace(/\[BR\]/gi, '<br>')
@@ -200,7 +203,7 @@ export const parsePseudoCode = (text: string): string => {
 		.replace(/\[C=([0-9a-f]{6})\](.*?)\[\/C\]/gi, replaceColor)
 		.replace(/\[ANTIQUITY=(.*?)\](.*?)\[\/ANTIQUITY\]/gi, replaceAntiquity)
 		.replace(/\[HIRELING=(.*?)\](.*?)\[\/HIRELING\]/gi, replaceHireling)
-		.replace(/\[IMG=(.*?):(.*?):(.*?)\]/gi, replaceImage);
+		.replace(/\[IMG=([^:\]]+)(?::(.*?):(.*?))?\]/gi, replaceImage);
 
 	return text;
 }
