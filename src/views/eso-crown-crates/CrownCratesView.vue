@@ -138,7 +138,7 @@ const prefetchCrate = (crateId: number) => usePrefetchCrownCrate(queryClient, cr
 		content: '';
 		flex: 1;
 		height: 1px;
-		background: linear-gradient(to right, rgba(var(--bs-heading-color), 0.5), transparent);
+		background: linear-gradient(to right, var(--bs-heading-color), transparent);
 	}
 }
 
