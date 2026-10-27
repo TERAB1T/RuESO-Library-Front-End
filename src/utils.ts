@@ -98,6 +98,13 @@ export const CROWN_CRATE_TIERS: Record<number, { ru: string; en: string; color: 
 
 export const crownCrateTier = (tier: number) => CROWN_CRATE_TIERS[tier] ?? { ru: `Тир ${tier}`, en: `Tier ${tier}`, color: 'inherit', chance: 0 };
 
+// Item quality 1..5 (Normal..Legendary) shares the crown crate tier palette.
+export const antiquityQualityColor = (quality: number | null | undefined) =>
+	quality && quality <= 5 ? CROWN_CRATE_TIERS[quality]?.color : undefined;
+
+// SI_ANTIQUITYDIFFICULTY0..5 from the game's ru_client.lua
+export const ANTIQUITY_DIFFICULTIES = ['Простейший', 'Простой', 'Средний', 'Продвинутый', 'Мастерский', 'Легендарный'];
+
 // Game text → HTML: escaped, |cRRGGBB…|r colors (|r may be missing at the end), line breaks.
 export const formatEsoText = (text: string | null | undefined): string => {
 	if (!text) return '';

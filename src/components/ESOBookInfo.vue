@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Book } from '@/types';
-import { prepareIcon } from '@/utils';
+import { prepareIcon, antiquityQualityColor, ANTIQUITY_DIFFICULTIES } from '@/utils';
 import { useQueryClient } from '@tanstack/vue-query';
 import { usePrefetchBook, usePrefetchCategory, usePrefetchPatch } from '@/composables/useApi';
 
@@ -22,7 +22,7 @@ const SKELETON_LABELS = ['Категория', 'Оригинальное наз�
 <template>
 	<template v-if="book.titleRu">
 		<div class="p-3 card-wrapper" :class="`${book.group && book.group.length ? '' : 'book-info-card-sticky'}`">
-			<div class="card">
+			<div class="card" :class="{ 'card-quality': antiquityQualityColor(book.quality) }" :style="antiquityQualityColor(book.quality) ? { borderColor: antiquityQualityColor(book.quality) } : undefined">
 				<div class="card-element book-icon">
 					<img :src="prepareIcon(book.icon)" width="64" height="64" :alt="book.titleRu">
 				</div>
@@ -35,6 +35,10 @@ const SKELETON_LABELS = ['Категория', 'Оригинальное наз�
 				<div class="card-element">
 					<div class="card-subtitle">Оригинальное название</div>
 					{{ book.titleEn }}
+				</div>
+				<div v-if="book.difficulty != null && ANTIQUITY_DIFFICULTIES[book.difficulty]" class="card-element">
+					<div class="card-subtitle">Уровень</div>
+					{{ ANTIQUITY_DIFFICULTIES[book.difficulty] }}
 				</div>
 				<div class="card-element">
 					<div class="card-subtitle">Добавлена</div>
@@ -86,6 +90,10 @@ const SKELETON_LABELS = ['Категория', 'Оригинальное наз�
 	margin: 0 0 0 15px;
 	border: none;
 	background: var(--bs-block-bg);
+}
+
+.card-quality {
+	border: 1px solid;
 }
 
 .card-book-group {
@@ -173,6 +181,10 @@ const SKELETON_LABELS = ['Категория', 'Оригинальное наз�
 	.card {
 		margin: 0;
 		padding: 0 !important;
+	}
+
+	.card-quality {
+		padding: 0 1rem !important;
 	}
 }
 </style>

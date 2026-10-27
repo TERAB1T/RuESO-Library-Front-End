@@ -15,6 +15,9 @@ export interface Book {
 	updated: Patch;
 	group?: Book[];
 	category?: Category;
+	// Antiquities and antiquity sets only
+	quality?: number | null;
+	difficulty?: number | null;
 }
 
 export interface Patch {
