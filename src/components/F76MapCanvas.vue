@@ -62,10 +62,10 @@ const container = ref<HTMLDivElement>();
 const tooltip = ref<{ text: string; x: number; y: number } | null>(null);
 // Region names show on the zoomed-out map only, like location names show zoomed in
 const showRegions = ref(true);
-// Region names keep their size relative to the map, as in game (full size at resolution 2.6),
+// Region names keep their size relative to the map, as in game (full size at resolution 3.5),
 // but never shrink below readable
 const regionScale = ref(1);
-const REGION_FULL_SIZE_RESOLUTION = 2.6;
+const REGION_FULL_SIZE_RESOLUTION = 3.5;
 const REGION_MIN_SCALE = 0.45;
 
 let map: OlMap | null = null;
