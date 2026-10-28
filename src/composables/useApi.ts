@@ -1,4 +1,4 @@
-import { useQuery, keepPreviousData } from '@tanstack/vue-query';
+import { useQuery, useQueries, keepPreviousData } from '@tanstack/vue-query';
 import { prepareURL, getAtomicShopSortOrder, getCampSortOrder } from '@/utils';
 import { useDebounceFn } from '@vueuse/core';
 
@@ -23,7 +23,9 @@ import type {
 	CampItemsResponse,
 	CampSubItem,
 	CrownCrate,
-	CrownCrateListItem
+	CrownCrateListItem,
+	F76MapData,
+	F76MapObject
 } from '@/types';
 import type { UseQueryReturnType } from '@tanstack/vue-query'
 import type { ComputedRef, Ref } from 'vue';
@@ -267,6 +269,25 @@ export const useFetchCampCategories = (): UseQueryReturnType<CampCategoryWithSub
 	});
 }
 
+export const useFetchMapData = (): UseQueryReturnType<F76MapData, Error> => {
+	return useQuery({
+		queryKey: ['f76_map_markers'],
+		queryFn: () => fetchApi(prepareURL('/api/f76/map/markers')),
+		staleTime: DEFAULT_STALE_TIME,
+	});
+}
+
+// Points of the turned-on map layers, one query per layer: turning one on doesn't refetch the others.
+export const useFetchMapLayers = (layerIds: ComputedRef<string[]>) => {
+	return useQueries({
+		queries: computed(() => layerIds.value.map(id => ({
+			queryKey: ['f76_map_layer', id],
+			queryFn: (): Promise<F76MapObject[] | null> => fetchApi(prepareURL(`/api/f76/map/layers/${id}`)),
+			staleTime: DEFAULT_STALE_TIME,
+		}))),
+	});
+}
+
 // Updates
 
 // One request for every section. App.vue awaits it during SSR on any page, so it is always in the
@@ -289,6 +310,8 @@ export const useFetchGlossaryUpdated = (type: string) => useUpdatedQuery<Glossar
 export const useFetchAtomicShopUpdated = () => useUpdatedQuery<LastModified>(updated => updated.f76AtomicShop);
 
 export const useFetchCampUpdated = () => useUpdatedQuery<LastModified>(updated => updated.f76Camp);
+
+export const useFetchMapUpdated = () => useUpdatedQuery<LastModified>(updated => updated.f76Map);
 
 export const useFetchCrownCratesUpdated = () => useUpdatedQuery<LastModified>(updated => updated.esoCrownCrates);
 

@@ -12,6 +12,7 @@ import F76AtomicShopView from '@/views/f76-atomic-shop/F76AtomicShopView.vue'
 import F76AtomicShopItemView from '@/views/f76-atomic-shop/F76AtomicShopItemView.vue'
 import F76CampView from '@/views/f76-camp/F76CampView.vue'
 import F76CampItemView from '@/views/f76-camp/F76CampItemView.vue'
+import F76MapView from '@/views/f76-map/F76MapView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 
 export default function createAppRouter() {
@@ -136,6 +137,11 @@ export default function createAppRouter() {
 				path: '/f76-camp/:itemFormId([a-fA-F0-9]{8}):slug?',
 				name: 'camp-item',
 				component: F76CampItemView,
+			},
+			{
+				path: '/f76-map',
+				name: 'f76-map',
+				component: F76MapView,
 			},
 			{
 				path: '/books-export',

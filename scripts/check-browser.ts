@@ -12,6 +12,7 @@
  *   not found   client-side navigation to a missing page shows the 404 page, and leaving it works
  *   layout      layout shift (CLS) while images load slowly, desktop and mobile. /public/img isn't
  *               served locally: images are stubbed with a square, as item images and book icons are
+ *               (.json files there, like the map icon atlas, are read from the local public/)
  *
  * Options: --base <url> SSR server (default http://localhost:6173), --api <url> (default
  * http://localhost:8000), --chromium <chrome.exe> (default: $PLAYWRIGHT_CHROMIUM, else the newest
@@ -73,6 +74,13 @@ async function openPage(viewport = DESKTOP, imageDelay = 0): Promise<Opened> {
 			return route.fulfill({ status: response.status, contentType: response.headers.get("content-type") ?? undefined, body: Buffer.from(await response.arrayBuffer()) });
 		}
 		if (url.pathname.startsWith("/public/img/")) {
+			// Data files next to the images (the map's icon atlas description) come from the local public/
+			if (url.pathname.endsWith(".json")) {
+				const file = Bun.file("." + decodeURIComponent(url.pathname));
+				return (await file.exists())
+					? route.fulfill({ status: 200, contentType: "application/json", body: Buffer.from(await file.arrayBuffer()) })
+					: route.fulfill({ status: 404 });
+			}
 			await Bun.sleep(imageDelay);
 			return route.fulfill({ status: 200, contentType: "image/png", body: SQUARE_PNG });
 		}

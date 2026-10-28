@@ -30,6 +30,7 @@ export async function buildPageList(api: string): Promise<string[]> {
 		`/f76-atomic-shop/subcategory/${atxCategory.subcategories[0].formId}-${atxCategory.subcategories[0].slug}`,
 		"/f76-atomic-shop/season", ...(season ? [`/f76-atomic-shop/season/${season.number}-${season.slug}`] : []),
 		"/eso-crown-crates", `/eso-crown-crates/${crate.id}-${crate.slug}`,
+		"/f76-map",
 	];
 }
 

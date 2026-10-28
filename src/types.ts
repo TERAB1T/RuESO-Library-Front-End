@@ -91,6 +91,7 @@ export interface Updated {
 	esoCrownCrates: LastModified;
 	f76AtomicShop: LastModified;
 	f76Camp: LastModified;
+	f76Map: LastModified;
 	glossary: Record<string, GlossaryUpdated>;
 }
 
@@ -653,4 +654,60 @@ export interface CrownCrate extends CrownCrateListItem {
 	noteRu: string | null;
 	cards: CrownCrateCard[];
 	rewards: CrownCrateReward[];
+}
+
+// Fallout 76 map
+
+export interface F76MapRegion {
+	formId: string;
+	nameEn: string;
+	nameRu: string;
+}
+
+export interface F76MapMarker {
+	formId: string;
+	// 'location' is a map marker, 'region' is a region name label.
+	kind: 'location' | 'region';
+	// Symbol class in the game's mapmarkerslibrary.swf; the icon is <icon>.svg.
+	icon: string;
+	nameEn: string;
+	nameRu: string;
+	regionFormId: string | null;
+	// Pixels of the 4096×4096 map texture, origin top left.
+	mapX: number;
+	mapY: number;
+	// Game world coordinates.
+	x: number;
+	y: number;
+	isPts: boolean;
+	initiallyDisabled: boolean;
+}
+
+// A layer of placed objects (e.g. event collectibles); its points are loaded when the layer is turned on.
+export interface F76MapLayer {
+	id: string;
+	nameEn: string;
+	nameRu: string;
+	count: number;
+	// Every point of the layer is new on PTS
+	isPts: boolean;
+}
+
+export interface F76MapObject {
+	formId: string;
+	regionFormId: string | null;
+	// Named location of the object's cell; null in the wilderness.
+	locationNameEn: string | null;
+	locationNameRu: string | null;
+	mapX: number;
+	mapY: number;
+	x: number;
+	y: number;
+	isPts: boolean;
+}
+
+export interface F76MapData {
+	regions: F76MapRegion[];
+	markers: F76MapMarker[];
+	layers: F76MapLayer[];
 }
