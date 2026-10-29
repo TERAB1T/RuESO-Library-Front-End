@@ -2,15 +2,16 @@
 import { computed } from 'vue';
 import { formatDurationSeconds } from '@/utils';
 
-import type { ArcadeGame, Buff, BuffEffect, BuffTrigger, BuffCondition, BuffPlayerType } from '@/types';
+import type { ArcadeGame, Buff, BuffEffect, BuffTrigger, BuffCondition, BuffPlayerType, WaterSource } from '@/types';
 
 const props = defineProps<{
 	buffs: Buff[] | null;
 	arcadeGame: ArcadeGame | null;
+	waterSource: WaterSource | null;
 	lang: 'ru' | 'en';
 }>();
 
-const TRIGGER_ORDER: BuffTrigger[] = ['whileUsing', 'afterDelay', 'onActivate', 'onPassThrough'];
+const TRIGGER_ORDER: BuffTrigger[] = ['whileUsing', 'afterDelay', 'onActivate', 'onPassThrough', 'onDrink'];
 
 const INSTANT_DURATION_MAX = 1;
 
@@ -19,7 +20,7 @@ const pick = (ru: string | null | undefined, en: string | null | undefined) =>
 
 const hasBuffs = computed(() => !!props.buffs && props.buffs.length > 0);
 const hasArcadeGame = computed(() => !!props.arcadeGame);
-const hasContent = computed(() => hasBuffs.value || hasArcadeGame.value);
+const hasContent = computed(() => hasBuffs.value || hasArcadeGame.value || !!props.waterSource);
 
 const conditionLabels: Record<BuffCondition, { ru: string; en: string }> = {
 	noAllyNearby: {
@@ -41,6 +42,7 @@ const conditionLabel = (condition: BuffCondition | null): string | null =>
 
 interface ResolvedEffect {
 	description: string;
+	duration: string | null;
 	perk: string | null;
 	playerType: string | null;
 }
@@ -60,23 +62,27 @@ interface BuffGroup {
 	buffs: ResolvedBuff[];
 }
 
-const resolveEffect = (effect: BuffEffect): ResolvedEffect => ({
+const formatDuration = (duration: number): string | null =>
+	duration > INSTANT_DURATION_MAX ? formatDurationSeconds(duration, props.lang) : null;
+
+const resolveEffect = (effect: BuffEffect, showDuration: boolean): ResolvedEffect => ({
 	description: pick(effect.description.ru, effect.description.en) || '—',
+	duration: showDuration ? formatDuration(effect.duration) : null,
 	perk: effect.requiresPerk ? pick(effect.requiresPerk.name.ru, effect.requiresPerk.name.en) ?? null : null,
 	playerType: effect.playerType ? t.value.playerType[effect.playerType] ?? null : null
 });
 
 const resolveBuff = (buff: Buff, index: number): ResolvedBuff => {
-	// Every effect of a buff shares the same duration, so it is shown once next to the buff name.
-	const duration = buff.effects[0]?.duration ?? 0;
+	// A shared duration is shown once next to the buff name; water spells mix instant and timed effects.
+	const sharedDuration = buff.effects.every(e => e.duration === buff.effects[0]?.duration);
 
 	return {
 		key: `${buff.spellFormId}-${index}`,
 		name: pick(buff.name.ru, buff.name.en) || '—',
-		duration: duration > INSTANT_DURATION_MAX ? formatDurationSeconds(duration, props.lang) : null,
+		duration: sharedDuration ? formatDuration(buff.effects[0]?.duration ?? 0) : null,
 		cooldown: buff.cooldownSeconds ? formatDurationSeconds(buff.cooldownSeconds, props.lang) : null,
 		condition: conditionLabel(buff.condition),
-		effects: buff.effects.map(resolveEffect)
+		effects: buff.effects.map(e => resolveEffect(e, !sharedDuration))
 	};
 };
 
@@ -103,6 +109,8 @@ const buildHeader = (trigger: BuffTrigger, delaySeconds: number | null, isOneOf:
 				return `При взаимодействии с этим объектом вы получаете ${gained}:`;
 			case 'onPassThrough':
 				return `При прохождении через этот объект вы получаете ${gained}:`;
+			case 'onDrink':
+				return `Из этого объекта можно пить. Вы получаете ${gained}:`;
 			default:
 				return `Этот объект дает ${gained}:`;
 		}
@@ -121,6 +129,8 @@ const buildHeader = (trigger: BuffTrigger, delaySeconds: number | null, isOneOf:
 			return `Interacting with this object grants you${oneOf}:`;
 		case 'onPassThrough':
 			return `Passing through this object grants you${oneOf}:`;
+		case 'onDrink':
+			return `You can drink from this object. You gain${oneOf}:`;
 		default:
 			return `This object grants you${oneOf}:`;
 	}
@@ -172,6 +182,15 @@ const arcadeInfo = computed(() => {
 	};
 });
 
+const waterText = computed(() => {
+	if (!props.waterSource) return null;
+
+	const { collectItem, collectRadiationDamage } = props.waterSource;
+	const collect = t.value.waterCollect(pick(collectItem.ru, collectItem.en) || '—');
+
+	return collectRadiationDamage != null ? `${collect} ${t.value.waterRadiation(collectRadiationDamage)}` : collect;
+});
+
 const t = computed(() => props.lang === 'ru'
 	? {
 		title: 'Взаимодействие',
@@ -179,6 +198,8 @@ const t = computed(() => props.lang === 'ru'
 		cooldown: (time: string) => `перезарядка: ${time}`,
 		playerType: { human: '(только для людей)', ghoul: '(только для гулей)' } as Record<BuffPlayerType, string>,
 		disease: 'При использовании можно подхватить заболевание.',
+		waterCollect: (name: string) => `Из этого объекта можно набрать грязную воду (1 ед.).`,
+		waterRadiation: (damage: number) => `При наборе вы получаете ${damage} ед. урона от радиации.`,
 		arcadeIntro: 'Этот объект — игровой автомат «Ядер-Аркады», и с ним можно взаимодействовать. Каждая игра стоит 1 крышку.'
 	}
 	: {
@@ -187,6 +208,8 @@ const t = computed(() => props.lang === 'ru'
 		cooldown: (time: string) => `cooldown: ${time}`,
 		playerType: { human: '(humans only)', ghoul: '(ghouls only)' } as Record<BuffPlayerType, string>,
 		disease: 'Using this object may cause a disease.',
+		waterCollect: (name: string) => `You can collect dirty water (1 unit) from this object.`,
+		waterRadiation: (damage: number) => `Collecting it deals ${damage} radiation damage.`,
 		arcadeIntro: 'This object is a Nuka-Cade arcade machine, and you can interact with it. Each game costs 1 cap.'
 	}
 );
@@ -228,12 +251,17 @@ const t = computed(() => props.lang === 'ru'
 					<ul class="buff-effects">
 						<li v-for="(effect, ei) in buff.effects" :key="ei">
 							{{ effect.description }}
+							<span v-if="effect.duration" class="buff-duration">({{ effect.duration }})</span>
 							<span v-if="effect.perk" class="buff-effect-perk">{{ t.perk(effect.perk) }}</span>
 							<span v-if="effect.playerType" class="buff-effect-perk">{{ effect.playerType }}</span>
 						</li>
 					</ul>
 				</li>
 			</ul>
+		</div>
+
+		<div v-if="waterText" class="buffs-group">
+			<p class="buffs-group-header">{{ waterText }}</p>
 		</div>
 
 		<p v-if="hasDiseaseRisk" class="buffs-disease">{{ t.disease }}</p>

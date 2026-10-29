@@ -418,7 +418,7 @@ onBeforeRouteLeave(() => {
 								<div v-if="hasShopDescriptionSetNote" class="shop-description-note">{{ shopSetWarning[l] }}</div>
 
 								<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" :lang="l" />
-								<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" :lang="l" />
+								<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" :water-source="item.waterSource" :lang="l" />
 								<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" :spoil-rate="item.spoilRate" :lang="l" @select-item="selectSubItem" />
 								<F76CampDisplayTable :display="item.display" :lang="l" />
 								<F76CampStorage :storage="item.storage" :spoil-rate="item.spoilRate" :unique="!item.sharedLimit && item.campMaxValue === 1" :lang="l" @select-item="selectSubItem" />

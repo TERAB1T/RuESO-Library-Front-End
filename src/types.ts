@@ -423,7 +423,7 @@ export interface DisplayInfo {
 	excluded: DisplayExcludedEntry[];
 }
 
-export type BuffTrigger = 'whileUsing' | 'afterDelay' | 'onActivate' | 'onPassThrough';
+export type BuffTrigger = 'whileUsing' | 'afterDelay' | 'onActivate' | 'onPassThrough' | 'onDrink';
 export type BuffCondition = 'noAllyNearby' | 'infatuatedAllyNearby' | 'romanticAllyNearby';
 export type BuffPlayerType = 'human' | 'ghoul';
 
@@ -462,6 +462,11 @@ export interface ArcadeGame {
 	name: LocalizedName;
 	description: LocalizedName;
 	pointsDescription: LocalizedName;
+}
+
+export interface WaterSource {
+	collectItem: Omit<CampGivenItem, 'count'>;
+	collectRadiationDamage: number | null;
 }
 
 export interface RecipeComponent {
@@ -539,6 +544,7 @@ export interface CampItemWithRelations extends CampItem {
 	display: DisplayInfo | null;
 	buffs: Buff[] | null;
 	arcadeGame: ArcadeGame | null;
+	waterSource: WaterSource | null;
 	unlockedByEntitlements: UnlockedByEntitlement[] | null;
 	shopInfo: CampShopInfo | null;
 	sharedLimit: CampSharedLimit | null;
