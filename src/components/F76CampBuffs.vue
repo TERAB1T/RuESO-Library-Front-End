@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { formatDurationSeconds } from '@/utils';
 
-import type { ArcadeGame, Buff, BuffEffect, BuffTrigger, BuffCondition } from '@/types';
+import type { ArcadeGame, Buff, BuffEffect, BuffTrigger, BuffCondition, BuffPlayerType } from '@/types';
 
 const props = defineProps<{
 	buffs: Buff[] | null;
@@ -42,12 +42,14 @@ const conditionLabel = (condition: BuffCondition | null): string | null =>
 interface ResolvedEffect {
 	description: string;
 	perk: string | null;
+	playerType: string | null;
 }
 
 interface ResolvedBuff {
 	key: string;
 	name: string;
 	duration: string | null;
+	cooldown: string | null;
 	condition: string | null;
 	effects: ResolvedEffect[];
 }
@@ -60,7 +62,8 @@ interface BuffGroup {
 
 const resolveEffect = (effect: BuffEffect): ResolvedEffect => ({
 	description: pick(effect.description.ru, effect.description.en) || '—',
-	perk: effect.requiresPerk ? pick(effect.requiresPerk.name.ru, effect.requiresPerk.name.en) ?? null : null
+	perk: effect.requiresPerk ? pick(effect.requiresPerk.name.ru, effect.requiresPerk.name.en) ?? null : null,
+	playerType: effect.playerType ? t.value.playerType[effect.playerType] ?? null : null
 });
 
 const resolveBuff = (buff: Buff, index: number): ResolvedBuff => {
@@ -71,6 +74,7 @@ const resolveBuff = (buff: Buff, index: number): ResolvedBuff => {
 		key: `${buff.spellFormId}-${index}`,
 		name: pick(buff.name.ru, buff.name.en) || '—',
 		duration: duration > INSTANT_DURATION_MAX ? formatDurationSeconds(duration, props.lang) : null,
+		cooldown: buff.cooldownSeconds ? formatDurationSeconds(buff.cooldownSeconds, props.lang) : null,
 		condition: conditionLabel(buff.condition),
 		effects: buff.effects.map(resolveEffect)
 	};
@@ -172,12 +176,16 @@ const t = computed(() => props.lang === 'ru'
 	? {
 		title: 'Взаимодействие',
 		perk: (name: string) => `(только со способностью «${name}»)`,
+		cooldown: (time: string) => `перезарядка: ${time}`,
+		playerType: { human: '(только для людей)', ghoul: '(только для гулей)' } as Record<BuffPlayerType, string>,
 		disease: 'При использовании можно подхватить заболевание.',
 		arcadeIntro: 'Этот объект — игровой автомат «Ядер-Аркады», и с ним можно взаимодействовать. Каждая игра стоит 1 крышку.'
 	}
 	: {
 		title: 'Interaction',
 		perk: (name: string) => `(requires the ${name} perk)`,
+		cooldown: (time: string) => `cooldown: ${time}`,
+		playerType: { human: '(humans only)', ghoul: '(ghouls only)' } as Record<BuffPlayerType, string>,
 		disease: 'Using this object may cause a disease.',
 		arcadeIntro: 'This object is a Nuka-Cade arcade machine, and you can interact with it. Each game costs 1 cap.'
 	}
@@ -214,12 +222,14 @@ const t = computed(() => props.lang === 'ru'
 				<li v-for="buff in group.buffs" :key="buff.key">
 					<span class="buff-name">{{ buff.name }}</span>
 					<span v-if="buff.duration" class="buff-duration"> ({{ buff.duration }})</span>
+					<span v-if="buff.cooldown" class="buff-duration"> ({{ t.cooldown(buff.cooldown) }})</span>
 					<span v-if="buff.condition" class="buff-condition"> — {{ buff.condition }}</span>
 
 					<ul class="buff-effects">
 						<li v-for="(effect, ei) in buff.effects" :key="ei">
 							{{ effect.description }}
 							<span v-if="effect.perk" class="buff-effect-perk">{{ t.perk(effect.perk) }}</span>
+							<span v-if="effect.playerType" class="buff-effect-perk">{{ effect.playerType }}</span>
 						</li>
 					</ul>
 				</li>
