@@ -50,6 +50,8 @@ useHead({
 /* VARIABLES & CONSTANTS */
 
 const tableID = '#main-table';
+// The API cuts longer search values to the same length.
+const MAX_SEARCH_LENGTH = 200;
 const dataTable = ref();
 let dt: any;
 
@@ -387,7 +389,7 @@ onBeforeUnmount(() => {
 		<div class="search-wrap">
 			<div class="d-flex justify-content-center w-100" :class="{ 'search-fixed-height': state.isFirstSearch }">
 				<Teleport defer v-if="state.targetExists" to="#glossary-search-nav" :disabled="state.isFirstSearch">
-					<input type="search" class="form-control form-control-lg" id="main-input" placeholder="Введите текст" autocomplete="off" @input="mainSearch" size="5">
+					<input type="search" class="form-control form-control-lg" id="main-input" placeholder="Введите текст" autocomplete="off" :maxlength="MAX_SEARCH_LENGTH" @input="mainSearch" size="5">
 				</Teleport>
 			</div>
 
@@ -420,9 +422,9 @@ onBeforeUnmount(() => {
 					<tfoot>
 						<tr>
 							<th></th>
-							<th><input type="search" class="form-control form-control-sm" placeholder="Фильтр" /></th>
-							<th><input type="search" class="form-control form-control-sm" placeholder="Фильтр" /></th>
-							<th><input type="search" class="form-control form-control-sm" placeholder="Фильтр" /></th>
+							<th><input type="search" class="form-control form-control-sm" placeholder="Фильтр" :maxlength="MAX_SEARCH_LENGTH" /></th>
+							<th><input type="search" class="form-control form-control-sm" placeholder="Фильтр" :maxlength="MAX_SEARCH_LENGTH" /></th>
+							<th><input type="search" class="form-control form-control-sm" placeholder="Фильтр" :maxlength="MAX_SEARCH_LENGTH" /></th>
 						</tr>
 					</tfoot>
 				</DataTable>
