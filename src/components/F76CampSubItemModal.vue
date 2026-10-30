@@ -89,6 +89,8 @@ const imageFile = computed(() => {
 const imageSrc = computed(() => prepareCampImage(imageFile.value, 512));
 
 // Note texts pad paragraphs with runs of empty lines; keep at most one between them.
+// Note text is long and read after the item data; other descriptions are one-line summaries and go first.
+const isNote = computed(() => subItem.value?.type === 'BOOK' || subItem.value?.type === 'NOTE');
 const description = computed(() => pick(subItem.value?.descriptionRu, subItem.value?.descriptionEn)?.replace(/\r\n?/g, '\n').replace(/\n{3,}/g, '\n\n').trim());
 
 const SURVIVAL_LABELS: Record<string, [ru: string, en: string]> = {
@@ -206,6 +208,8 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 						</div>
 
 						<template v-else-if="subItem">
+							<p v-if="description && !isNote" class="subitem-description">{{ description }}</p>
+
 							<div v-if="typeLabel" class="subitem-row">
 								<span class="subitem-label">{{ ru ? 'Тип' : 'Type' }}</span>
 								<span class="subitem-value">{{ typeLabel }}</span>
@@ -284,7 +288,7 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 								<span class="subitem-value"><template v-for="(part, index) in (subItem.editorId ?? '').split('_')" :key="index"><template v-if="index">_<wbr></template>{{ part }}</template></span>
 							</div>
 
-							<p v-if="description" class="subitem-description">{{ description }}</p>
+							<p v-if="description && isNote" class="subitem-description subitem-description-note">{{ description }}</p>
 						</template>
 					</div>
 				</div>
@@ -328,8 +332,12 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 .subitem-description {
 	font-size: 0.95rem;
 	line-height: 1.5;
-	margin: 1rem 0 0;
+	margin: 0 0 0.5rem;
 	white-space: pre-line;
+}
+
+.subitem-description-note {
+	margin: 1rem 0 0;
 }
 
 .subitem-row {
