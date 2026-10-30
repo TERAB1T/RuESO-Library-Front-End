@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { prepareCampImage, atomicShopHandleImageError, pluralizeRu } from '@/utils';
 import { useQueryClient } from '@tanstack/vue-query';
 import { usePrefetchCampSubItem } from '@/composables/useApi';
@@ -19,6 +21,8 @@ const selectItem = (item: AllyStockItem) => emit('selectItem', item.formId.repla
 const pick = (ru: string | null | undefined, en: string | null | undefined) =>
 	props.lang === 'ru' ? (ru || en) : (en || ru);
 
+const name = computed(() => props.ally ? pick(props.ally.name.ru, props.ally.name.en) || '—' : '—');
+
 const items = computed<AllyStockItem[]>(() =>
 	(props.ally?.stock ?? [])
 		.filter((r): r is AllyStockItem => r.kind === 'item')
@@ -28,6 +32,8 @@ const categories = computed<AllyStockCategory[]>(() =>
 	(props.ally?.stock ?? []).filter((r): r is AllyStockCategory => r.kind === 'category'));
 
 const hasStock = computed(() => items.value.length > 0 || categories.value.length > 0);
+
+const stockExpanded = ref(false);
 
 const typeLabels: Record<string, { ru: string; en: string }> = {
 	ALCH: { ru: 'Расходуемый предмет', en: 'Consumable' },
@@ -62,78 +68,127 @@ const formatPercent = (probability: number) => {
 
 const t = computed(() => props.lang === 'ru'
 	? {
-		title: 'Ассортимент',
-		intro: (name: string) => `${name} торгует за крышки. Шанс — вероятность, что предмет есть в продаже у персонажа 50+ уровня.`,
-		colItem: 'Предмет', colType: 'Тип', colChance: 'Шанс',
+		title: 'Союзник',
+		intro: 'При установке этого объекта в вашей C.A.M.P. появляется союзник:',
+		romance: (female: boolean) => `С ${female ? 'ней' : 'ним'} можно завести роман.`,
+		vendor: (vendorName: string) => `${vendorName} продает товары за крышки.`,
+		showStock: 'Показать ассортимент',
+		hideStock: 'Скрыть ассортимент',
+		colItem: 'Предмет', colType: 'Тип', colPrice: 'Цена', colChance: 'Шанс',
+		chanceNote: 'Шанс — вероятность, что предмет появится в продаже для персонажа 50+ уровня.',
 		eventOnly: 'только во время события',
+		caps: 'крышек',
 		category: (count: number) => `${count} ${pluralizeRu(count, ['предмет', 'предмета', 'предметов'])}`
 	}
 	: {
-		title: 'Stock',
-		intro: (name: string) => `${name} sells items for caps. Chance is the probability that an item is in stock for a level 50+ character.`,
-		colItem: 'Item', colType: 'Type', colChance: 'Chance',
+		title: 'Ally',
+		intro: 'When you place this object in your C.A.M.P., an ally appears:',
+		romance: (female: boolean) => `You can romance ${female ? 'her' : 'him'}.`,
+		vendor: (vendorName: string) => `${vendorName} sells goods for caps.`,
+		showStock: 'Show stock',
+		hideStock: 'Hide stock',
+		colItem: 'Item', colType: 'Type', colPrice: 'Price', colChance: 'Chance',
+		chanceNote: 'Chance is the probability that an item appears in stock for a level 50+ character.',
 		eventOnly: 'only during an event',
+		caps: 'caps',
 		category: (count: number) => `${count} item${count === 1 ? '' : 's'}`
 	}
 );
 </script>
 
 <template>
-	<div v-if="ally && hasStock" class="stock-block">
+	<div v-if="ally" class="ally-block">
 		<div class="fo-sect-h">
 			<span class="fo-bar"></span>
 			<h3 class="fo-h3">{{ t.title }}</h3>
 		</div>
 
-		<p class="stock-intro">{{ t.intro(pick(ally.name.ru, ally.name.en) || '—') }}</p>
+		<p class="ally-text">{{ t.intro }} <strong>{{ name }}</strong>.{{ ally.hasRomance ? ` ${t.romance(ally.female)}` : '' }}</p>
 
-		<table class="stock-table">
-			<thead>
-				<tr>
-					<th>{{ t.colItem }}</th>
-					<th class="stock-th-type">{{ t.colType }}</th>
-					<th class="stock-th-chance">{{ t.colChance }}</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr v-for="item in items" :key="item.formId" class="stock-row stock-row-clickable"
-					@click="selectItem(item)" @mouseenter="prefetchSubItem(item.formId)">
-					<td class="stock-td-item">
-						<img :src="prepareCampImage(formIdToImageFilename(item.formId), 100)" class="stock-icon" :alt="pick(item.ru, item.en) || ''" loading="lazy" @error="atomicShopHandleImageError">
-						<div class="stock-item-text">
-							<button type="button" class="stock-name" @click.stop="selectItem(item)">{{ pick(item.ru, item.en) }}</button>
-							<span v-if="item.eventOnly" class="stock-note">{{ t.eventOnly }}</span>
-						</div>
-					</td>
-					<td class="stock-td-type">{{ typeLabel(item.type) }}</td>
-					<td class="stock-td-chance">{{ formatPercent(item.probability) }}</td>
-				</tr>
-				<tr v-for="category in categories" :key="`${category.en}`" class="stock-row stock-row-category">
-					<td class="stock-td-item">
-						<span class="stock-category-name">{{ pick(category.ru, category.en) }}</span>
-						<span class="stock-category-count">— {{ t.category(category.count) }}</span>
-					</td>
-					<td class="stock-td-type"></td>
-					<td class="stock-td-chance"></td>
-				</tr>
-			</tbody>
-		</table>
+		<template v-if="ally.isVendor">
+			<p class="ally-text">{{ t.vendor(name) }}</p>
+
+			<button v-if="hasStock" type="button" class="stock-toggle" :aria-expanded="stockExpanded" @click="stockExpanded = !stockExpanded">
+				<FontAwesomeIcon :icon="stockExpanded ? faChevronDown : faChevronRight" class="stock-toggle-icon" size="sm" />
+				{{ stockExpanded ? t.hideStock : t.showStock }}
+			</button>
+
+			<table v-if="hasStock" v-show="stockExpanded" class="stock-table sticky-thead">
+				<thead>
+					<tr>
+						<th>{{ t.colItem }}</th>
+						<th class="stock-th-type">{{ t.colType }}</th>
+						<th class="stock-th-price">{{ t.colPrice }}</th>
+						<th class="stock-th-chance">{{ t.colChance }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="item in items" :key="item.formId" class="stock-row stock-row-clickable"
+						@click="selectItem(item)" @mouseenter="prefetchSubItem(item.formId)">
+						<td class="stock-td-item">
+							<img :src="prepareCampImage(formIdToImageFilename(item.formId), 100)" class="stock-icon" :alt="pick(item.ru, item.en) || ''" loading="lazy" @error="atomicShopHandleImageError">
+							<div class="stock-item-text">
+								<button type="button" class="stock-name" @click.stop="selectItem(item)">{{ pick(item.ru, item.en) }}</button>
+								<span v-if="item.eventOnly" class="stock-note">{{ t.eventOnly }}</span>
+							</div>
+						</td>
+						<td class="stock-td-type">{{ typeLabel(item.type) }}</td>
+						<td class="stock-td-price">
+							<span v-if="item.value != null" class="stock-caps">{{ item.value }}<span class="visually-hidden"> {{ t.caps }}</span></span>
+						</td>
+						<td class="stock-td-chance">{{ formatPercent(item.probability) }}</td>
+					</tr>
+					<tr v-for="category in categories" :key="`${category.en}`" class="stock-row stock-row-category">
+						<td class="stock-td-item">
+							<span class="stock-category-name">{{ pick(category.ru, category.en) }}</span>
+							<span class="stock-category-count">— {{ t.category(category.count) }}</span>
+						</td>
+						<td class="stock-td-type"></td>
+						<td class="stock-td-price"></td>
+						<td class="stock-td-chance"></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p v-if="items.length" v-show="stockExpanded" class="stock-footnote">{{ t.chanceNote }}</p>
+		</template>
 	</div>
 </template>
 
 <style scoped lang="scss">
-.stock-block {
+.ally-block {
 	margin-top: 2.25rem;
 }
 
-.stock-intro {
+.ally-text {
 	font-size: 1.0325rem;
 	line-height: 1.6;
-	margin-bottom: 1rem;
+	margin-bottom: 0.6rem;
+}
+
+.stock-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--bs-link-color);
+	font-size: 0.95rem;
+
+	&:hover {
+		color: var(--bs-link-hover-color);
+		text-decoration: underline;
+	}
+}
+
+.stock-toggle-icon {
+	width: 0.75rem;
 }
 
 .stock-table {
 	width: 100%;
+	margin-top: 0.6rem;
 	border-collapse: collapse;
 
 	th {
@@ -149,6 +204,11 @@ const t = computed(() => props.lang === 'ru'
 
 	.stock-th-type {
 		width: 9rem;
+	}
+
+	.stock-th-price {
+		text-align: right;
+		width: 5rem;
 	}
 
 	.stock-th-chance {
@@ -239,12 +299,34 @@ const t = computed(() => props.lang === 'ru'
 	white-space: nowrap;
 }
 
+.stock-td-price,
 .stock-td-chance {
 	text-align: right;
-	font-weight: 600;
 	font-size: 0.875rem;
 	color: var(--bs-body-color);
 	white-space: nowrap;
+}
+
+.stock-td-chance {
+	font-weight: 600;
+}
+
+.stock-caps::after {
+	content: '';
+	display: inline-block;
+	width: 1.1rem;
+	height: 1rem;
+	background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4.9 -2.55 62.25 55.65"><path fill="%23ffffcb" d="M36.6 19.2 Q40.9 19.2 41.55 13.35 41.55 7.4 35.75 7.4 L32.85 7.4 Q23.4 7.4 12.05 22.5 9.15 27.1 9.15 31.75 L9.15 32.8 Q9.15 43.15 21.25 43.15 28.3 43.15 36.6 32.8 36.15 32.2 36.15 31.75 L35.75 31.75 Q27.75 38.7 23.3 38.7 L22.95 38.7 Q17.6 38.7 16.65 32.5 L16.65 30.65 Q16.65 21.45 29.95 11.45 31.35 10.75 32.45 10.75 L33.3 10.75 Q33.75 10.75 34.5 11.85 32.45 15.25 32.45 17.0 33.5 19.2 36.15 19.2 L36.6 19.2 M53.6 18.45 Q53.6 21.6 57.35 24.75 L57.35 25.85 Q53.6 29.2 53.6 32.5 L54.85 36.15 Q54.85 37.2 50.25 39.1 47.35 41.65 47.35 45.75 46.7 46.55 41.15 46.8 38.8 47.8 36.15 51.65 L34.1 52.0 Q34.1 50.9 28.65 50.5 27.25 50.5 23.75 53.1 L22.05 53.1 Q18.6 49.45 16.25 49.45 L10.4 49.8 Q9.65 49.1 7.5 44.65 5.15 42.85 0.45 42.05 L0.1 40.95 0.45 37.65 Q-0.1 34.2 -4.5 31.75 -4.9 31.1 -4.9 30.3 -2.9 28.15 -2.9 26.6 L-2.9 24.0 Q-2.9 23.15 -4.9 20.0 L-0.35 15.15 Q0.45 13.75 0.45 12.65 L0.1 9.25 Q1.6 8.25 6.25 7.1 8.45 5.15 9.6 1.6 L11.3 0.8 Q12.75 1.6 14.6 1.6 18.4 1.6 22.05 -2.15 L23.75 -2.55 Q23.75 -1.1 28.65 0.1 L30.75 0.1 34.9 -1.1 35.75 -1.1 Q39.8 4.1 43.2 4.1 L46.15 4.1 Q47.55 4.1 48.6 10.05 52.05 13.35 54.45 13.35 L54.85 15.15 Q53.6 17.5 53.6 18.45"/></svg>') no-repeat center / contain;
+	margin-left: 4px;
+	vertical-align: middle;
+	position: relative;
+	top: -1px;
+}
+
+.stock-footnote {
+	margin-top: 0.6rem;
+	font-size: 0.8rem;
+	color: #a1a1aa;
 }
 
 @media (max-width: 767.98px) {

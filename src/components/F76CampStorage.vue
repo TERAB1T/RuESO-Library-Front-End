@@ -198,7 +198,7 @@ const visible = computed(() => {
 
 		<template v-else>
 			<p class="storage-text">{{ group.intro ? tr(group.intro) : '' }}</p>
-			<table class="storage-table">
+			<table class="storage-table sticky-thead">
 				<thead>
 					<tr>
 						<th>{{ ru ? 'Предмет' : 'Item' }}</th>

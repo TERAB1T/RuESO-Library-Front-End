@@ -55,7 +55,7 @@ const select = (item: CampGivenItem) => emit('selectItem', item.formId.replace(/
 		</div>
 
 		<p class="gives-text">{{ ru ? 'При первом взаимодействии с этим объектом игрок получает:' : 'The first interaction with this object gives the player:' }}</p>
-		<table class="gives-table">
+		<table class="gives-table sticky-thead">
 			<thead>
 				<tr>
 					<th>{{ ru ? 'Предмет' : 'Item' }}</th>

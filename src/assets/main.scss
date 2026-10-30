@@ -254,6 +254,16 @@ table.dataTable thead {
 	clip-path: inset(0 0 -20px 0);
 }
 
+// Header row of the C.A.M.P. item tables stays under the sticky navbar. With border-collapse
+// the th border scrolls away with the body, so the stuck row draws its own bottom line.
+.sticky-thead th {
+	position: sticky;
+	top: 67px;
+	z-index: 2;
+	background: var(--bs-block-bg);
+	box-shadow: inset 0 -1px rgba(255, 255, 255, 0.1);
+}
+
 table.dataTable thead tr:first-child th {
 	border-bottom: 1px #343541 solid;
 }

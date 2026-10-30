@@ -8,7 +8,7 @@ import Breadcrumb from '@/components/Breadcrumb.vue';
 import F76CampUnlockConditions from '@/components/F76CampUnlockConditions.vue';
 import F76CampBuffs from '@/components/F76CampBuffs.vue';
 import F76CampProducesTable from '@/components/F76CampProducesTable.vue';
-import F76CampAllyStock from '@/components/F76CampAllyStock.vue';
+import F76CampAlly from '@/components/F76CampAlly.vue';
 import F76CampRecipeVariants from '@/components/F76CampRecipeVariants.vue';
 import F76CampDisplayTable from '@/components/F76CampDisplayTable.vue';
 import F76CampPowerInfo from '@/components/F76CampPowerInfo.vue';
@@ -419,9 +419,9 @@ onBeforeRouteLeave(() => {
 								<div v-if="hasShopDescriptionSetNote" class="shop-description-note">{{ shopSetWarning[l] }}</div>
 
 								<F76CampUnlockConditions :learn-conditions="item.learnConditions" :unlocked-by-entitlements="item.unlockedByEntitlements" :lang="l" />
-								<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" :water-source="item.waterSource" :ally="item.ally" :lang="l" />
+								<F76CampAlly :ally="item.ally" :lang="l" @select-item="selectSubItem" />
+								<F76CampBuffs :buffs="item.buffs" :arcade-game="item.arcadeGame" :water-source="item.waterSource" :lang="l" />
 								<F76CampProducesTable :produces="item.produces" :carry-weight="item.carryWeight" :spoil-rate="item.spoilRate" :lang="l" @select-item="selectSubItem" />
-								<F76CampAllyStock :ally="item.ally" :lang="l" @select-item="selectSubItem" />
 								<F76CampDisplayTable :display="item.display" :lang="l" />
 								<F76CampStorage :storage="item.storage" :spoil-rate="item.spoilRate" :unique="!item.sharedLimit && item.campMaxValue === 1" :lang="l" @select-item="selectSubItem" />
 								<F76CampGivesItems :items="item.givesItems" :lang="l" @select-item="selectSubItem" />

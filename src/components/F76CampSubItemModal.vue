@@ -88,7 +88,8 @@ const imageFile = computed(() => {
 });
 const imageSrc = computed(() => prepareCampImage(imageFile.value, 512));
 
-const description = computed(() => pick(subItem.value?.descriptionRu, subItem.value?.descriptionEn));
+// Note texts pad paragraphs with runs of empty lines; keep at most one between them.
+const description = computed(() => pick(subItem.value?.descriptionRu, subItem.value?.descriptionEn)?.replace(/\r\n?/g, '\n').replace(/\n{3,}/g, '\n\n').trim());
 
 const SURVIVAL_LABELS: Record<string, [ru: string, en: string]> = {
 	hunger: ['Сытость', 'Food'],
@@ -205,8 +206,6 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 						</div>
 
 						<template v-else-if="subItem">
-							<p v-if="description" class="subitem-description">{{ description }}</p>
-
 							<div v-if="typeLabel" class="subitem-row">
 								<span class="subitem-label">{{ ru ? 'Тип' : 'Type' }}</span>
 								<span class="subitem-value">{{ typeLabel }}</span>
@@ -275,6 +274,8 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 								<span class="subitem-label">Editor ID</span>
 								<span class="subitem-value"><template v-for="(part, index) in (subItem.editorId ?? '').split('_')" :key="index"><template v-if="index">_<wbr></template>{{ part }}</template></span>
 							</div>
+
+							<p v-if="description" class="subitem-description">{{ description }}</p>
 						</template>
 					</div>
 				</div>
@@ -318,7 +319,8 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 .subitem-description {
 	font-size: 0.95rem;
 	line-height: 1.5;
-	margin: 0 0 0.5rem;
+	margin: 1rem 0 0;
+	white-space: pre-line;
 }
 
 .subitem-row {

@@ -305,7 +305,7 @@ const t = computed(() => props.lang === 'ru'
 			</template>
 		</div>
 
-		<table class="produces-table">
+		<table class="produces-table sticky-thead">
 			<thead>
 				<tr>
 					<th class="produces-th-item">{{ t.colItem }}</th>
