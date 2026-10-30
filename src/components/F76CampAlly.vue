@@ -2,10 +2,10 @@
 import { computed, ref } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import { prepareCampImage, atomicShopHandleImageError, pluralizeRu } from '@/utils';
+import { prepareCampImage, atomicShopHandleImageError, pluralizeRu, formatDurationSeconds } from '@/utils';
 import { useQueryClient } from '@tanstack/vue-query';
 import { usePrefetchCampSubItem } from '@/composables/useApi';
-import type { Ally, AllyStockCategory, AllyStockItem } from '@/types';
+import type { Ally, AllyBuffMode, AllyStockCategory, AllyStockItem } from '@/types';
 
 const props = defineProps<{
 	ally: Ally | null;
@@ -66,11 +66,53 @@ const formatPercent = (probability: number) => {
 	return props.lang === 'ru' ? `${percent.toLocaleString('ru-RU')}%` : `${percent}%`;
 };
 
+const INSTANT_DURATION_MAX = 1;
+
+const formatDuration = (duration: number): string | null =>
+	duration > INSTANT_DURATION_MAX ? formatDurationSeconds(duration, props.lang) : null;
+
+const buffs = computed(() => {
+	const allyBuffs = props.ally?.buffs;
+	if (!allyBuffs) return null;
+
+	return {
+		header: t.value.buffsHeader[allyBuffs.mode](name.value),
+		options: allyBuffs.options.map((option, index) => {
+			const { buff } = option;
+			// A shared duration is shown once next to the buff name; meals mix instant and timed effects.
+			const sharedDuration = buff.effects.every(e => e.duration === buff.effects[0]?.duration);
+			const label = option.timeOfDay
+				? t.value.timeOfDay[option.timeOfDay]
+				: option.payment ? option.payment.map(i => pick(i.ru, i.en)).join(', ') : null;
+
+			return {
+				key: `${buff.spellFormId}-${index}`,
+				label,
+				name: pick(buff.name.ru, buff.name.en) || '—',
+				duration: sharedDuration ? formatDuration(buff.effects[0]?.duration ?? 0) : null,
+				effects: buff.effects.map(e => ({
+					description: pick(e.description.ru, e.description.en) || '—',
+					duration: sharedDuration ? null : formatDuration(e.duration)
+				}))
+			};
+		})
+	};
+});
+
 const t = computed(() => props.lang === 'ru'
 	? {
 		title: 'Союзник',
+		tradeTitle: 'Торговля',
 		intro: 'При установке этого объекта в вашей C.A.M.P. появляется союзник:',
 		romance: (female: boolean) => `С ${female ? 'ней' : 'ним'} можно завести роман.`,
+		buffsHeader: {
+			single: (allyName: string) => `${allyName} может наложить на вас эффект:`,
+			random: (allyName: string) => `${allyName} может наложить на вас один из следующих эффектов (выбирается случайно):`,
+			timeOfDay: (allyName: string) => `${allyName} может наложить на вас эффект:`,
+			payment: (allyName: string) => `${allyName} может наложить на вас эффект в обмен на предмет:`,
+			services: (allyName: string) => `${allyName} оказывает услуги за крышки:`
+		} as Record<AllyBuffMode, (allyName: string) => string>,
+		timeOfDay: { day: 'Днем', night: 'Ночью' },
 		vendor: (vendorName: string) => `${vendorName} продает товары за крышки.`,
 		showStock: 'Показать ассортимент',
 		hideStock: 'Скрыть ассортимент',
@@ -82,8 +124,17 @@ const t = computed(() => props.lang === 'ru'
 	}
 	: {
 		title: 'Ally',
+		tradeTitle: 'Trade',
 		intro: 'When you place this object in your C.A.M.P., an ally appears:',
 		romance: (female: boolean) => `You can romance ${female ? 'her' : 'him'}.`,
+		buffsHeader: {
+			single: (allyName: string) => `${allyName} can give you an effect:`,
+			random: (allyName: string) => `${allyName} can give you one of the following effects (chosen at random):`,
+			timeOfDay: (allyName: string) => `${allyName} can give you an effect:`,
+			payment: (allyName: string) => `${allyName} can give you an effect in exchange for an item:`,
+			services: (allyName: string) => `${allyName} offers services for caps:`
+		} as Record<AllyBuffMode, (allyName: string) => string>,
+		timeOfDay: { day: 'By day', night: 'At night' },
 		vendor: (vendorName: string) => `${vendorName} sells goods for caps.`,
 		showStock: 'Show stock',
 		hideStock: 'Hide stock',
@@ -105,53 +156,77 @@ const t = computed(() => props.lang === 'ru'
 
 		<p class="ally-text">{{ t.intro }} <strong>{{ name }}</strong>.{{ ally.hasRomance ? ` ${t.romance(ally.female)}` : '' }}</p>
 
-		<template v-if="ally.isVendor">
-			<p class="ally-text">{{ t.vendor(name) }}</p>
+		<template v-if="buffs">
+			<p class="ally-text">{{ buffs.header }}</p>
 
-			<button v-if="hasStock" type="button" class="stock-toggle" :aria-expanded="stockExpanded" @click="stockExpanded = !stockExpanded">
-				<FontAwesomeIcon :icon="stockExpanded ? faChevronDown : faChevronRight" class="stock-toggle-icon" size="sm" />
-				{{ stockExpanded ? t.hideStock : t.showStock }}
-			</button>
+			<ul class="ally-buffs">
+				<li v-for="buff in buffs.options" :key="buff.key">
+					<span v-if="buff.label" class="ally-buff-muted">{{ buff.label }}: </span>
+					<span class="ally-buff-name">{{ buff.name }}</span>
+					<span v-if="buff.duration" class="ally-buff-muted"> ({{ buff.duration }})</span>
 
-			<table v-if="hasStock" v-show="stockExpanded" class="stock-table sticky-thead">
-				<thead>
-					<tr>
-						<th>{{ t.colItem }}</th>
-						<th class="stock-th-type">{{ t.colType }}</th>
-						<th class="stock-th-price">{{ t.colPrice }}</th>
-						<th class="stock-th-chance">{{ t.colChance }}</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr v-for="item in items" :key="item.formId" class="stock-row stock-row-clickable"
-						@click="selectItem(item)" @mouseenter="prefetchSubItem(item.formId)">
-						<td class="stock-td-item">
-							<img :src="prepareCampImage(formIdToImageFilename(item.formId), 100)" class="stock-icon" :alt="pick(item.ru, item.en) || ''" loading="lazy" @error="atomicShopHandleImageError">
-							<div class="stock-item-text">
-								<button type="button" class="stock-name" @click.stop="selectItem(item)">{{ pick(item.ru, item.en) }}</button>
-								<span v-if="item.eventOnly" class="stock-note">{{ t.eventOnly }}</span>
-							</div>
-						</td>
-						<td class="stock-td-type">{{ typeLabel(item.type) }}</td>
-						<td class="stock-td-price">
-							<span v-if="item.value != null" class="stock-caps">{{ item.value }}<span class="visually-hidden"> {{ t.caps }}</span></span>
-						</td>
-						<td class="stock-td-chance">{{ formatPercent(item.probability) }}</td>
-					</tr>
-					<tr v-for="category in categories" :key="`${category.en}`" class="stock-row stock-row-category">
-						<td class="stock-td-item">
-							<span class="stock-category-name">{{ pick(category.ru, category.en) }}</span>
-							<span class="stock-category-count">— {{ t.category(category.count) }}</span>
-						</td>
-						<td class="stock-td-type"></td>
-						<td class="stock-td-price"></td>
-						<td class="stock-td-chance"></td>
-					</tr>
-				</tbody>
-			</table>
-
-			<p v-if="items.length" v-show="stockExpanded" class="stock-footnote">{{ t.chanceNote }}</p>
+					<ul class="ally-buff-effects">
+						<li v-for="(effect, ei) in buff.effects" :key="ei">
+							{{ effect.description }}
+							<span v-if="effect.duration" class="ally-buff-muted">({{ effect.duration }})</span>
+						</li>
+					</ul>
+				</li>
+			</ul>
 		</template>
+	</div>
+
+	<div v-if="ally?.isVendor" class="ally-block">
+		<div class="fo-sect-h">
+			<span class="fo-bar"></span>
+			<h3 class="fo-h3">{{ t.tradeTitle }}</h3>
+		</div>
+
+		<p class="ally-text">{{ t.vendor(name) }}</p>
+
+		<button v-if="hasStock" type="button" class="stock-toggle" :aria-expanded="stockExpanded" @click="stockExpanded = !stockExpanded">
+			<FontAwesomeIcon :icon="stockExpanded ? faChevronDown : faChevronRight" class="stock-toggle-icon" size="sm" />
+			{{ stockExpanded ? t.hideStock : t.showStock }}
+		</button>
+
+		<table v-if="hasStock" v-show="stockExpanded" class="stock-table sticky-thead">
+			<thead>
+				<tr>
+					<th>{{ t.colItem }}</th>
+					<th class="stock-th-type">{{ t.colType }}</th>
+					<th class="stock-th-price">{{ t.colPrice }}</th>
+					<th class="stock-th-chance">{{ t.colChance }}</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="item in items" :key="item.formId" class="stock-row stock-row-clickable"
+					@click="selectItem(item)" @mouseenter="prefetchSubItem(item.formId)">
+					<td class="stock-td-item">
+						<img :src="prepareCampImage(formIdToImageFilename(item.formId), 100)" class="stock-icon" :alt="pick(item.ru, item.en) || ''" loading="lazy" @error="atomicShopHandleImageError">
+						<div class="stock-item-text">
+							<button type="button" class="stock-name" @click.stop="selectItem(item)">{{ pick(item.ru, item.en) }}</button>
+							<span v-if="item.eventOnly" class="stock-note">{{ t.eventOnly }}</span>
+						</div>
+					</td>
+					<td class="stock-td-type">{{ typeLabel(item.type) }}</td>
+					<td class="stock-td-price">
+						<span v-if="item.value != null" class="stock-caps">{{ item.value }}<span class="visually-hidden"> {{ t.caps }}</span></span>
+					</td>
+					<td class="stock-td-chance">{{ formatPercent(item.probability) }}</td>
+				</tr>
+				<tr v-for="category in categories" :key="`${category.en}`" class="stock-row stock-row-category">
+					<td class="stock-td-item">
+						<span class="stock-category-name">{{ pick(category.ru, category.en) }}</span>
+						<span class="stock-category-count">— {{ t.category(category.count) }}</span>
+					</td>
+					<td class="stock-td-type"></td>
+					<td class="stock-td-price"></td>
+					<td class="stock-td-chance"></td>
+				</tr>
+			</tbody>
+		</table>
+
+		<p v-if="items.length" v-show="stockExpanded" class="stock-footnote">{{ t.chanceNote }}</p>
 	</div>
 </template>
 
@@ -164,6 +239,37 @@ const t = computed(() => props.lang === 'ru'
 	font-size: 1.0325rem;
 	line-height: 1.6;
 	margin-bottom: 0.6rem;
+}
+
+.ally-buffs {
+	margin: 0 0 1rem;
+	padding-left: 1.5rem;
+	font-size: 1.0325rem;
+	line-height: 1.6;
+
+	> li {
+		margin-bottom: 0.35rem;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+}
+
+.ally-buff-name {
+	font-weight: 600;
+	color: var(--bs-body-color);
+}
+
+.ally-buff-muted {
+	color: #a1a1aa;
+}
+
+.ally-buff-effects {
+	margin: 0.1rem 0 0;
+	padding-left: 1.5rem;
+	list-style-type: circle;
+	color: var(--bs-body-color);
 }
 
 .stock-toggle {
