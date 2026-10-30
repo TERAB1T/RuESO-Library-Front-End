@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { reactive, watch, computed, watchEffect, onServerPrefetch, ref, onMounted } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
+import { reactive, watch, computed, watchEffect, onServerPrefetch, ref } from 'vue';
 import { prepareCampImage, getCampSortOrder, setCampSortOrder, atomicShopHandleImageError } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchCampItems, usePrefetchCampItem } from '@/composables/useApi';
+import { useCatalogList } from '@/composables/useCatalogList';
 import { useDelegatedTooltips } from '@/composables/useDelegatedTooltips';
 import { useQueryClient } from '@tanstack/vue-query';
-import { useDebounceFn } from '@vueuse/core';
-import { trackCatalogFilter } from '@/analytics';
 
 import type { CampCategoryWithSubcategories, CampItem } from '@/types';
 
 const route = useRoute();
-const router = useRouter();
 
 const props = defineProps<{
 	categories: CampCategoryWithSubcategories[]
@@ -20,22 +18,18 @@ const props = defineProps<{
 
 const state = reactive({
 	items: [] as CampItem[],
-	currentCategory: {
-		formId: (route.params.categoryFormId ?? '-1') as string,
-		nameRu: ''
-	},
-	currentSubcategory: {
-		formId: (route.params.subcategoryFormId ?? '-1') as string,
-		nameRu: ''
-	},
 	pageSize: 18,
 	totalPages: 1,
-	filter: (route.query.filter as string | undefined) || '',
 	sortOrder: getCampSortOrder(),
 	isPTS: route.query.isPTS === '1'
 });
 
-const currentPage = computed(() => Number(route.query.page) || 1);
+const { currentPage, filter, changePage, onChangeFilter, getBreadcrumb } = useCatalogList({
+	section: 'camp',
+	categories: () => props.categories,
+	totalPages: () => state.totalPages,
+});
+
 const currentCategory = computed(() => (route.params.categoryFormId || '-1') as string);
 const currentSubcategory = computed(() => (route.params.subcategoryFormId || '-1') as string);
 
@@ -48,7 +42,7 @@ const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched, isP
 	currentSubcategory,
 	currentPage,
 	state.pageSize,
-	computed(() => state.filter),
+	computed(() => filter.value),
 	computed(() => state.sortOrder),
 	computed(() => state.isPTS)
 );
@@ -57,9 +51,6 @@ watchEffect(async () => {
 	if (itemsData.value) {
 		state.items = itemsData.value.items ?? [];
 		state.totalPages = itemsData.value.pagination?.total_pages ?? 1;
-
-		state.currentCategory.nameRu = itemsData.value.category?.nameRu ?? '';
-		state.currentSubcategory.nameRu = itemsData.value.subcategory?.nameRu ?? '';
 	}
 });
 
@@ -68,18 +59,12 @@ onServerPrefetch(async () => {
 	if (itemsData.value) {
 		state.items = itemsData.value.items ?? [];
 		state.totalPages = itemsData.value.pagination?.total_pages ?? 1;
-
-		state.currentCategory.nameRu = itemsData.value.category?.nameRu ?? '';
-		state.currentSubcategory.nameRu = itemsData.value.subcategory?.nameRu ?? '';
 	}
 });
 
 watch(
 	() => [route.params.categoryFormId, route.params.subcategoryFormId, route.query.page, route.query.isPTS],
-	([newCategoryFormId, newSubcategoryFormId, newPage, newIsPTS]) => {
-		state.currentCategory.formId = (newCategoryFormId ?? '-1') as string;
-		state.currentSubcategory.formId = (newSubcategoryFormId ?? '-1') as string;
-
+	([, , , newIsPTS]) => {
 		state.isPTS = (newIsPTS === '1') ? true : false;
 
 		if (!import.meta.env.SSR)
@@ -88,73 +73,8 @@ watch(
 	{ immediate: true }
 );
 
-watch(
-	() => route.query.filter,
-	(newFilter) => {
-		state.filter = (newFilter as string | undefined) || '';
-
-		if (!import.meta.env.SSR) {
-			const filterInput = document.getElementById('library-filter') as HTMLInputElement;
-			if (filterInput && document.activeElement !== filterInput) {
-				filterInput.value = state.filter || '';
-			}
-		}
-	},
-	{ immediate: true }
-);
-
-const changePage = (newPage: number) => {
-	if (newPage > 0 && newPage <= state.totalPages) {
-		const newQuery: Record<string, any> = { ...route.query };
-
-		if (newPage === 1) {
-			delete newQuery.page;
-		} else {
-			newQuery.page = newPage;
-		}
-
-		router.push({ query: newQuery });
-		if (!import.meta.env.SSR)
-			window.scrollTo({ top: 0, behavior: 'smooth' });
-	}
-};
-
 const queryClient = useQueryClient();
 const prefetchCampItem = (itemFormId: string) => usePrefetchCampItem(queryClient, itemFormId);
-
-const onChangeFilter = useDebounceFn((textFilter: string) => {
-	const newQuery: Record<string, any> = { ...route.query };
-	delete newQuery.page;
-
-	if (!textFilter || textFilter.length < 3) {
-		state.filter = '';
-		delete newQuery.filter;
-	} else {
-		state.filter = textFilter;
-		newQuery.filter = state.filter;
-		trackCatalogFilter('camp', state.filter);
-	}
-
-	router.push({ query: newQuery });
-}, 300);
-
-const categoriesIndex = computed(() => {
-	const index: Record<string, { nameRu: string }> = {};
-	props.categories.forEach(cat => {
-		index[cat.formId] = { nameRu: cat.nameRu ?? '' };
-		cat.subcategories.forEach(sub => {
-			index[sub.formId] = { nameRu: sub.nameRu ?? '' };
-		});
-	});
-	return index;
-});
-
-const getBreadcrumb = (item: CampItem) => {
-	const catName = categoriesIndex.value[item.categoryFormId || '']?.nameRu;
-	const subName = categoriesIndex.value[item.subcategoryFormId || '']?.nameRu;
-	if (catName && subName) return `${catName} → ${subName}`;
-	return catName || '';
-};
 
 const hoveredItem = ref<string | null>(null);
 
@@ -166,13 +86,6 @@ useDelegatedTooltips();
 
 // Loading skeleton: two rows of cards on desktop.
 const SKELETON_CARD_COUNT = 6;
-
-onMounted(() => {
-	const filterInput = document.getElementById('library-filter') as HTMLInputElement;
-	if (filterInput && state.filter) {
-		filterInput.value = state.filter;
-	}
-});
 </script>
 
 <template>

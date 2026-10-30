@@ -129,7 +129,6 @@ const toggleLayer = (id: string) => {
 	activeLayers.value = activeLayers.value.includes(id)
 		? activeLayers.value.filter(l => l !== id)
 		: [...activeLayers.value, id];
-	if (selectedObject.value && !activeLayers.value.length) selectedId.value = null;
 	updateQuery();
 };
 
@@ -180,6 +179,12 @@ onMounted(() => {
 
 watch([mapData, objects], applyPendingQuery);
 
+// A layer point leaves the map when its layer is turned off or the region changes; the card and ?m= go with it.
+// (A location stays in `locations` across regions, so setRegion drops it itself.)
+watch([selected, selectedObject], ([marker, object]) => {
+	if (selectedId.value && !marker && !object) selectMarker(null);
+});
+
 // The selected marker scrolls into view in the list
 watch(selectedId, async id => {
 	if (!id) return;
@@ -220,8 +225,6 @@ const headInput = computed((): ReactiveHead => {
 		],
 		link: [
 			{ rel: 'canonical', href: link },
-			// Region names on the map use the font the Russian game uses for them
-			{ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap' },
 		],
 	};
 });
@@ -345,7 +348,7 @@ useHead(headInput);
 				@ready="onCanvasReady"
 			/>
 
-			<button type="button" class="map-style-switch" :title="MAP_STYLE_TITLES[otherStyle]" @click="toggleStyle">
+			<button type="button" class="map-style-switch" :title="MAP_STYLE_TITLES[otherStyle]" @pointerenter="canvas?.prefetchStyle(otherStyle)" @focus="canvas?.prefetchStyle(otherStyle)" @click="toggleStyle">
 				<span class="map-style-preview" :style="{ backgroundImage: `url('/public/img/f76/map/tiles/${otherStyle}/0/0/0.webp')` }"></span>
 				<span class="map-style-label">{{ MAP_STYLE_NAMES[otherStyle] }}</span>
 			</button>
@@ -577,6 +580,13 @@ $map-muted: rgba(241, 234, 210, 0.62);
 	list-style: none;
 	margin: 0;
 	padding: 0;
+
+	// ~480 locations, a dozen of them on screen: the browser skips the layout of the rest.
+	// 43px is an item with an English subtitle; `auto` keeps the real size once an item has been shown.
+	> li {
+		content-visibility: auto;
+		contain-intrinsic-size: auto 43px;
+	}
 }
 
 .map-list-item {

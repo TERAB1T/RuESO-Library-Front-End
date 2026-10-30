@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute, onBeforeRouteLeave } from 'vue-router';
-import { onMounted, computed, onServerPrefetch, watch, ref, nextTick } from 'vue';
+import { onMounted, computed, onServerPrefetch, watch, ref } from 'vue';
 import { useHead } from '@unhead/vue';
 import { prepareCampImage, prepareAtomicShopImage, generateMetaDescription, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
 import { useFetchCampItem, useFetchCampCategories } from '@/composables/useApi';
@@ -20,8 +20,7 @@ import F76CampSubItemModal from '@/components/F76CampSubItemModal.vue';
 import F76CampInfoCard from '@/components/F76CampInfoCard.vue';
 import F76ItemGallery from '@/components/F76ItemGallery.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
-import PhotoSwipeLightbox from 'photoswipe/lightbox';
-import 'photoswipe/style.css';
+import { useItemLightbox } from '@/composables/useItemLightbox';
 
 import type { ReactiveHead } from '@unhead/vue';
 import type { CampItemWithRelations, CampCategoryWithSubcategories, BreadcrumbItem, ItemGallerySlide } from '@/types';
@@ -38,7 +37,6 @@ const PTS_NOTICE = {
 	en: 'This item is currently available only on the Public Test Server.',
 };
 
-let lightbox: PhotoSwipeLightbox | null = null;
 let BootstrapModal: any = null;
 
 const currentItemFormId = computed(() => ((route.params.itemFormId || '') as string).toLowerCase());
@@ -169,64 +167,7 @@ const headInput = computed((): ReactiveHead => {
 
 useHead(headInput);
 
-const initLightbox = () => {
-	if (import.meta.env.SSR) return;
-
-	if (lightbox) {
-		lightbox.destroy();
-		lightbox = null;
-	}
-
-	nextTick(() => {
-		const galleryElement = document.querySelector('#main-item-container');
-		if (!galleryElement) return;
-
-		const sizeCache = new Map();
-
-		lightbox = new PhotoSwipeLightbox({
-			gallery: '#main-item-container',
-			children: '.screenshot-link',
-			pswpModule: () => import('photoswipe'),
-		});
-
-		lightbox.addFilter('itemData', (itemData, index) => {
-			const imgSrc = itemData.src || (itemData.element as HTMLAnchorElement | undefined)?.href || '';
-
-			// A screenshot's thumbnail is the full file, so its natural size is already known before the first open.
-			const thumb = (itemData.element as HTMLAnchorElement | undefined)?.querySelector('img');
-			if (thumb && thumb.naturalWidth && thumb.currentSrc === imgSrc) {
-				sizeCache.set(imgSrc, { width: thumb.naturalWidth, height: thumb.naturalHeight });
-			}
-
-			if (sizeCache.has(imgSrc)) {
-				const cached = sizeCache.get(imgSrc);
-				itemData.width = cached.width;
-				itemData.height = cached.height;
-				return itemData;
-			}
-
-			itemData.width = 1440;
-			itemData.height = 1440;
-
-			const img = new Image();
-			img.onload = () => {
-				sizeCache.set(imgSrc, {
-					width: img.naturalWidth,
-					height: img.naturalHeight
-				});
-
-				if (lightbox?.pswp && lightbox.pswp.currSlide?.index === index) {
-					lightbox.pswp.updateSize(true);
-				}
-			};
-			img.src = imgSrc;
-
-			return itemData;
-		});
-
-		lightbox.init();
-	});
-};
+const { initLightbox, destroyLightbox } = useItemLightbox();
 
 onServerPrefetch(async () => {
 	await itemSuspense();
@@ -318,10 +259,7 @@ onBeforeRouteLeave(() => {
 		modal?.hide();
 	}
 
-	if (lightbox) {
-		lightbox.destroy();
-		lightbox = null;
-	}
+	destroyLightbox();
 });
 </script>
 

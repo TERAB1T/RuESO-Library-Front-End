@@ -101,11 +101,6 @@ const prefetchStyle = (style: F76MapStyle) => {
 	}
 };
 
-const whenIdle = (fn: () => void) => {
-	if ('requestIdleCallback' in window) window.requestIdleCallback(fn, { timeout: 3000 });
-	else setTimeout(fn, 1000);
-};
-
 const buildFeatures = (markers: F76MapMarker[], withAtlas: boolean) => markers.map(m => {
 	const feature = new FeatureClass!({ geometry: new PointClass!(toMapCoordinate(m)) });
 	feature.setId(m.formId);
@@ -339,12 +334,9 @@ onMounted(async () => {
 		emit('select', (feature?.getId() as string | undefined) ?? null);
 	});
 
-	// After the first frame: every tile of the current style, then the other styles when the browser is idle
-	olMap.once('rendercomplete', () => {
-		prefetchStyle(props.mapStyle);
-		const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
-		if (!saveData) whenIdle(() => MAP_STYLES.forEach(prefetchStyle));
-	});
+	// After the first frame: every tile of the current style. The other style is fetched only when the page
+	// expects a switch (see prefetchStyle in defineExpose): ~2–4 MB per style, too much to take on every visit.
+	olMap.once('rendercomplete', () => prefetchStyle(props.mapStyle));
 
 	emit('ready');
 });
@@ -402,7 +394,7 @@ const zoomBy = (delta: number) => {
 
 const resetView = () => map?.getView().fit(EXTENT, { padding: [16, 16, 16, 16], duration: 400 });
 
-defineExpose({ flyTo, zoomBy, resetView });
+defineExpose({ flyTo, zoomBy, resetView, prefetchStyle });
 </script>
 
 <template>

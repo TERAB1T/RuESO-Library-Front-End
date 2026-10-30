@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { reactive, watch, computed, watchEffect, onServerPrefetch, ref, onMounted } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
+import { reactive, watch, computed, watchEffect, onServerPrefetch, ref } from 'vue';
 import { prepareAtomicShopImage, getAtomicShopSortOrder, setAtomicShopSortOrder, atomicShopHandleImageError } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchAtomicShopItems, useFetchAtomicShopAcquisitionTypeItems, useFetchAtomicShopAcquisitionSourceItems, usePrefetchAtomicShopItem } from '@/composables/useApi';
+import { useCatalogList } from '@/composables/useCatalogList';
 import { useDelegatedTooltips } from '@/composables/useDelegatedTooltips';
 import { useQueryClient } from '@tanstack/vue-query';
-import { useDebounceFn } from '@vueuse/core';
-import { trackCatalogFilter } from '@/analytics';
 
 import type { AtomicShopCategory, AtomicShopCategoryWithSubcategories, AtomicShopItem } from '@/types';
 
 const route = useRoute();
-const router = useRouter();
 
 const props = defineProps<{
 	categories: AtomicShopCategoryWithSubcategories[]
@@ -30,13 +28,17 @@ const state = reactive({
 	groupCategories: [] as Pick<AtomicShopCategory, 'formId' | 'nameRu'>[],
 	pageSize: 18,
 	totalPages: 1,
-	filter: (route.query.filter as string | undefined) || '',
 	sortOrder: getAtomicShopSortOrder(),
 	isPTS: route.query.isPTS === '1',
 	hasSupport: route.query.hasSupport === '1'
 });
 
-const currentPage = computed(() => Number(route.query.page) || 1);
+const { currentPage, filter, changePage, onChangeFilter, getBreadcrumb } = useCatalogList({
+	section: 'atomic_shop',
+	categories: () => props.categories,
+	totalPages: () => state.totalPages,
+});
+
 const currentCategory = computed(() => (route.params.categoryFormId || '-1') as string);
 const currentSubcategory = computed(() => (route.params.subcategoryFormId || '-1') as string);
 
@@ -49,7 +51,7 @@ const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched, isP
 	currentSubcategory,
 	currentPage,
 	state.pageSize,
-	computed(() => state.filter),
+	computed(() => filter.value),
 	computed(() => state.sortOrder),
 	computed(() => state.isPTS),
 	computed(() => state.hasSupport),
@@ -60,7 +62,7 @@ const { data: acquisitionTypeData, suspense: acquisitionTypeSuspense, isSuccess:
 	currentAcquisitionType,
 	currentPage,
 	state.pageSize,
-	computed(() => state.filter),
+	computed(() => filter.value),
 	computed(() => state.sortOrder),
 	computed(() => state.isPTS),
 	computed(() => state.hasSupport),
@@ -72,7 +74,7 @@ const { data: acquisitionSourceData, suspense: acquisitionSourceSuspense, isSucc
 	currentAcquisitionNumber,
 	currentPage,
 	state.pageSize,
-	computed(() => state.filter),
+	computed(() => filter.value),
 	computed(() => state.sortOrder),
 	computed(() => state.isPTS),
 	computed(() => state.hasSupport),
@@ -129,73 +131,8 @@ watch(
 	{ immediate: true }
 );
 
-watch(
-	() => route.query.filter,
-	(newFilter) => {
-		state.filter = (newFilter as string | undefined) || '';
-
-		if (!import.meta.env.SSR) {
-			const filterInput = document.getElementById('library-filter') as HTMLInputElement;
-			if (filterInput && document.activeElement !== filterInput) {
-				filterInput.value = state.filter || '';
-			}
-		}
-	},
-	{ immediate: true }
-);
-
-const changePage = (newPage: number) => {
-	if (newPage > 0 && newPage <= state.totalPages) {
-		const newQuery: Record<string, any> = { ...route.query };
-
-		if (newPage === 1) {
-			delete newQuery.page;
-		} else {
-			newQuery.page = newPage;
-		}
-
-		router.push({ query: newQuery });
-		if (!import.meta.env.SSR)
-			window.scrollTo({ top: 0, behavior: 'smooth' });
-	}
-};
-
 const queryClient = useQueryClient();
 const prefetchAtomicShopItem = (itemFormId: string) => usePrefetchAtomicShopItem(queryClient, itemFormId);
-
-const onChangeFilter = useDebounceFn((textFilter: string) => {
-	const newQuery: Record<string, any> = { ...route.query };
-	delete newQuery.page;
-
-	if (!textFilter || textFilter.length < 3) {
-		state.filter = '';
-		delete newQuery.filter;
-	} else {
-		state.filter = textFilter;
-		newQuery.filter = state.filter;
-		trackCatalogFilter('atomic_shop', state.filter);
-	}
-
-	router.push({ query: newQuery });
-}, 300);
-
-const categoriesIndex = computed(() => {
-	const index: Record<string, { nameRu: string }> = {};
-	props.categories.forEach(cat => {
-		index[cat.formId] = { nameRu: cat.nameRu ?? '' };
-		cat.subcategories.forEach(sub => {
-			index[sub.formId] = { nameRu: sub.nameRu ?? '' };
-		});
-	});
-	return index;
-});
-
-const getBreadcrumb = (item: AtomicShopItem) => {
-	const catName = categoriesIndex.value[item.categoryFormId || '']?.nameRu;
-	const subName = categoriesIndex.value[item.subcategoryFormId || '']?.nameRu;
-	if (catName && subName) return `${catName} → ${subName}`;
-	return catName || '';
-};
 
 const itemGroups = computed(() => {
 	if (!state.groupCategories.length) {
@@ -226,13 +163,6 @@ useDelegatedTooltips();
 
 // Loading skeleton: two rows of cards on desktop.
 const SKELETON_CARD_COUNT = 6;
-
-onMounted(() => {
-	const filterInput = document.getElementById('library-filter') as HTMLInputElement;
-	if (filterInput && state.filter) {
-		filterInput.value = state.filter;
-	}
-});
 </script>
 
 <template>
