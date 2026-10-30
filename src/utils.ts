@@ -401,9 +401,13 @@ export const setAtomicShopSortOrder = (order: string) => saveSortOrder(atomicSho
 export const getCampSortOrder = (): string => getSavedSortOrder(campLocalStorageKey);
 export const setCampSortOrder = (order: string) => saveSortOrder(campLocalStorageKey, order);
 
+const IMAGE_FALLBACK = '/public/img/f76/atx/notfound.webp';
+
 export const atomicShopHandleImageError = (event: Event) => {
 	const target = event.target as HTMLImageElement;
-	target.src = '/public/img/f76/atx/notfound.webp';
+	// If the fallback fails too (offline, 5xx), setting it again fires another error: an endless request loop.
+	if (target.src.endsWith(IMAGE_FALLBACK)) return;
+	target.src = IMAGE_FALLBACK;
 };
 
 
