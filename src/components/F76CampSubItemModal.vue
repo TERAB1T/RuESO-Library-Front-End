@@ -257,6 +257,15 @@ const usedElsewhere = computed(() => (subItem.value?.usedIn ?? []).filter(i => i
 								<span class="subitem-value subitem-caps" :title="valueText">{{ subItem.value }}<span class="visually-hidden"> {{ valueText }}</span></span>
 							</div>
 
+							<div v-if="subItem.teaches?.length" class="subitem-row">
+								<span class="subitem-label">{{ ru ? 'Открывает' : 'Unlocks' }}</span>
+								<ul class="subitem-value subitem-list">
+									<li v-for="i in subItem.teaches" :key="i.formId">
+										<RouterLink :to="`/f76-camp/${i.formId}-${i.slug}`" @mouseenter="prefetchCampItem(i.formId)">{{ pick(i.nameRu, i.nameEn) }}</RouterLink>
+									</li>
+								</ul>
+							</div>
+
 							<div v-if="usedElsewhere.length" class="subitem-row">
 								<span class="subitem-label">{{ ru ? 'Также встречается' : 'Also found in' }}</span>
 								<ul class="subitem-value subitem-list">

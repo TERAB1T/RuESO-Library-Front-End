@@ -664,6 +664,7 @@ export interface CampSubItem {
 	value: number | null;
 	details: CampSubItemDetails | null;
 	usedIn: RecipeSiblingItem[];
+	teaches: RecipeSiblingItem[];
 }
 
 // ESO crown crates
