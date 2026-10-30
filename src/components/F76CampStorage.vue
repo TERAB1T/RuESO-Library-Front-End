@@ -67,6 +67,8 @@ const typeLabels: Record<string, [ru: string, en: string]> = {
 	AMMO: ['Боеприпасы', 'Ammo'],
 	CMPO: ['Компонент', 'Component'],
 	BOOK: ['Записка', 'Note'],
+	RECIPE: ['Схема или рецепт', 'Plan or recipe'],
+	NOTE: ['Голозапись', 'Holotape'],
 };
 
 const ru = computed(() => props.lang === 'ru');

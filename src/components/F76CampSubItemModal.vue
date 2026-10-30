@@ -69,6 +69,8 @@ const typeLabels: Record<string, [ru: string, en: string]> = {
 	WEAP: ['Оружие', 'Weapon'],
 	ARMO: ['Броня', 'Armor'],
 	BOOK: ['Записка', 'Note'],
+	RECIPE: ['Схема или рецепт', 'Plan or recipe'],
+	NOTE: ['Голозапись', 'Holotape'],
 	HAT: ['Головной убор', 'Hat'],
 };
 
@@ -101,6 +103,8 @@ const CONDITION_LABELS: Record<string, [ru: string, en: string]> = {
 	notGhoul: ['только для людей', 'humans only'],
 	night: ['ночью', 'at night'],
 	ally: ['при наличии союзника', 'with an ally'],
+	team: ['в команде', 'while in a team'],
+	drunk: ['под действием алкоголя', 'while drunk'],
 };
 
 const effectText = (e: CampSubItemEffect) => {

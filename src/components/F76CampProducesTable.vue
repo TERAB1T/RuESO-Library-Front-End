@@ -44,6 +44,8 @@ const typeLabels: Record<string, { ru: string; en: string }> = {
 	ARMO: { ru: 'Броня', en: 'Armor' },
 	CMPO: { ru: 'Компонент', en: 'Component' },
 	BOOK: { ru: 'Записка', en: 'Note' },
+	RECIPE: { ru: 'Схема или рецепт', en: 'Plan or recipe' },
+	NOTE: { ru: 'Голозапись', en: 'Holotape' },
 	HAT: { ru: 'Головной убор', en: 'Hat' },
 };
 

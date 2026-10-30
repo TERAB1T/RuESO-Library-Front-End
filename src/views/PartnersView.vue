@@ -71,7 +71,7 @@ const partners: Partner[] = [
 	{
 		name: 'Атомная хатка',
 		description: 'Графика и новости Fallout 76 под одной крышей!',
-		url: 'https://t.me/xata_skrayu',
+		url: 'https://t.me/atomic_hut',
 		image: '/public/img/partner-atomhut.webp',
 		category: 'Fallout',
 	},

@@ -469,6 +469,47 @@ export interface WaterSource {
 	collectRadiationDamage: number | null;
 }
 
+export interface AllyVendorVisitor {
+	npcFormId: string;
+	name: LocalizedName;
+	spawnChance: number;
+	afterQuests: number | null;
+	beforeAnyQuest: boolean;
+	questsOf: { npcFormId: string; name: LocalizedName } | null;
+	byStory: boolean;
+}
+
+export interface AllyStockItem {
+	kind: 'item';
+	formId: string;
+	editorId: string | null;
+	en: string | null;
+	ru: string | null;
+	type: string | null;
+	probability: number;
+	eventOnly: boolean;
+	byRegion: boolean;
+}
+
+export interface AllyStockCategory {
+	kind: 'category';
+	en: string | null;
+	ru: string | null;
+	count: number;
+}
+
+export type AllyStockRow = AllyStockItem | AllyStockCategory;
+
+export interface Ally {
+	npcFormId: string;
+	editorId: string;
+	name: LocalizedName;
+	isVendor: boolean;
+	stock: AllyStockRow[] | null;
+	hasRomance: boolean;
+	vendorVisitors: AllyVendorVisitor[];
+}
+
 export interface RecipeComponent {
 	formId: string;
 	editorId: string | null;
@@ -545,6 +586,7 @@ export interface CampItemWithRelations extends CampItem {
 	buffs: Buff[] | null;
 	arcadeGame: ArcadeGame | null;
 	waterSource: WaterSource | null;
+	ally: Ally | null;
 	unlockedByEntitlements: UnlockedByEntitlement[] | null;
 	shopInfo: CampShopInfo | null;
 	sharedLimit: CampSharedLimit | null;
@@ -563,7 +605,7 @@ export interface CampWeatherInfo {
 }
 
 export type CampSubItemEffectKind ='hunger' | 'thirst' | 'rads' | 'disease' | 'feral';
-export type CampSubItemEffectCondition = 'ghoul' | 'notGhoul' | 'night' | 'ally';
+export type CampSubItemEffectCondition = 'ghoul' | 'notGhoul' | 'night' | 'ally' | 'team' | 'drunk';
 
 export interface CampSubItemEffect {
 	kind: CampSubItemEffectKind | null;

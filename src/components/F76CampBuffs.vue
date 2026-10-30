@@ -2,12 +2,13 @@
 import { computed } from 'vue';
 import { formatDurationSeconds } from '@/utils';
 
-import type { ArcadeGame, Buff, BuffEffect, BuffTrigger, BuffCondition, BuffPlayerType, WaterSource } from '@/types';
+import type { Ally, AllyVendorVisitor, ArcadeGame, Buff, BuffEffect, BuffTrigger, BuffCondition, BuffPlayerType, WaterSource } from '@/types';
 
 const props = defineProps<{
 	buffs: Buff[] | null;
 	arcadeGame: ArcadeGame | null;
 	waterSource: WaterSource | null;
+	ally: Ally | null;
 	lang: 'ru' | 'en';
 }>();
 
@@ -20,7 +21,7 @@ const pick = (ru: string | null | undefined, en: string | null | undefined) =>
 
 const hasBuffs = computed(() => !!props.buffs && props.buffs.length > 0);
 const hasArcadeGame = computed(() => !!props.arcadeGame);
-const hasContent = computed(() => hasBuffs.value || hasArcadeGame.value || !!props.waterSource);
+const hasContent = computed(() => hasBuffs.value || hasArcadeGame.value || !!props.waterSource || !!props.ally);
 
 const conditionLabels: Record<BuffCondition, { ru: string; en: string }> = {
 	noAllyNearby: {
@@ -191,6 +192,29 @@ const waterText = computed(() => {
 	return collectRadiationDamage != null ? `${collect} ${t.value.waterRadiation(collectRadiationDamage)}` : collect;
 });
 
+const visitorCondition = (visitor: AllyVendorVisitor): string => {
+	if (visitor.byStory) return t.value.visitorByStory;
+	if (visitor.beforeAnyQuest) return t.value.visitorBeforeAnyQuest;
+
+	const ownerName = visitor.questsOf ? pick(visitor.questsOf.name.ru, visitor.questsOf.name.en) || '—' : null;
+	return t.value.visitorAfterQuests(visitor.afterQuests ?? 0, ownerName);
+};
+
+const allyInfo = computed(() => {
+	if (!props.ally) return null;
+
+	const lines: string[] = [];
+	if (props.ally.isVendor) lines.push(t.value.allyVendor);
+	if (props.ally.hasRomance) lines.push(t.value.allyRomance);
+	for (const visitor of props.ally.vendorVisitors)
+		lines.push(t.value.allyVisitor(pick(visitor.name.ru, visitor.name.en) || '—', visitor.spawnChance, visitorCondition(visitor)));
+
+	return {
+		name: pick(props.ally.name.ru, props.ally.name.en) || '—',
+		lines
+	};
+});
+
 const t = computed(() => props.lang === 'ru'
 	? {
 		title: 'Взаимодействие',
@@ -200,7 +224,15 @@ const t = computed(() => props.lang === 'ru'
 		disease: 'При использовании можно подхватить заболевание.',
 		waterCollect: (name: string) => `Из этого объекта можно набрать грязную воду (1 ед.).`,
 		waterRadiation: (damage: number) => `При наборе вы получаете ${damage} ед. урона от радиации.`,
-		arcadeIntro: 'Этот объект — игровой автомат «Ядер-Аркады», и с ним можно взаимодействовать. Каждая игра стоит 1 крышку.'
+		arcadeIntro: 'Этот объект — игровой автомат «Ядер-Аркады», и с ним можно взаимодействовать. Каждая игра стоит 1 крышку.',
+		allyIntro: 'Этот объект поселяет в вашем C.A.M.P. союзника:',
+		allyVendor: 'Торгует за крышки',
+		allyRomance: 'Можно завести роман',
+		allyVisitor: (name: string, chance: number, condition: string) => `Иногда приходит гость-торговец «${name}» (шанс ${chance}%, ${condition})`,
+		visitorAfterQuests: (count: number, owner: string | null) =>
+			`после выполнения ${count} ${count === 1 ? 'задания' : 'заданий'}${owner ? ` союзника «${owner}»` : ''}`,
+		visitorBeforeAnyQuest: 'пока не выполнено ни одного задания',
+		visitorByStory: 'в зависимости от выбора в заданиях'
 	}
 	: {
 		title: 'Interaction',
@@ -210,7 +242,15 @@ const t = computed(() => props.lang === 'ru'
 		disease: 'Using this object may cause a disease.',
 		waterCollect: (name: string) => `You can collect dirty water (1 unit) from this object.`,
 		waterRadiation: (damage: number) => `Collecting it deals ${damage} radiation damage.`,
-		arcadeIntro: 'This object is a Nuka-Cade arcade machine, and you can interact with it. Each game costs 1 cap.'
+		arcadeIntro: 'This object is a Nuka-Cade arcade machine, and you can interact with it. Each game costs 1 cap.',
+		allyIntro: 'This object brings an ally to your C.A.M.P.:',
+		allyVendor: 'Sells items for caps',
+		allyRomance: 'Can be romanced',
+		allyVisitor: (name: string, chance: number, condition: string) => `A visiting merchant, ${name}, sometimes comes by (${chance}% chance, ${condition})`,
+		visitorAfterQuests: (count: number, owner: string | null) =>
+			`after completing ${count} ${count === 1 ? 'quest' : 'quests'}${owner ? ` for ${owner}` : ''}`,
+		visitorBeforeAnyQuest: 'only until any of the quests is completed',
+		visitorByStory: 'depending on your choices in quests'
 	}
 );
 </script>
@@ -220,6 +260,20 @@ const t = computed(() => props.lang === 'ru'
 		<div class="fo-sect-h">
 			<span class="fo-bar"></span>
 			<h3 class="fo-h3">{{ t.title }}</h3>
+		</div>
+
+		<div v-if="allyInfo" class="buffs-group">
+			<p class="buffs-group-header">{{ t.allyIntro }}</p>
+
+			<ul class="buffs-list">
+				<li>
+					<span class="buff-name">{{ allyInfo.name }}</span>
+
+					<ul v-if="allyInfo.lines.length" class="buff-effects">
+						<li v-for="(line, li) in allyInfo.lines" :key="li">{{ line }}</li>
+					</ul>
+				</li>
+			</ul>
 		</div>
 
 		<div v-if="arcadeInfo" class="buffs-group">

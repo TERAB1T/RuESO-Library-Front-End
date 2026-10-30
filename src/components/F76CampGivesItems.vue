@@ -26,6 +26,8 @@ const typeLabels: Record<string, [ru: string, en: string]> = {
 	MISC: ['Разное', 'Misc'],
 	AMMO: ['Боеприпасы', 'Ammo'],
 	BOOK: ['Записка', 'Note'],
+	RECIPE: ['Схема или рецепт', 'Plan or recipe'],
+	NOTE: ['Голозапись', 'Holotape'],
 };
 
 const ru = computed(() => props.lang === 'ru');
