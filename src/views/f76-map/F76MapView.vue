@@ -49,6 +49,7 @@ const search = ref('');
 const showAllItemResults = ref(false);
 // The location list is long: it opens on demand, and on its own while searching
 const isLocationListOpen = ref(false);
+const isResourceListOpen = ref(false);
 // Mobile: the panel covers the map; desktop: it can be collapsed to give the map the whole width
 const isPanelOpen = ref(false);
 const isPanelCollapsed = ref(false);
@@ -491,16 +492,21 @@ useHead(headInput);
 						</div>
 					</section>
 					<section v-if="ores.length || components.length" class="map-section">
-						<div class="map-section-title">Ресурсы</div>
-						<div class="map-subtitle">Рудные жилы</div>
-						<div class="map-chip-list">
-							<button v-for="o in ores" :key="o.id" type="button" class="map-chip-button" :class="{ active: findColor(`i-${o.id}`) }" :style="{ '--find-color': findColor(`i-${o.id}`) ?? undefined }" @click="toggleFind(`i-${o.id}`)">{{ o.nameRu }}</button>
-						</div>
-						<div class="map-subtitle">Хлам, который разбирается на</div>
-						<div class="map-chip-list">
-							<button v-for="c in components" :key="c.formId" type="button" class="map-chip-button" :class="{ active: findColor(`c-${c.formId}`) }" :style="{ '--find-color': findColor(`c-${c.formId}`) ?? undefined }" @click="toggleFind(`c-${c.formId}`)">{{ c.nameRu }}</button>
-						</div>
-						<p class="map-hint">Любой предмет из мира — через поиск: «чайник», «мешок цемента», «секач».</p>
+						<button type="button" class="map-section-title map-section-toggle" :aria-expanded="isResourceListOpen" @click="isResourceListOpen = !isResourceListOpen">
+							Ресурсы
+							<FontAwesomeIcon :icon="faChevronDown" class="map-section-chevron" :class="{ open: isResourceListOpen }" />
+						</button>
+						<template v-if="isResourceListOpen">
+							<div class="map-subtitle">Рудные жилы</div>
+							<div class="map-chip-list">
+								<button v-for="o in ores" :key="o.id" type="button" class="map-chip-button" :class="{ active: findColor(`i-${o.id}`) }" :style="{ '--find-color': findColor(`i-${o.id}`) ?? undefined }" @click="toggleFind(`i-${o.id}`)">{{ o.nameRu }}</button>
+							</div>
+							<div class="map-subtitle">Хлам, который разбирается на</div>
+							<div class="map-chip-list">
+								<button v-for="c in components" :key="c.formId" type="button" class="map-chip-button" :class="{ active: findColor(`c-${c.formId}`) }" :style="{ '--find-color': findColor(`c-${c.formId}`) ?? undefined }" @click="toggleFind(`c-${c.formId}`)">{{ c.nameRu }}</button>
+							</div>
+							<p class="map-hint">Любой предмет из мира — через поиск: «чайник», «мешок цемента», «секач».</p>
+						</template>
 					</section>
 
 				</template>
@@ -745,6 +751,8 @@ $map-muted: rgba(241, 234, 210, 0.62);
 	flex: 1;
 	min-height: 0;
 	overflow-y: auto;
+	// Reserve the scrollbar's space: otherwise the layer hints that appear make it show up and narrow the content
+	scrollbar-gutter: stable;
 	border-top: 1px solid var(--bs-border-color);
 }
 
@@ -782,8 +790,8 @@ $map-muted: rgba(241, 234, 210, 0.62);
 }
 
 .map-section-toggle {
-	width: calc(100% - 2rem);
-	box-sizing: content-box;
+	width: 100%;
+	padding: 0;
 	margin-bottom: 0;
 	border: 0;
 	background: transparent;
