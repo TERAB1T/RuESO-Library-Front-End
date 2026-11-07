@@ -470,9 +470,9 @@ useHead(headInput);
 							</span>
 						</label>
 						<p v-if="activeLayers.includes('camp')" class="map-hint map-layer-hint">
-							<span class="map-legend" :style="{ background: ZONE_COLORS[ZONE_ALLOWED]![1] }"></span> игра не запрещает лагерь,
-							<span class="map-legend" :style="{ background: ZONE_COLORS[ZONE_BLOCKED]![1] }"></span> запрещает.
-							Ещё могут помешать рельеф, вода и чужие C.A.M.P.
+							<span class="map-legend" :style="{ background: ZONE_COLORS[ZONE_ALLOWED]![1] }"></span> — можно установить C.A.M.P.
+							<br>
+							<span class="map-legend" :style="{ background: ZONE_COLORS[ZONE_BLOCKED]![1] }"></span> — нельзя установить C.A.M.P.
 						</p>
 						<p v-if="activeLayers.includes('fishing')" class="map-hint map-layer-hint">
 							Вода, где под поплавком хватает глубины. Рыба зависит от региона: он в подсказке при наведении.
