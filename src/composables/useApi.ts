@@ -25,7 +25,9 @@ import type {
 	CrownCrate,
 	CrownCrateListItem,
 	F76MapData,
-	F76MapObject
+	F76MapItemCatalog,
+	F76MapItemPoints,
+	F76MapLayerContents
 } from '@/types';
 import type { UseQueryReturnType } from '@tanstack/vue-query'
 import type { ComputedRef, Ref } from 'vue';
@@ -277,12 +279,33 @@ export const useFetchMapData = (): UseQueryReturnType<F76MapData, Error> => {
 	});
 }
 
-// Points of the turned-on map layers, one query per layer: turning one on doesn't refetch the others.
+// Contents of the turned-on map layers, one query per layer: turning one on doesn't refetch the others.
 export const useFetchMapLayers = (layerIds: ComputedRef<string[]>) => {
 	return useQueries({
 		queries: computed(() => layerIds.value.map(id => ({
 			queryKey: ['f76_map_layer', id],
-			queryFn: (): Promise<F76MapObject[] | null> => fetchApi(prepareURL(`/api/f76/map/layers/${id}`)),
+			queryFn: (): Promise<F76MapLayerContents | null> => fetchApi(prepareURL(`/api/f76/map/layers/${id}`)),
+			staleTime: DEFAULT_STALE_TIME,
+		}))),
+	});
+}
+
+// Every item that lies in the world, for the map search; loaded once the search or the URL needs it.
+export const useFetchMapItemCatalog = (enabled: ComputedRef<boolean>): UseQueryReturnType<F76MapItemCatalog, Error> => {
+	return useQuery({
+		queryKey: ['f76_map_items'],
+		queryFn: () => fetchApi(prepareURL('/api/f76/map/items')),
+		staleTime: DEFAULT_STALE_TIME,
+		enabled,
+	});
+}
+
+// Points of the items and resources put on the map: an item ('i-<id>') or every item that scraps into a component ('c-<id>')
+export const useFetchMapItemPoints = (keys: ComputedRef<string[]>) => {
+	return useQueries({
+		queries: computed(() => keys.value.map(key => ({
+			queryKey: ['f76_map_item_points', key],
+			queryFn: (): Promise<F76MapItemPoints | null> => fetchApi(prepareURL(`/api/f76/map/${key.startsWith('c-') ? 'components' : 'items'}/${key.slice(2)}/points`)),
 			staleTime: DEFAULT_STALE_TIME,
 		}))),
 	});

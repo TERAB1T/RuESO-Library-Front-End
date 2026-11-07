@@ -12,6 +12,7 @@ export { default as WebGLVectorLayer } from 'ol/layer/WebGLVector';
 export { default as VectorSource } from 'ol/source/Vector';
 export { default as Feature } from 'ol/Feature';
 export { default as Point } from 'ol/geom/Point';
+export { default as Polygon } from 'ol/geom/Polygon';
 export { default as Style } from 'ol/style/Style';
 export { default as Icon } from 'ol/style/Icon';
 export { default as Text } from 'ol/style/Text';

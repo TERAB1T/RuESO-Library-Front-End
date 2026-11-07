@@ -757,9 +757,10 @@ export interface F76MapMarker {
 	initiallyDisabled: boolean;
 }
 
-// A layer of placed objects (e.g. event collectibles); its points are loaded when the layer is turned on.
+// A layer of points (collectible spawns, vendors) or of areas (C.A.M.P. zones); its contents load when it is turned on.
 export interface F76MapLayer {
 	id: string;
+	kind: 'points' | 'zones';
 	nameEn: string;
 	nameRu: string;
 	count: number;
@@ -769,19 +770,74 @@ export interface F76MapLayer {
 
 export interface F76MapObject {
 	formId: string;
+	// Own name of the point (a vendor); null means the layer's name.
+	nameEn: string | null;
+	nameRu: string | null;
 	regionFormId: string | null;
-	// Named location of the object's cell; null in the wilderness.
-	locationNameEn: string | null;
-	locationNameRu: string | null;
+	// Named location of the point, or the interior it is in; null in the wilderness.
+	placeNameEn: string | null;
+	placeNameRu: string | null;
+	// Inside an interior: the point is the interior's entrance and count is the number of copies inside.
+	inside: boolean;
+	count: number;
 	mapX: number;
 	mapY: number;
-	x: number;
-	y: number;
 	isPts: boolean;
+}
+
+// An area of a zone layer: the outer ring and its holes, each in map pixels: x0, y0, x1, y1, … Areas never overlap.
+export interface F76MapZoneData {
+	// C.A.M.P. zones: 'allowed' — the game doesn't forbid a camp here, 'blocked' — it does
+	kind: string;
+	rings: number[][];
+}
+
+export type F76MapLayerContents =
+	| { kind: 'points'; objects: F76MapObject[] }
+	| { kind: 'zones'; zones: F76MapZoneData[] };
+
+export interface F76MapComponent {
+	formId: string;
+	nameEn: string;
+	nameRu: string;
+}
+
+export interface F76MapItem {
+	id: string;
+	category: string;
+	nameEn: string;
+	nameRu: string;
+	// Placed copies, counting every copy inside interiors
+	count: number;
+	isPts: boolean;
+	// Indexes into F76MapItemCatalog.components
+	components: number[];
+}
+
+export interface F76MapItemCatalog {
+	components: F76MapComponent[];
+	items: F76MapItem[];
+}
+
+// Point: [mapX, mapY, itemIndex, placeIndex (-1 — wilderness), count, inside (0/1), isPts (0/1)]
+export interface F76MapItemPoints {
+	items: F76MapItemSummary[];
+	places: { formId: string; nameEn: string; nameRu: string }[];
+	points: [number, number, number, number, number, number, number][];
 }
 
 export interface F76MapData {
 	regions: F76MapRegion[];
 	markers: F76MapMarker[];
 	layers: F76MapLayer[];
+	// Resources to look for without the item catalog: junk components and ore veins
+	components: F76MapComponent[];
+	ores: F76MapItemSummary[];
+}
+
+export interface F76MapItemSummary {
+	id: string;
+	nameEn: string;
+	nameRu: string;
+	count: number;
 }

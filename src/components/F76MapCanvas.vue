@@ -9,12 +9,13 @@ import type VectorLayer from 'ol/layer/Vector';
 import type WebGLVectorLayer from 'ol/layer/WebGLVector';
 import type { StyleLike } from 'ol/style/Style';
 import type { F76MapMarker } from '@/types';
-import { LAYER_COLORS } from '@/f76Map';
-import type { F76MapObjectPoint, F76MapStyle } from '@/f76Map';
+import { POINT_COLORS, ZONE_COLORS } from '@/f76Map';
+import type { F76MapPoint, F76MapStyle, F76MapZone } from '@/f76Map';
 
 const props = defineProps<{
 	markers: F76MapMarker[];
-	objects: F76MapObjectPoint[];
+	objects: F76MapPoint[];
+	zones: F76MapZone[];
 	regionLabels: F76MapMarker[];
 	mapStyle: F76MapStyle;
 	selectedId: string | null;
@@ -73,12 +74,14 @@ let atlas: IconAtlas | null = null;
 const tileLayers = new Map<F76MapStyle, TileLayerType>();
 let markerLayer: WebGLVectorLayer | null = null;
 let objectLayer: WebGLVectorLayer | null = null;
+let zoneLayer: WebGLVectorLayer | null = null;
 let labelLayer: VectorLayer | null = null;
 let OverlayClass: typeof import('ol/Overlay').default | null = null;
 let regionOverlays: InstanceType<typeof import('ol/Overlay').default>[] = [];
 let selectedLayer: VectorLayer | null = null;
 let FeatureClass: typeof Feature | null = null;
 let PointClass: typeof import('ol/geom/Point').default | null = null;
+let PolygonClass: typeof import('ol/geom/Polygon').default | null = null;
 let disposed = false;
 
 // Every tile is fetched once per page: the browser keeps a loaded image URL in memory for the document,
@@ -119,15 +122,30 @@ const setLayerMarkers = (layer: VectorLayer | WebGLVectorLayer | null, markers: 
 	source.addFeatures(buildFeatures(markers, layer === markerLayer));
 };
 
-const setLayerObjects = (objects: F76MapObjectPoint[]) => {
+const setLayerObjects = (objects: F76MapPoint[]) => {
 	const source = objectLayer?.getSource();
 	if (!source) return;
 	source.clear(true);
 	source.addFeatures(objects.map(o => {
 		const feature = new FeatureClass!({ geometry: new PointClass!([o.mapX, MAP_SIZE - o.mapY]) });
-		feature.setId(o.formId);
+		feature.setId(o.id);
 		feature.setProperties({ object: o, color: o.colorIndex });
 		return feature;
+	}));
+};
+
+const setZones = (zones: F76MapZone[]) => {
+	const source = zoneLayer?.getSource();
+	if (!source) return;
+	source.clear(true);
+	source.addFeatures(zones.map(z => {
+		const rings = z.rings.map(flat => {
+			const ring: number[][] = [];
+			for (let i = 0; i < flat.length; i += 2) ring.push([flat[i]!, MAP_SIZE - flat[i + 1]!]);
+			ring.push(ring[0]!);
+			return ring;
+		});
+		return new FeatureClass!({ geometry: new PolygonClass!(rings), color: z.color, tooltip: z.tooltip });
 	}));
 };
 
@@ -162,7 +180,7 @@ const updateSelected = () => {
 	const ids = [props.highlightId, props.selectedId].filter((id, i, a) => id && a.indexOf(id) === i);
 	for (const id of ids) {
 		const marker = props.markers.find(m => m.formId === id);
-		const object = marker ? undefined : props.objects.find(o => o.formId === id);
+		const object = marker ? undefined : props.objects.find(o => o.id === id);
 		const feature = marker
 			? buildFeatures([marker], false)[0]!
 			: object ? new FeatureClass!({ geometry: new PointClass!([object.mapX, MAP_SIZE - object.mapY]), object }) : null;
@@ -182,13 +200,14 @@ onMounted(async () => {
 	if (disposed || !container.value) return;
 	const {
 		Map, View, TileLayer, XYZ, TileGrid, Projection, VectorLayer: VectorLayerClass, WebGLVectorLayer: WebGLVectorLayerClass,
-		VectorSource, Feature: FeatureImport, Point, Style, Icon, Text, Fill, Stroke, CircleStyle, Overlay,
+		VectorSource, Feature: FeatureImport, Point, Polygon, Style, Icon, Text, Fill, Stroke, CircleStyle, Overlay,
 	} = ol;
 	OverlayClass = Overlay;
 
 	atlas = atlasData;
 	FeatureClass = FeatureImport;
 	PointClass = Point;
+	PolygonClass = Polygon;
 
 	const projection = new Projection({ code: 'f76-appalachia', units: 'pixels', extent: EXTENT });
 	const tileGrid = new TileGrid({ extent: EXTENT, origin: [0, MAP_SIZE], resolutions: TILE_RESOLUTIONS, tileSize: TILE_SIZE });
@@ -221,11 +240,22 @@ onMounted(async () => {
 		source: new VectorSource(),
 		style: {
 			'circle-radius': ['interpolate', ['linear'], ['resolution'], 0.25, 9, 1, 7, 4, 5, 16, 4],
-			'circle-fill-color': ['match', ['get', 'color'], ...LAYER_COLORS.flatMap((color, i) => [i, color]), '#ffffff'],
+			'circle-fill-color': ['match', ['get', 'color'], ...POINT_COLORS.flatMap((color, i) => [i, color]), '#ffffff'],
 			'circle-stroke-color': 'rgba(10, 18, 24, 0.9)',
 			'circle-stroke-width': 1.5,
 		},
 		zIndex: 3,
+	});
+
+	// Areas (regions, water, C.A.M.P. zones) lie under the markers, in the order given
+	zoneLayer = new WebGLVectorLayerClass({
+		source: new VectorSource(),
+		style: {
+			'fill-color': ['match', ['get', 'color'], ...ZONE_COLORS.flatMap(([fill], i) => [i, fill]), 'rgba(0, 0, 0, 0)'],
+			'stroke-color': ['match', ['get', 'color'], ...ZONE_COLORS.flatMap(([, stroke], i) => [i, stroke]), 'rgba(0, 0, 0, 0)'],
+			'stroke-width': 1.25,
+		},
+		zIndex: 1,
 	});
 
 	// The selected marker is drawn again on top, bigger and with a ring; a selected point gets just the ring.
@@ -233,13 +263,13 @@ onMounted(async () => {
 	// A pin above the point (its tip just over the icon) leaves the icon itself readable
 	const selectedStyle: StyleLike = (feature, resolution) => {
 		const marker = feature.get('marker') as F76MapMarker | undefined;
-		const object = feature.get('object') as F76MapObjectPoint | undefined;
+		const object = feature.get('object') as F76MapPoint | undefined;
 		const highlight = feature.get('highlight') === true;
 		const scale = iconScale(resolution) * 1.3;
 		const point = marker
 			? new Style({ image: new Icon({ src: iconUrl(marker.icon), scale }) })
 			: new Style({
-				image: new CircleStyle({ radius: 9, fill: new Fill({ color: LAYER_COLORS[object!.colorIndex] }), stroke: new Stroke({ color: 'rgba(10, 18, 24, 0.9)', width: 2 }) }),
+				image: new CircleStyle({ radius: 9, fill: new Fill({ color: POINT_COLORS[object!.colorIndex] }), stroke: new Stroke({ color: 'rgba(10, 18, 24, 0.9)', width: 2 }) }),
 			});
 		const halfHeight = marker ? 12 * scale : 9;
 		const pin = new Style({
@@ -280,7 +310,7 @@ onMounted(async () => {
 		target: container.value,
 		// Zoom buttons are the page's own (see zoomBy/resetView)
 		controls: [],
-		layers: [...tileLayers.values(), ...(markerLayer ? [markerLayer] : []), objectLayer, selectedLayer, labelLayer],
+		layers: [...tileLayers.values(), zoneLayer, ...(markerLayer ? [markerLayer] : []), objectLayer, selectedLayer, labelLayer],
 		view: new View({
 			projection,
 			center: [MAP_SIZE / 2, MAP_SIZE / 2],
@@ -304,12 +334,14 @@ onMounted(async () => {
 	updateRegions();
 	olMap.getView().on('change:resolution', updateRegions);
 	setLayerObjects(props.objects);
+	setZones(props.zones);
 	markerLayer?.setVisible(props.showIcons);
 	labelLayer.setVisible(props.showLabels);
 	updateSelected();
 
 	// Points lie on top of markers, so they win a hit
 	const hitOptions = { layerFilter: (layer: unknown) => layer === markerLayer || layer === objectLayer };
+	const zoneHitOptions = { layerFilter: (layer: unknown) => layer === zoneLayer };
 
 	olMap.on('pointermove', event => {
 		if (event.dragging) {
@@ -319,11 +351,17 @@ onMounted(async () => {
 		const feature = olMap.forEachFeatureAtPixel(event.pixel, f => f, hitOptions);
 		container.value!.style.cursor = feature ? 'pointer' : '';
 		const marker = feature?.get('marker') as F76MapMarker | undefined;
-		const object = feature?.get('object') as F76MapObjectPoint | undefined;
+		const object = feature?.get('object') as F76MapPoint | undefined;
 		const [x, y] = event.pixel as [number, number];
 		// Labels already name the markers when zoomed in
 		if (marker) tooltip.value = olMap.getView().getResolution()! > LABEL_MAX_RESOLUTION ? { text: marker.nameRu, x, y } : null;
-		else if (object) tooltip.value = { text: object.locationNameRu ? `${object.layerName} — ${object.locationNameRu}` : object.layerName, x, y };
+		else if (object) tooltip.value = { text: object.placeNameRu ? `${object.name} — ${object.placeNameRu}` : object.name, x, y };
+		else if (props.zones.length) {
+			// The topmost area with something to say: they are drawn in order, so the last hit
+			let text: string | undefined;
+			olMap.forEachFeatureAtPixel(event.pixel, f => { text = f.get('tooltip') ?? text; }, zoneHitOptions);
+			tooltip.value = text ? { text, x, y } : null;
+		}
 		else tooltip.value = null;
 	});
 
@@ -374,6 +412,8 @@ watch(() => props.objects, objects => {
 	setLayerObjects(objects);
 	updateSelected();
 });
+
+watch(() => props.zones, setZones);
 
 watch(() => [props.selectedId, props.highlightId], updateSelected);
 
