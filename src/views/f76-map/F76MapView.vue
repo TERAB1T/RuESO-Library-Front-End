@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onServerPrefetch, ref, watch } from 'vue';
+import { computed, h, nextTick, onMounted, onServerPrefetch, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useHead } from '@unhead/vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faChevronDown, faChevronLeft, faChevronRight, faExpand, faFont, faLink, faMagnifyingGlass, faMinus, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useFetchMapData, useFetchMapItemCatalog, useFetchMapItemPoints, useFetchMapLayers, useFetchMapUpdated } from '@/composables/useApi';
 import { formatDateTime } from '@/utils';
 import F76MapCanvas from '@/components/F76MapCanvas.vue';
 import { ITEM_CATEGORY_NAMES, POINT_COLORS, ZONE_ALLOWED, ZONE_BLOCKED, ZONE_COLORS, ZONE_WATER, itemColorIndex, layerColorIndex, regionZoneColor } from '@/f76Map';
 
+import type { FunctionalComponent } from 'vue';
+import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import type { ReactiveHead } from '@unhead/vue';
 import type { F76MapItem } from '@/types';
 import type { F76MapPoint, F76MapStyle, F76MapZone } from '@/f76Map';
@@ -48,6 +49,17 @@ const showLabels = ref(true);
 const search = ref('');
 const showAllItemResults = ref(false);
 // The location list is long: it opens on demand, and on its own while searching
+// Icons as plain inline SVG sized in em: the FontAwesome component's styles are injected from JS, so in the SSR
+// markup (slow connection, page refresh) its icons rendered at full size until the script ran
+const Icon: FunctionalComponent<{ icon: IconDefinition }> = ({ icon }) => {
+	const [width, height, , , path] = icon.icon;
+	return h('svg', {
+		viewBox: `0 0 ${width} ${height}`, width: `${width / height}em`, height: '1em',
+		fill: 'currentColor', 'aria-hidden': 'true', style: 'overflow: visible; vertical-align: -0.125em',
+	}, (Array.isArray(path) ? path : [path]).map(d => h('path', { d })));
+};
+Icon.props = ['icon'];
+
 const isLocationListOpen = ref(false);
 const isResourceListOpen = ref(false);
 // Mobile: the panel covers the map; desktop: it can be collapsed to give the map the whole width
@@ -384,10 +396,10 @@ useHead(headInput);
 			</header>
 
 			<div class="map-search">
-				<FontAwesomeIcon :icon="faMagnifyingGlass" class="map-search-icon" />
+				<Icon :icon="faMagnifyingGlass" class="map-search-icon" />
 				<input v-model="search" type="search" class="form-control" placeholder="Локация, предмет или ресурс" aria-label="Поиск локаций и предметов" @keydown.enter.prevent="onSearchEnter">
 				<button v-if="search" type="button" class="map-search-clear" aria-label="Очистить поиск" @click="search = ''">
-					<FontAwesomeIcon :icon="faXmark" />
+					<Icon :icon="faXmark" />
 				</button>
 			</div>
 
@@ -455,7 +467,7 @@ useHead(headInput);
 							</span>
 						</label>
 						<label class="map-layer">
-							<FontAwesomeIcon :icon="faFont" class="map-layer-icon" />
+							<Icon :icon="faFont" class="map-layer-icon" />
 							<span class="map-layer-name">Названия локаций</span>
 							<span class="form-check form-switch m-0 ms-auto">
 								<input v-model="showLabels" class="form-check-input" type="checkbox" role="switch" @change="updateQuery">
@@ -487,14 +499,14 @@ useHead(headInput);
 							<span class="map-layer-name">{{ f.name }}<span v-if="f.isComponent" class="map-find-kind"> · ресурс</span></span>
 							<span class="map-layer-count">{{ f.count ?? '…' }}</span>
 							<button type="button" class="map-find-remove" :aria-label="`Убрать «${f.name}» с карты`" @click="toggleFind(f.key)">
-								<FontAwesomeIcon :icon="faXmark" />
+								<Icon :icon="faXmark" />
 							</button>
 						</div>
 					</section>
 					<section v-if="ores.length || components.length" class="map-section">
 						<button type="button" class="map-section-title map-section-toggle" :aria-expanded="isResourceListOpen" @click="isResourceListOpen = !isResourceListOpen">
 							Ресурсы
-							<FontAwesomeIcon :icon="faChevronDown" class="map-section-chevron" :class="{ open: isResourceListOpen }" />
+							<Icon :icon="faChevronDown" class="map-section-chevron" :class="{ open: isResourceListOpen }" />
 						</button>
 						<template v-if="isResourceListOpen">
 							<div class="map-subtitle">Рудные жилы</div>
@@ -515,7 +527,7 @@ useHead(headInput);
 					<button v-if="!query" type="button" class="map-section-title map-section-toggle" :aria-expanded="isLocationListOpen" @click="isLocationListOpen = !isLocationListOpen">
 						Локации
 						<span class="map-section-count">{{ listMarkers.length }}</span>
-						<FontAwesomeIcon :icon="faChevronDown" class="map-section-chevron" :class="{ open: isLocationListOpen }" />
+						<Icon :icon="faChevronDown" class="map-section-chevron" :class="{ open: isLocationListOpen }" />
 					</button>
 					<div v-else class="map-section-title">
 						Локации
@@ -560,7 +572,7 @@ useHead(headInput);
 			</div>
 
 			<button type="button" class="map-panel-collapse" :aria-label="isPanelCollapsed ? 'Показать панель' : 'Скрыть панель'" @click="isPanelCollapsed = !isPanelCollapsed">
-				<FontAwesomeIcon :icon="isPanelCollapsed ? faChevronRight : faChevronLeft" />
+				<Icon :icon="isPanelCollapsed ? faChevronRight : faChevronLeft" />
 			</button>
 		</aside>
 
@@ -586,19 +598,19 @@ useHead(headInput);
 			</button>
 
 			<div class="map-controls" role="group" aria-label="Масштаб">
-				<button type="button" aria-label="Приблизить" @click="canvas?.zoomBy(1)"><FontAwesomeIcon :icon="faPlus" /></button>
-				<button type="button" aria-label="Отдалить" @click="canvas?.zoomBy(-1)"><FontAwesomeIcon :icon="faMinus" /></button>
-				<button type="button" aria-label="Вся карта" @click="canvas?.resetView()"><FontAwesomeIcon :icon="faExpand" /></button>
+				<button type="button" aria-label="Приблизить" @click="canvas?.zoomBy(1)"><Icon :icon="faPlus" /></button>
+				<button type="button" aria-label="Отдалить" @click="canvas?.zoomBy(-1)"><Icon :icon="faMinus" /></button>
+				<button type="button" aria-label="Вся карта" @click="canvas?.resetView()"><Icon :icon="faExpand" /></button>
 			</div>
 
 			<button type="button" class="map-panel-toggle" @click="isPanelOpen = !isPanelOpen">
-				<FontAwesomeIcon :icon="isPanelOpen ? faXmark : faMagnifyingGlass" />
+				<Icon :icon="isPanelOpen ? faXmark : faMagnifyingGlass" />
 				{{ isPanelOpen ? 'Карта' : 'Поиск и слои' }}
 			</button>
 
 			<div v-if="selected || selectedPoint" class="map-card">
 				<button type="button" class="map-card-close" aria-label="Закрыть" @click="selectMarker(null)">
-					<FontAwesomeIcon :icon="faXmark" />
+					<Icon :icon="faXmark" />
 				</button>
 
 				<template v-if="selected">
@@ -649,7 +661,7 @@ useHead(headInput);
 				</template>
 
 				<button type="button" class="map-card-action" @click="copyLink">
-					<FontAwesomeIcon :icon="faLink" />
+					<Icon :icon="faLink" />
 					{{ linkCopied ? 'Ссылка скопирована' : 'Скопировать ссылку' }}
 				</button>
 			</div>
