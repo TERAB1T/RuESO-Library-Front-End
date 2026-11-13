@@ -146,7 +146,21 @@ const headInput = computed((): ReactiveHead => {
 			{
 				type: 'application/ld+json',
 				innerHTML: JSON.stringify(breadcrumbSchema)
-			}
+			},
+			// Google requires name, thumbnailUrl and uploadDate; the description matches the video sitemap entry.
+			...(itemData.video && itemData.videoThumbnail && itemData.videoUploadDate ? [{
+				type: 'application/ld+json' as const,
+				innerHTML: JSON.stringify({
+					'@context': 'https://schema.org',
+					'@type': 'VideoObject',
+					name: itemData.nameRu,
+					description: metaDescription || `Эмоция «${itemData.nameRu}» из Атомной лавки Fallout 76: видео анимации.`,
+					thumbnailUrl: `https://rueso.ru${prepareAtomicShopVideo(itemData.videoThumbnail)}`,
+					contentUrl: `https://rueso.ru${prepareAtomicShopVideo(itemData.video)}`,
+					uploadDate: itemData.videoUploadDate,
+					inLanguage: 'ru'
+				})
+			}] : [])
 		]
 	};
 });

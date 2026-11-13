@@ -210,6 +210,9 @@ export interface AtomicShopItem {
 	mainImage: string | null;
 	screenshots: string | string[] | null;
 	video: string | null;
+	// Set by the parser only once the video and its thumbnail are on the server.
+	videoThumbnail?: string | null;
+	videoUploadDate?: string | null;
 	categoryFormId: string | null;
 	subcategoryFormId: string | null;
 	isPTS: boolean | null;
