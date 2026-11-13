@@ -620,6 +620,10 @@ export interface CampItemWithRelations extends CampItem {
 	spoilRate: number | null;
 	surface: 'dirt' | 'water' | null;
 	weather: CampWeatherInfo | null;
+	// In flamingo units (one Lawn Flamingo); null for wallpapers.
+	budget: number | null;
+	// The whole C.A.M.P. budget in the same units.
+	campBudgetLimit: number | null;
 	recipe: RecipeInfo | null;
 	recipeItems: RecipeSiblingItem[];
 }

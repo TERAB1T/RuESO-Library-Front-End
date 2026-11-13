@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { prepareCampImage, atomicShopHandleImageError } from '@/utils';
 import { usePrefetchCampCategory, usePrefetchCampSubcategory } from '@/composables/useApi';
 import F76CampRecipeComponents from '@/components/F76CampRecipeComponents.vue';
+import F76CampBudgetHint from '@/components/F76CampBudgetHint.vue';
 
 import type { CampItemWithRelations, CampCategoryWithSubcategories, CampSubcategory } from '@/types';
 
@@ -32,6 +33,27 @@ const maximumEntries = computed(() => {
 
 	return entries;
 });
+
+const formatNumber = (value: number) => value.toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+
+const budgetDisplay = computed(() => {
+	const { budget, campBudgetLimit } = props.item;
+	if (budget == null) return null;
+	const percent = campBudgetLimit ? budget / campBudgetLimit * 100 : null;
+	return {
+		value: formatNumber(budget),
+		share: percent != null ? `${formatNumber(percent)}%` : null,
+		color: percent != null ? budgetShareColor(percent) : undefined,
+	};
+});
+
+// Log scale: almost everything costs 0.2%, the heaviest items ~10%; a linear scale would paint the whole catalog green.
+const SHARE_GREEN = 0.05;
+const SHARE_RED = 10;
+const budgetShareColor = (percent: number) => {
+	const t = Math.min(1, Math.max(0, Math.log(percent / SHARE_GREEN) / Math.log(SHARE_RED / SHARE_GREEN)));
+	return `hsl(${Math.round(130 * (1 - t))} 75% 62%)`;
+};
 
 const requiresPowerDisplay = computed(() => {
 	if (!props.item.requiresPower) return 'Нет';
@@ -95,6 +117,13 @@ const powerGeneratedDisplay = computed(() => {
 					</span>
 				</div>
 			</div>
+			<div v-if="budgetDisplay" class="card-element">
+				<div class="card-subtitle">Расход <span class="budget-subtitle-tail">бюджета<F76CampBudgetHint :camp-budget-limit="item.campBudgetLimit" /></span></div>
+				<div class="card-value">
+					<span class="text-nowrap">{{ budgetDisplay.value }}<span role="img" aria-label="фламинго">🦩</span></span>
+					<template v-if="budgetDisplay.share"> (<span :style="{ color: budgetDisplay.color }">{{ budgetDisplay.share }}</span>)</template>
+				</div>
+			</div>
 			<div v-if="!powerGeneratedDisplay" class="card-element">
 				<div class="card-subtitle">Требует энергию</div>
 				<div class="card-value">{{ requiresPowerDisplay }}</div>
@@ -155,6 +184,13 @@ const powerGeneratedDisplay = computed(() => {
 	width: 0.65rem;
 	height: 0.65rem;
 	flex-shrink: 0;
+}
+
+// Keeps the "?" on the last word's line and centred on the text.
+.budget-subtitle-tail {
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
 }
 
 .camp-maximum-entries {

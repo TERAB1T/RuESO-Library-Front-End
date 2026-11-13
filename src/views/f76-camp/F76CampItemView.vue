@@ -29,7 +29,7 @@ const route = useRoute();
 
 // Loading skeleton: line widths of the description and the info card labels, which are static.
 const SKELETON_TEXT_LINES = ['col-12', 'col-11', 'col-12', 'col-9', 'col-10', 'col-6'];
-const SKELETON_INFO_LABELS = ['Категория', 'Оригинальное название', 'Доступно для постройки', 'Требует энергию', 'Form ID', 'Editor ID'];
+const SKELETON_INFO_LABELS = ['Категория', 'Оригинальное название', 'Доступно для постройки', 'Расход бюджета', 'Требует энергию', 'Form ID', 'Editor ID'];
 
 const LANGS = ['ru', 'en'] as const;
 const PTS_NOTICE = {
