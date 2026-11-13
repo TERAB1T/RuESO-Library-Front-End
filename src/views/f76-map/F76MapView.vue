@@ -477,8 +477,9 @@ useHead(headInput);
 							<span class="map-layer-dot" :class="{ zone: l.kind === 'zones' }" :style="{ background: layerColor(l.id) }"></span>
 							<span class="map-layer-name">{{ l.nameRu }}</span>
 							<span v-if="l.isPts" class="badge text-bg-warning">PTS</span>
-							<span class="map-layer-count">{{ l.count }}</span>
-							<span class="form-check form-switch m-0">
+							<!-- An area layer's count is the number of its source pieces, which means nothing to a visitor -->
+							<span v-if="l.kind !== 'zones'" class="map-layer-count">{{ l.count }}</span>
+							<span class="form-check form-switch m-0" :class="{ 'ms-auto': l.kind === 'zones' }">
 								<input class="form-check-input" type="checkbox" role="switch" :checked="activeLayers.includes(l.id)" @change="toggleLayer(l.id)">
 							</span>
 						</label>
