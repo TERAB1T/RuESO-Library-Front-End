@@ -157,6 +157,8 @@ const setRegionLabels = (labels: F76MapMarker[]) => {
 		const element = document.createElement('div');
 		element.className = 'map-region-label';
 		element.textContent = label.nameRu;
+		if (label.textColor) element.style.setProperty('--region-text', label.textColor);
+		if (label.backgroundColor) element.style.setProperty('--region-band', label.backgroundColor);
 		const overlay = new OverlayClass!({ element, position: toMapCoordinate(label), positioning: 'top-left', stopEvent: false });
 		map!.addOverlay(overlay);
 		return overlay;
@@ -458,12 +460,14 @@ defineExpose({ flyTo, zoomBy, resetView, prefetchStyle });
 	inset: 0;
 }
 
-// Like the game's region name: Roboto Condensed Bold (the Russian game's Futura) on a dark band fading out to the sides
+// Like the game's region name: Roboto Condensed Bold (the Russian game's Futura) on a band fading out to the sides,
+// in the region's own colors (the game lays the band at ~80% over the map)
 :deep(.map-region-label) {
+	--region-band-fill: color-mix(in srgb, var(--region-band, #1b1d24) 80%, transparent);
 	min-width: 174px;
 	padding: 0.15rem 2rem;
-	background: linear-gradient(90deg, transparent, rgba(27, 29, 36, 0.8) 30%, rgba(27, 29, 36, 0.8) 70%, transparent);
-	color: #a39a8f;
+	background: linear-gradient(90deg, transparent, var(--region-band-fill) 30%, var(--region-band-fill) 70%, transparent);
+	color: var(--region-text, #a39a8f);
 	font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
 	font-size: 20px;
 	font-weight: 700;
