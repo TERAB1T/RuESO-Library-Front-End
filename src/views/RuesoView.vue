@@ -438,8 +438,9 @@ h3 {
 
 .tabs-bar {
 	position: sticky;
-	/* Right under the site navbar, which is sticky too. */
-	top: 67px;
+	/* Under the sticky navbar, tucked 1px beneath it (as the library's mobile tabs): flush, a rounded navbar
+	   height left a 1px gap on phones. */
+	top: 66px;
 	z-index: 3;
 	border-bottom: 1px solid var(--rueso-rule);
 	background: var(--bs-body-bg);
@@ -786,7 +787,7 @@ h3 {
 
 	.tabs-bar {
 		/* The navbar is lower here: its logo shrinks to 40 px. */
-		top: 57px;
+		top: 56px;
 	}
 
 	.nav-tabs {
