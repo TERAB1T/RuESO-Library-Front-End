@@ -19,3 +19,7 @@ export { default as Text } from 'ol/style/Text';
 export { default as Fill } from 'ol/style/Fill';
 export { default as Stroke } from 'ol/style/Stroke';
 export { default as CircleStyle } from 'ol/style/Circle';
+export { default as DragPan } from 'ol/interaction/DragPan';
+export { default as MouseWheelZoom } from 'ol/interaction/MouseWheelZoom';
+export { default as Kinetic } from 'ol/Kinetic';
+export { default as ViewHint } from 'ol/ViewHint';

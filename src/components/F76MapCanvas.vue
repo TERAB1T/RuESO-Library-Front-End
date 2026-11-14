@@ -23,6 +23,8 @@ const props = defineProps<{
 	highlightId: string | null;
 	showIcons: boolean;
 	showLabels: boolean;
+	// Pixels of the map's left edge under the page's panel: the view keeps its center clear of them
+	coveredLeft: number;
 }>();
 
 const emit = defineEmits<{
@@ -41,6 +43,9 @@ const VIEW_RESOLUTIONS = [16, ...TILE_RESOLUTIONS, 0.5, 0.25];
 const MAP_STYLES: F76MapStyle[] = ['paper', 'military'];
 // Location names appear from this resolution down, region names above it.
 const LABEL_MAX_RESOLUTION = 2;
+// Wheel zoom: one zoom level per this many pixels of scroll (a mouse notch is 100–120), eased with this time constant
+const WHEEL_PIXELS_PER_ZOOM = 300;
+const WHEEL_EASE_MS = 90;
 // Icon scale by resolution, like in game: small on the whole map, full size up close (1 = 24px icon).
 const ICON_SCALE_STOPS: [number, number][] = [[0.25, 1.5], [0.5, 1.35], [1, 1.1], [2, 0.9], [4, 0.73], [8, 0.59], [16, 0.48]];
 
@@ -203,6 +208,7 @@ onMounted(async () => {
 	const {
 		Map, View, TileLayer, XYZ, TileGrid, Projection, VectorLayer: VectorLayerClass, WebGLVectorLayer: WebGLVectorLayerClass,
 		VectorSource, Feature: FeatureImport, Point, Polygon, Style, Icon, Text, Fill, Stroke, CircleStyle, Overlay,
+		DragPan, MouseWheelZoom, Kinetic, ViewHint,
 	} = ol;
 	OverlayClass = Overlay;
 
@@ -320,9 +326,51 @@ onMounted(async () => {
 			extent: EXTENT,
 			constrainOnlyCenter: true,
 			showFullExtent: true,
+			padding: [0, 0, 0, props.coveredLeft],
 		}),
 	});
 	map = olMap;
+
+	// A longer, softer glide after a drag than the default (decay -0.005, stop at 0.05 px/ms)
+	const interactions = olMap.getInteractions();
+	interactions.forEach((interaction, i) => {
+		if (interaction instanceof DragPan) interactions.setAt(i, new DragPan({ kinetic: new Kinetic(-0.003, 0.03, 100) }));
+	});
+	// The stock wheel zoom restarts its easing on every notch, which reads as jerks; this one eases toward a
+	// target that the notches move, so a spin of the wheel is one continuous motion.
+	interactions.remove(interactions.getArray().find(interaction => interaction instanceof MouseWheelZoom)!);
+	const view = olMap.getView();
+	let wheelTarget: number | null = null;
+	let wheelAnchor: number[] | undefined;
+	let wheelTime = 0;
+	const wheelStep = (time: number) => {
+		if (wheelTarget === null || map !== olMap) return;
+		const zoom = view.getZoom()!;
+		const rest = wheelTarget - zoom;
+		if (Math.abs(rest) < 0.002) {
+			view.adjustZoom(rest, wheelAnchor);
+			wheelTarget = null;
+			view.setHint(ViewHint.INTERACTING, -1);
+			return;
+		}
+		view.adjustZoom(rest * (1 - Math.exp((wheelTime - time) / WHEEL_EASE_MS)), wheelAnchor);
+		wheelTime = time;
+		requestAnimationFrame(wheelStep);
+	};
+	container.value.addEventListener('wheel', event => {
+		event.preventDefault();
+		view.cancelAnimations();
+		const pixels = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 40 : 1);
+		// ctrlKey: a trackpad pinch, whose deltas are small
+		const delta = -pixels / (event.ctrlKey ? WHEEL_PIXELS_PER_ZOOM / 4 : WHEEL_PIXELS_PER_ZOOM);
+		const running = wheelTarget !== null;
+		wheelTarget = Math.min(view.getMaxZoom(), Math.max(view.getMinZoom(), (wheelTarget ?? view.getZoom()!) + delta));
+		wheelAnchor = olMap.getEventCoordinate(event);
+		if (running) return;
+		view.setHint(ViewHint.INTERACTING, 1);
+		wheelTime = performance.now();
+		requestAnimationFrame(wheelStep);
+	}, { passive: false });
 	olMap.getView().fit(EXTENT, { padding: [16, 16, 16, 16] });
 
 	setLayerMarkers(markerLayer, props.markers);
@@ -420,6 +468,10 @@ watch(() => props.objects, objects => {
 watch(() => props.zones, setZones);
 
 watch(() => [props.selectedId, props.highlightId], updateSelected);
+
+watch(() => props.coveredLeft, covered => {
+	if (map) map.getView().padding = [0, 0, 0, covered];
+});
 
 watch(() => props.showIcons, show => markerLayer?.setVisible(show));
 watch(() => props.showLabels, show => labelLayer?.setVisible(show));

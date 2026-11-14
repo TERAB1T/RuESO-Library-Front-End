@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, nextTick, onMounted, onServerPrefetch, ref, watch } from 'vue';
+import { computed, h, nextTick, onBeforeUnmount, onMounted, onServerPrefetch, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useHead } from '@unhead/vue';
 import { faChevronDown, faChevronLeft, faChevronRight, faExpand, faFont, faLink, faMagnifyingGlass, faMinus, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
@@ -65,6 +65,13 @@ const isResourceListOpen = ref(false);
 // Mobile: the panel covers the map; desktop: it can be collapsed to give the map the whole width
 const isPanelOpen = ref(false);
 const isPanelCollapsed = ref(false);
+// The panel lies over the map, so collapsing it never resizes the canvas; the map keeps its center clear of it.
+// Must match $panel-width and the mobile breakpoint in the styles.
+const PANEL_WIDTH = 340;
+const mobileQuery = import.meta.env.SSR ? null : window.matchMedia('(max-width: 767.98px)');
+const isMobile = ref(false);
+const onMobileChange = () => { isMobile.value = mobileQuery!.matches; };
+const coveredLeft = computed(() => isMobile.value || isPanelCollapsed.value ? 0 : PANEL_WIDTH);
 
 const canvas = ref<InstanceType<typeof F76MapCanvas>>();
 
@@ -314,7 +321,11 @@ const applyPendingQuery = () => {
 	}
 };
 
+onBeforeUnmount(() => mobileQuery?.removeEventListener('change', onMobileChange));
+
 onMounted(() => {
+	onMobileChange();
+	mobileQuery!.addEventListener('change', onMobileChange);
 	const { m, region, style, layers: layerParam, find, icons, labels } = route.query;
 	if (style === 'military') mapStyle.value = style;
 	if (icons === '0') showIcons.value = false;
@@ -589,6 +600,7 @@ useHead(headInput);
 				:highlight-id="highlightId"
 				:show-icons="showIcons"
 				:show-labels="showLabels"
+				:covered-left="coveredLeft"
 				@select="id => selectMarker(id)"
 				@ready="onCanvasReady"
 			/>
@@ -684,20 +696,22 @@ $map-muted: rgba(241, 234, 210, 0.62);
 	min-height: 420px;
 }
 
+// Over the map and moved by transform: the map never changes size, so collapsing costs no redraws
 .map-panel {
-	position: relative;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
 	display: flex;
 	flex-direction: column;
 	width: $panel-width;
-	flex-shrink: 0;
-	min-height: 0;
 	border-right: 1px solid var(--bs-border-color);
 	background: var(--bs-body-bg);
-	transition: margin-left 0.2s ease;
+	transition: transform 0.25s cubic-bezier(0, 0, 0.2, 1);
 	z-index: 20;
 
 	.panel-collapsed & {
-		margin-left: -$panel-width;
+		transform: translateX(-100%);
 	}
 }
 
@@ -1074,7 +1088,14 @@ $map-muted: rgba(241, 234, 210, 0.62);
 	flex-direction: column;
 	padding: 3px;
 	border-radius: 0.6rem;
+	// Follows the panel's edge
+	transform: translateX($panel-width);
+	transition: transform 0.25s cubic-bezier(0, 0, 0.2, 1);
 	z-index: 10;
+
+	.panel-collapsed & {
+		transform: none;
+	}
 
 	&:hover .map-style-preview {
 		filter: brightness(1.12);
@@ -1260,10 +1281,10 @@ $map-muted: rgba(241, 234, 210, 0.62);
 
 @media (max-width: 767.98px) {
 	.map-panel {
-		position: absolute;
-		inset: 0;
 		width: 100%;
 		border-right: 0;
+		transform: none !important;
+		transition: none;
 		visibility: hidden;
 
 		&.open {
@@ -1294,6 +1315,8 @@ $map-muted: rgba(241, 234, 210, 0.62);
 	.map-style-switch {
 		top: 0.75rem;
 		bottom: auto;
+		transform: none !important;
+		transition: none;
 	}
 
 	.map-style-preview {
