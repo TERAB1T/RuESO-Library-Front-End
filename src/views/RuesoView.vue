@@ -10,7 +10,7 @@ import {
 	RUESO_ESOUI_URL, RUESO_LIBADDONMENU_URL, RUESO_DISCORD_URL,
 } from '@/ruesoData';
 import type { RuesoRelease } from '@/ruesoData';
-import { formatIsoDateGenitive as formatDate } from '@/utils';
+import { formatIsoDateGenitive as formatDate, ONEST_PRELOAD } from '@/utils';
 import { useCopyOnClick } from '@/composables/useCopyOnClick';
 
 const IMG = '/public/img/rueso/';
@@ -34,6 +34,13 @@ const metaDescription = 'RuESO дополняет официальную рус�
 const metaLink = 'https://rueso.ru/rueso';
 const metaIcon = 'https://rueso.ru/public/img/main-card-rueso.jpg';
 
+const tabs = [
+	{ id: 'about', label: 'Описание' },
+	{ id: 'install', label: 'Установка' },
+	{ id: 'faq', label: 'Вопросы и ответы' },
+	{ id: 'changelog', label: 'История изменений' },
+];
+
 useHead({
 	title: metaTitle,
 	meta: [
@@ -54,7 +61,8 @@ useHead({
 		{ name: 'twitter:creator', content: '@TERAB1T' },
 	],
 	link: [
-		{ rel: 'canonical', href: metaLink }
+		{ rel: 'canonical', href: metaLink },
+		...ONEST_PRELOAD,
 	],
 	script: [
 		{
@@ -87,6 +95,12 @@ useHead({
 				})),
 			})
 		},
+		// The server never sees the hash, so it renders the first tab. Before the first paint this marks the tab
+		// from the hash, and the styles show it until mount switches the tabs for real (no flash, no layout shift).
+		// Server only: on a client-side navigation the tabs are switched before anything is painted.
+		...(import.meta.env.SSR ? [{
+			innerHTML: `(() => { const tab = location.hash.slice(1); if (${JSON.stringify(tabs.slice(1).map((tab) => tab.id))}.includes(tab)) document.documentElement.dataset.ruesoTab = tab; })();`,
+		}] : []),
 	]
 });
 
@@ -94,28 +108,26 @@ const copiedPath = ref('');
 let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
 const copyPath = async (path: string) => {
-	await navigator.clipboard.writeText(path);
+	try {
+		await navigator.clipboard.writeText(path);
+	} catch (err) {
+		console.error('Ошибка копирования:', err);
+		return;
+	}
 	copiedPath.value = path;
 	clearTimeout(copiedTimer);
 	copiedTimer = setTimeout(() => (copiedPath.value = ''), 1500);
 };
 
-const tabs = [
-	{ id: 'about', label: 'Описание' },
-	{ id: 'install', label: 'Установка' },
-	{ id: 'faq', label: 'Вопросы и ответы' },
-	{ id: 'changelog', label: 'История изменений' },
-];
-
 const page = ref<HTMLElement | null>(null);
 const hero = ref<HTMLElement | null>(null);
 const tabsBar = ref<HTMLElement | null>(null);
 
-// The /rueso chat command looks and copies like the item names in the support guide; it is not an item, so no analytics.
-useCopyOnClick(page, { title: 'Команда скопирована', onCopy: () => {} });
-// One gallery per tab, so the lightbox never pages into screenshots of a hidden tab.
+useCopyOnClick(page, { title: 'Команда скопирована' });
+// Screenshots that page into each other are grouped in .lightbox-group, so the lightbox never pages into
+// a hidden tab or into the desktop grid, which is hidden on mobile (the slider there has its own lightbox).
 // The addon's screenshots are 16:9.
-const { initLightbox, destroyLightbox } = useItemLightbox('.rueso .tab-pane', { width: 1920, height: 1080 });
+const { initLightbox, destroyLightbox } = useItemLightbox('.rueso .lightbox-group', { width: 1920, height: 1080 });
 
 const onTabShown = (event: Event) => {
 	const id = (event.target as HTMLElement).id.replace(/-tab$/, '');
@@ -149,6 +161,8 @@ onMounted(async () => {
 			document.getElementById(`${id}-pane`)?.classList.toggle('show', isLinked);
 		}
 	}
+
+	delete document.documentElement.dataset.ruesoTab;
 
 	// Registers Bootstrap's data-api, which handles clicks on the data-bs-toggle="tab" buttons.
 	await import('bootstrap');
@@ -194,24 +208,24 @@ onBeforeUnmount(() => {
 					<p class="prose"><strong>RuESO</strong> — это модификация для <strong>The Elder Scrolls Online</strong>, которая содержит ряд полезных функций для тех, кто играет в <strong>ESO</strong> на русском.</p>
 					<p class="prose">Изначально проект <strong>RuESO</strong> создавался для перевода игры на русский язык, но с выходом официальной локализации его направленность изменилась — модификация больше ничего не переводит, а лишь делает игру с локализацией комфортнее.</p>
 					<p class="prose"><strong>RuESO</strong> может показывать оригинальные английские названия вместо русских или рядом с ними — отдельно для имен персонажей, названий локаций, способностей (в том числе в системе героя), предметов с их зачарованиями и особенностями, а также наборов на ремесленных станках и в меню коллекций. Кроме того, с <strong>RuESO</strong> в меню коллекций можно искать названия наборов на английском.</p>
-					<p class="prose">Все параметры <strong>RuESO</strong> регулируются в специальном меню настроек. Чтобы в него попасть, нажмите ESC, щелкните по пункту «Настройки», перейдите в раздел «Дополнения» (или «Модификации») и в открывшемся меню выберите «RuESO» (<a class="screenshot-link text-link" :href="`${IMG}settings1.webp`">скриншот</a>).</p>
+					<p class="prose">Все параметры <strong>RuESO</strong> регулируются в специальном меню настроек. Чтобы в него попасть, нажмите ESC, щелкните по пункту «Настройки», перейдите в раздел «Дополнения» (или «Модификации») и в открывшемся меню выберите «RuESO» (<span class="lightbox-group"><a class="screenshot-link text-link" :href="`${IMG}settings1.webp`">скриншот</a></span>).</p>
 
 					<div class="fo-sect-h section-heading">
 						<span class="fo-bar"></span>
 						<h2 class="fo-h3">Галерея</h2>
 					</div>
 					<!-- As on Atomic Shop item pages: a grid of thumbnails on desktop, the slider on mobile. -->
-					<div class="row g-3 d-none d-lg-flex">
+					<div class="row g-3 d-none d-lg-flex lightbox-group">
 						<div v-for="slide in gallerySlides" :key="slide.href" class="col-12 col-md-4">
 							<a :href="slide.href" class="screenshot-link">
 								<img :src="slide.src" class="img-fluid screenshot-img" width="640" height="360" loading="lazy" :alt="slide.alt">
 							</a>
 						</div>
 					</div>
-					<F76ItemGallery class="d-lg-none" :slides="gallerySlides" :image-width="640" :image-height="360" />
+					<F76ItemGallery class="d-lg-none" :slides="gallerySlides" :image-width="640" :image-height="360" :image-fallback="false" />
 				</section>
 
-				<section id="install-pane" class="tab-pane" role="tabpanel" aria-labelledby="install-tab" tabindex="0">
+				<section id="install-pane" class="tab-pane lightbox-group" role="tabpanel" aria-labelledby="install-tab" tabindex="0">
 					<div class="fo-sect-h">
 						<span class="fo-bar"></span>
 						<h2 class="fo-h3">Через Minion</h2>
@@ -526,14 +540,37 @@ h3 {
 	}
 }
 
-/* A plain text link that still opens in the lightbox. */
+/* The tab from the link's hash until mount (see the head script); the ids are those of `tabs` after the first. */
+:root[data-rueso-tab] {
+	.tab-pane.active {
+		display: none;
+	}
+
+	.nav-tabs .nav-link.active {
+		border-bottom-color: transparent;
+		color: var(--bs-body-color);
+	}
+}
+
+@each $tab in install, faq, changelog {
+	:root[data-rueso-tab='#{$tab}'] {
+		##{$tab}-pane {
+			display: block;
+		}
+
+		.nav-tabs ##{$tab}-tab {
+			border-bottom-color: var(--bs-primary);
+			color: var(--bs-primary);
+		}
+	}
+}
+
 .screenshot-link.text-link {
 	display: inline;
 	overflow: visible;
 	border-radius: 0;
 }
 
-/* A screenshot inside the text: centred under its paragraph. */
 .inline-shot {
 	width: fit-content;
 	max-width: min(100%, 560px);

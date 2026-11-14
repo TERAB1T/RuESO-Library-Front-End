@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue';
 import { RouterLink } from 'vue-router';
+import { ONEST_PRELOAD } from '@/utils';
 
-/** Every section is the same tile. */
 interface SectionCard {
 	/** A page of this site, or a full URL of another one (opens in a new tab). */
 	link: string;
@@ -44,7 +44,8 @@ useHead({
 		{ name: 'twitter:creator', content: '@TERAB1T' },
 	],
 	link: [
-		{ rel: 'canonical', href: metaLink }
+		{ rel: 'canonical', href: metaLink },
+		...ONEST_PRELOAD,
 	]
 });
 
@@ -253,7 +254,6 @@ const sections: HomeSection[] = [
 	text-wrap: pretty;
 }
 
-/* The two games side by side, each with its tiles in two columns. */
 .home-sections {
 	position: relative;
 	display: grid;
@@ -280,8 +280,6 @@ const sections: HomeSection[] = [
 	gap: 1rem;
 }
 
-/* A compact tile, as the addon and furniture tiles were: the art fills the tile, the title and one line
-   of facts sit on a dark gradient at the bottom. */
 .home-card {
 	position: relative;
 	display: flex;

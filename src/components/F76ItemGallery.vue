@@ -4,6 +4,7 @@ import emblaCarouselVue from 'embla-carousel-vue';
 import { atomicShopHandleImageError } from '@/utils';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import 'photoswipe/style.css';
+import { addSizeProbe } from '@/composables/useItemLightbox';
 
 import type { ItemGallerySlide } from '@/types';
 
@@ -13,9 +14,12 @@ const props = withDefaults(defineProps<{
 	/** Intrinsic size of the slide images; also sets the slide's aspect ratio. */
 	imageWidth?: number;
 	imageHeight?: number;
+	/** Swap a broken image for the Fallout 76 placeholder. */
+	imageFallback?: boolean;
 }>(), {
 	imageWidth: 512,
 	imageHeight: 512,
+	imageFallback: true,
 });
 
 // Matches the slide width in the styles below.
@@ -41,6 +45,7 @@ const scrollToSlide = (index: number, jump = false) => {
 
 // The fallback srcset would otherwise keep winning over the replaced src.
 const onImageError = (event: Event) => {
+	if (!props.imageFallback) return;
 	(event.target as HTMLImageElement).removeAttribute('srcset');
 	atomicShopHandleImageError(event);
 };
@@ -57,8 +62,6 @@ watch(() => props.slides, () => nextTick(() => scrollToSlide(0, true)));
 onMounted(() => {
 	if (!viewport.value) return;
 
-	const sizeCache = new Map<string, { width: number; height: number }>();
-
 	// Embla swallows the click that ends a drag, so a drag never opens the lightbox.
 	lightbox = new PhotoSwipeLightbox({
 		gallery: viewport.value,
@@ -66,44 +69,7 @@ onMounted(() => {
 		pswpModule: () => import('photoswipe'),
 	});
 
-	lightbox.addFilter('itemData', (itemData, index) => {
-		const imgSrc = (itemData.element as HTMLAnchorElement | undefined)?.href || '';
-
-		const thumb = itemData.element?.querySelector('img');
-		if (thumb && thumb.naturalWidth && thumb.currentSrc === imgSrc) {
-			sizeCache.set(imgSrc, { width: thumb.naturalWidth, height: thumb.naturalHeight });
-		}
-
-		const cached = sizeCache.get(imgSrc);
-		if (cached) {
-			itemData.width = cached.width;
-			itemData.height = cached.height;
-			return itemData;
-		}
-
-		// Same proportions as the slides; the real size replaces this guess once the file loads.
-		itemData.width = 1440;
-		itemData.height = Math.round(1440 * props.imageHeight / props.imageWidth);
-
-		const img = new Image();
-		img.onload = () => {
-			sizeCache.set(imgSrc, { width: img.naturalWidth, height: img.naturalHeight });
-			// updateSize() would keep the guessed size; rebuilding the slide reruns this filter with the cached size.
-			// The clicked slide can load before PhotoSwipe exists: then refresh once it initialises.
-			if (lightbox?.pswp) {
-				lightbox.pswp.refreshSlideContent(index);
-				return;
-			}
-			const refreshOnce = () => {
-				lightbox?.pswp?.refreshSlideContent(index);
-				lightbox?.off('afterInit', refreshOnce);
-			};
-			lightbox?.on('afterInit', refreshOnce);
-		};
-		img.src = imgSrc;
-
-		return itemData;
-	});
+	addSizeProbe(lightbox, { width: 1440, height: Math.round(1440 * props.imageHeight / props.imageWidth) });
 
 	// Closing animates back to the thumbnail, so the slider follows the lightbox.
 	lightbox.on('change', () => {

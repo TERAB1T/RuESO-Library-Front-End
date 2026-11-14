@@ -2,7 +2,7 @@
 import { useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, computed, onServerPrefetch, watch, ref } from 'vue';
 import { useHead } from '@unhead/vue';
-import { prepareCampImage, prepareAtomicShopImage, generateMetaDescription, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
+import { prepareCampImage, prepareAtomicShopImage, generateMetaDescription, generateMetaDescriptionAtomicShop, atomicShopHandleImageError, ONEST_PRELOAD } from '@/utils';
 import { useFetchCampItem, useFetchCampCategories } from '@/composables/useApi';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import F76CampUnlockConditions from '@/components/F76CampUnlockConditions.vue';
@@ -142,6 +142,7 @@ const headInput = computed((): ReactiveHead => {
 		],
 		link: [
 			{ rel: 'canonical', href: metaLink },
+			...ONEST_PRELOAD,
 		],
 		script: [
 			{

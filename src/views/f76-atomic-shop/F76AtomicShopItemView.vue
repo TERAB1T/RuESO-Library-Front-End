@@ -2,7 +2,7 @@
 import { useRoute, onBeforeRouteLeave } from 'vue-router';
 import { onMounted, onBeforeUnmount, computed, onServerPrefetch, watch, ref } from 'vue';
 import { useHead } from '@unhead/vue';
-import { prepareAtomicShopImage, prepareAtomicShopVideo, generateMetaDescriptionAtomicShop, atomicShopHandleImageError } from '@/utils';
+import { prepareAtomicShopImage, prepareAtomicShopVideo, generateMetaDescriptionAtomicShop, atomicShopHandleImageError, ONEST_PRELOAD } from '@/utils';
 import { useFetchAtomicShopItem, useFetchAtomicShopCategories } from '@/composables/useApi';
 import F76AtomicShopCampUnlocked from '@/components/F76AtomicShopCampUnlocked.vue';
 import F76AtomicShopInfoCard from '@/components/F76AtomicShopInfoCard.vue';
@@ -12,6 +12,7 @@ import NotFoundView from '@/views/NotFoundView.vue';
 import { useSupportText } from '@/composables/useSupportText';
 import { useCopyOnClick } from '@/composables/useCopyOnClick';
 import { useItemLightbox } from '@/composables/useItemLightbox';
+import { trackSupportItemCopy } from '@/analytics';
 
 import type { ReactiveHead } from '@unhead/vue';
 import type { AtomicShopItem, AtomicShopCategoryWithSubcategories, BreadcrumbItem, ItemGallerySlide } from '@/types';
@@ -128,6 +129,7 @@ const headInput = computed((): ReactiveHead => {
 		],
 		link: [
 			{ rel: 'canonical', href: metaLink },
+			...ONEST_PRELOAD,
 		],
 		script: [
 			{
@@ -246,7 +248,7 @@ onBeforeRouteLeave(() => {
 });
 
 const copyContainerRef = ref<HTMLElement | null>(null);
-useCopyOnClick(copyContainerRef);
+useCopyOnClick(copyContainerRef, { onCopy: trackSupportItemCopy });
 </script>
 
 <template>

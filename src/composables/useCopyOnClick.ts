@@ -1,5 +1,4 @@
 import { onMounted, onUnmounted, watch } from 'vue';
-import { trackSupportItemCopy } from '@/analytics';
 import type { Ref } from 'vue';
 
 interface CopyOnClickOptions {
@@ -15,7 +14,7 @@ interface CopyOnClickOptions {
 export const useCopyOnClick = (containerRef: Ref<HTMLElement | null>, {
 	selector = '.support-item-name',
 	title = 'Название скопировано',
-	onCopy = trackSupportItemCopy,
+	onCopy,
 }: CopyOnClickOptions = {}) => {
 	const tooltips = new Map<HTMLElement, any>();
 	let Tooltip: any = null;
