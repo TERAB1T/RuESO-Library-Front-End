@@ -397,7 +397,7 @@ useHead(headInput);
 
 			<div class="map-search">
 				<Icon :icon="faMagnifyingGlass" class="map-search-icon" />
-				<input v-model="search" type="search" class="form-control" placeholder="Локация, предмет или ресурс" aria-label="Поиск локаций и предметов" @keydown.enter.prevent="onSearchEnter">
+				<input :value="search" type="search" class="form-control" placeholder="Локация, предмет или ресурс" aria-label="Поиск локаций и предметов" @input="search = ($event.target as HTMLInputElement).value" @keydown.enter.prevent="onSearchEnter">
 				<button v-if="search" type="button" class="map-search-clear" aria-label="Очистить поиск" @click="search = ''">
 					<Icon :icon="faXmark" />
 				</button>

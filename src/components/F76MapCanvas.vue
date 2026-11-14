@@ -368,6 +368,8 @@ onMounted(async () => {
 	});
 
 	container.value.addEventListener('pointerleave', () => { tooltip.value = null; });
+	// iOS Safari zooms the page on a pinch whatever touch-action says
+	container.value.addEventListener('gesturestart', event => event.preventDefault());
 
 	olMap.on('click', event => {
 		const feature = olMap.forEachFeatureAtPixel(event.pixel, f => f, hitOptions);
@@ -458,6 +460,11 @@ defineExpose({ flyTo, zoomBy, resetView, prefetchStyle });
 .map-target {
 	position: absolute;
 	inset: 0;
+
+	// OpenLayers leaves the browser's own gestures on (pan-x pan-y), and a pinch then zooms the page along with the map
+	:deep(.ol-viewport) {
+		touch-action: none !important;
+	}
 }
 
 // Like the game's region name: Roboto Condensed Bold (the Russian game's Futura) on a band fading out to the sides,
