@@ -56,7 +56,7 @@ const partners: Partner[] = [
 	},
 	{
 		name: 'Eso-Wiki',
-		description: 'Неофициальный wiki-проект, посвящённый MMORPG The Elder Scrolls Online.',
+		description: 'Неофициальный wiki-проект, посвященный MMORPG The Elder Scrolls Online.',
 		url: 'https://eso-wiki.ru',
 		image: '/public/img/partner-eso-wiki.webp',
 		category: 'The Elder Scrolls',

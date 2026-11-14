@@ -300,6 +300,15 @@ const formatFullDateGenitive = (timestamp: number): string => {
 }
 
 /**
+ * The same format for an ISO date ("2026-09-29" → "29 сентября 2026 года"). Parsed as text, not with Date:
+ * a time zone could shift the day, and the server and the browser must render the same string.
+ */
+export const formatIsoDateGenitive = (iso: string): string => {
+	const [year, month, day] = iso.split('-');
+	return `${Number(day)} ${MONTHS_GENITIVE[Number(month) - 1]} ${year} года`;
+}
+
+/**
  * Builds the descriptive sentence for a season/miniseason acquisition source,
  * covering every combination of known/unknown start and end dates relative to
  * the current moment: already ended, currently running with a known end,

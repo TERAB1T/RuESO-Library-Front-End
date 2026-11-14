@@ -115,21 +115,6 @@ const acquisitionSourceLabel = computed(() => {
 	margin-top: -4px;
 }
 
-:deep(.support-item-name) {
-	background-color: hsl(from #4cb6eb h s l / 10%);
-	border: 1px solid hsl(from #4cb6eb h s l / 30%);
-	border-radius: 4px;
-	padding: 0px 4px;
-	cursor: pointer;
-	transition: background-color 0.2s ease;
-	user-select: none;
-	white-space: nowrap;
-
-	&:hover {
-		background-color: hsl(from #4cb6eb h s l / 18%);
-	}
-}
-
 @media (max-width: 991.98px) {
 	.modal-trigger {
 		margin-top: 0;

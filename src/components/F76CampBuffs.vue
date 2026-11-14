@@ -200,7 +200,7 @@ const t = computed(() => props.lang === 'ru'
 		disease: 'При использовании можно подхватить заболевание.',
 		waterCollect: (name: string) => `Из этого объекта можно набрать грязную воду (1 ед.).`,
 		waterRadiation: (damage: number) => `При наборе вы получаете ${damage} ед. урона от радиации.`,
-		arcadeIntro: 'Этот объект — игровой автомат «Ядер-Аркады», и с ним можно взаимодействовать. Каждая игра стоит 1 крышку.'
+		arcadeIntro: 'Этот объект — игровой автомат «Ядер-Аркады», и с ним можно взаимодействовать. Каждая игра стоит 1 крышку.'
 	}
 	: {
 		title: 'Interaction',
@@ -246,7 +246,7 @@ const t = computed(() => props.lang === 'ru'
 					<span class="buff-name">{{ buff.name }}</span>
 					<span v-if="buff.duration" class="buff-duration"> ({{ buff.duration }})</span>
 					<span v-if="buff.cooldown" class="buff-duration"> ({{ t.cooldown(buff.cooldown) }})</span>
-					<span v-if="buff.condition" class="buff-condition"> — {{ buff.condition }}</span>
+					<span v-if="buff.condition" class="buff-condition"> — {{ buff.condition }}</span>
 
 					<ul class="buff-effects">
 						<li v-for="(effect, ei) in buff.effects" :key="ei">

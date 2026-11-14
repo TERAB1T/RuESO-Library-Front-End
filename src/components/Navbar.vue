@@ -48,10 +48,13 @@ onMounted(async () => {
 						<RouterLink activeClass="active" class="nav-link py-2 px-2" to="/" exact>Главная</RouterLink>
 					</li>
 					<li class="nav-item mx-2 dropdown">
-						<a :class="`${isPathStartWith('/glossary-tes') || isPathStartWith('/library') || isPathStartWith('/eso-crown-crates') ? 'active' : ''} nav-link py-2 px-2 dropdown-toggle`" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+						<a :class="`${isPathStartWith('/rueso') || isPathStartWith('/glossary-tes') || isPathStartWith('/library') || isPathStartWith('/eso-crown-crates') ? 'active' : ''} nav-link py-2 px-2 dropdown-toggle`" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 							The Elder Scrolls
 						</a>
 						<ul class="dropdown-menu mx-2">
+							<li>
+								<RouterLink :class="`${isPathStartWith('/rueso') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/rueso">Модификация RuESO</RouterLink>
+							</li>
 							<li>
 								<RouterLink :class="`${isPathStartWith('/library') ? 'active' : ''} nav-link py-2 px-3 dropdown-item`" to="/library/eso">Библиотека ESO</RouterLink>
 							</li>

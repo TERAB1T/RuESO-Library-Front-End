@@ -174,7 +174,7 @@ const addictionText = computed(() => {
 	if (!a) return null;
 	const name = loc(a.name);
 	const chance = `${num(a.chance * 100)}%`;
-	return name ? `${name} — ${ru.value ? 'шанс' : 'chance'} ${chance}` : chance;
+	return name ? `${name} — ${ru.value ? 'шанс' : 'chance'} ${chance}` : chance;
 });
 
 const valueText = computed(() => {

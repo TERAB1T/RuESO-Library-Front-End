@@ -23,7 +23,7 @@
 	--fo-amber: var(--bs-primary);
 	/* #f0a93c;   акцент */
 	--fo-text2: #a3a8b0;
-	/* приглушённый текст */
+	/* приглушенный текст */
 }
 
 .fo-sect-h {
@@ -552,6 +552,41 @@ table.dataTable pre {
 
 .tooltip-dark .tooltip-arrow::before {
 	display: none;
+}
+
+/* A name or command copied on click (useCopyOnClick): the support guide's item names, the RuESO chat command. */
+.support-item-name {
+	background-color: hsl(from #4cb6eb h s l / 10%);
+	border: 1px solid hsl(from #4cb6eb h s l / 30%);
+	border-radius: 4px;
+	padding: 0px 4px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	user-select: none;
+	white-space: nowrap;
+
+	&:hover {
+		background-color: hsl(from #4cb6eb h s l / 18%);
+	}
+}
+
+/* A screenshot thumbnail that opens in the lightbox (useItemLightbox). */
+.screenshot-link {
+	display: block;
+	border-radius: 8px;
+	overflow: hidden;
+
+	&:hover .screenshot-img {
+		transform: scale(1.02);
+	}
+}
+
+.screenshot-img {
+	transition: transform 0.2s ease;
+	will-change: transform;
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+	transform: translateZ(0);
 }
 
 @media (max-width: 767.98px) {

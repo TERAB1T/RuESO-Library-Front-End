@@ -1,6 +1,7 @@
 import { createRouter, createMemoryHistory, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import PartnersView from '@/views/PartnersView.vue'
+import RuesoView from '@/views/RuesoView.vue'
 import LibraryView from '@/views/eso-library/LibraryView.vue'
 import BookView from '@/views/eso-library/BookView.vue'
 import GlossaryTESView from '@/views/glossaries/GlossaryTESView.vue'
@@ -25,6 +26,11 @@ export default function createAppRouter() {
 				path: '/',
 				name: 'home',
 				component: HomeView,
+			},
+			{
+				path: '/rueso',
+				name: 'rueso',
+				component: RuesoView,
 			},
 			{
 				path: '/library/eso',

@@ -405,7 +405,7 @@ onMounted(async () => {
 		const [x, y] = event.pixel as [number, number];
 		// Labels already name the markers when zoomed in
 		if (marker) tooltip.value = olMap.getView().getResolution()! > LABEL_MAX_RESOLUTION ? { text: marker.nameRu, x, y } : null;
-		else if (object) tooltip.value = { text: object.placeNameRu ? `${object.name} — ${object.placeNameRu}` : object.name, x, y };
+		else if (object) tooltip.value = { text: object.placeNameRu ? `${object.name} — ${object.placeNameRu}` : object.name, x, y };
 		else if (props.zones.length) {
 			// The topmost area with something to say: they are drawn in order, so the last hit
 			let text: string | undefined;

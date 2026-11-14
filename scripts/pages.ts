@@ -19,7 +19,7 @@ export async function buildPageList(api: string): Promise<string[]> {
 	const season = acquisition.find((g: any) => g.type === "season")?.sources.at(-1);
 
 	return [
-		"/", "/partners", "/glossary-tes", "/glossary-fallout",
+		"/", "/partners", "/rueso", "/glossary-tes", "/glossary-fallout",
 		"/library/eso", `/library/eso/category/${libraryCategory.id}-${libraryCategory.slug}`,
 		`/library/eso/patch/${patch.version}-${patch.slug}`, `/library/eso/${book.id}-${book.slug}`,
 		"/f76-camp", "/f76-camp?isPTS=1&filter=chair", `/f76-camp/${campItem.formId}-${campItem.slug}`,

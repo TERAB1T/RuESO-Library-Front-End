@@ -89,17 +89,17 @@ export function useSupportText(item: Ref<AtomicShopItem>): UseSupportTextReturn 
 		if (!hasItem && !hasBundles) return '';
 
 		if (hasItem && !hasBundles) {
-			return 'Да — напрямую';
+			return 'Да — напрямую';
 		}
 
 		const bundleCount = item.value.supportBundles!.split('|').length;
 		const bundleWord = bundleCount === 1 ? 'наборе' : 'наборах';
 
 		if (!hasItem && hasBundles) {
-			return `Да — в ${bundleWord}`;
+			return `Да — в ${bundleWord}`;
 		}
 
-		return `Да — напрямую и в ${bundleWord}`;
+		return `Да — напрямую и в ${bundleWord}`;
 	});
 
 	return {

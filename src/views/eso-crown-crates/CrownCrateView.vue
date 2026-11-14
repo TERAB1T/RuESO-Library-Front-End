@@ -53,7 +53,7 @@ const headInput = computed((): ReactiveHead => {
 
 	const title = `${c.nameRu} | Кронные ящики ESO`;
 	const metaDescription = generateMetaDescription(
-		`${c.nameRu} (${c.nameEn}) — кронный ящик The Elder Scrolls Online${sale.value ? `, продавался ${sale.value}` : ''}. ` +
+		`${c.nameRu} (${c.nameEn}) — кронный ящик The Elder Scrolls Online${sale.value ? `, продавался ${sale.value}` : ''}. ` +
 		`Все ${c.rewardsCount} наград с редкостью, шансами выпадения и ценами в кронных самоцветах.`
 	);
 	const link = `https://rueso.ru/eso-crown-crates/${c.id}-${c.slug}`;

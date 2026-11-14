@@ -101,7 +101,7 @@ const headInput = computed((): ReactiveHead => {
 	let metaDescription = generateMetaDescriptionAtomicShop(itemData.shopInfo?.descriptionRu || itemData.descriptionRu || itemData.recipe?.descriptionRu || '');
 	if (!metaDescription) {
 		// Without any game text the description is built from the item's data, so pages don't get identical or empty snippets.
-		const facts = [`${itemData.nameRu} — объект${itemData.category?.nameRu ? ` из раздела «${itemData.category.nameRu}»` : ''} для C.A.M.P. в Fallout 76.`];
+		const facts = [`${itemData.nameRu} — объект${itemData.category?.nameRu ? ` из раздела «${itemData.category.nameRu}»` : ''} для C.A.M.P. в Fallout 76.`];
 		if (itemData.powerGenerated > 0) facts.push(`Вырабатывает ${itemData.powerGenerated} ед. энергии.`);
 		else if (itemData.requiresPower && itemData.powerRequired > 0) facts.push(`Потребляет ${itemData.powerRequired} ед. энергии.`);
 		metaDescription = generateMetaDescription(facts.join(' '));
@@ -217,7 +217,7 @@ const gallerySlides = computed((): ItemGallerySlide[] => {
 			srcset: item.value.mainImage ? `${mainThumb} 512w, ${mainImage} 1440w` : undefined,
 			alt: name || 'C.A.M.P. Item',
 		},
-		...splittedScreenshots.value.map((screenshot, index) => ({ href: screenshot, src: screenshot, alt: `${name} — скриншот ${index + 1}` })),
+		...splittedScreenshots.value.map((screenshot, index) => ({ href: screenshot, src: screenshot, alt: `${name} — скриншот ${index + 1}` })),
 		...shopScreenshots.value.map((screenshot, index) => ({ href: screenshot, src: screenshot, alt: `${name} - скриншот из магазина ${index + 1}` })),
 	];
 });
@@ -379,7 +379,7 @@ onBeforeRouteLeave(() => {
 						<div class="row g-3">
 							<div v-for="(screenshot, index) in splittedScreenshots" :key="index" class="col-12 col-md-4">
 								<a :href="screenshot" class="screenshot-link">
-									<img :src="screenshot" class="img-fluid screenshot-img" :alt="`${item.nameRu || item.nameEn} — скриншот ${index + 1}`" loading="lazy" @error="atomicShopHandleImageError">
+									<img :src="screenshot" class="img-fluid screenshot-img" :alt="`${item.nameRu || item.nameEn} — скриншот ${index + 1}`" loading="lazy" @error="atomicShopHandleImageError">
 								</a>
 							</div>
 							<div v-for="(screenshot, index) in shopScreenshots" :key="`shop-${index}`" class="col-12 col-md-4">
@@ -467,28 +467,6 @@ onBeforeRouteLeave(() => {
 	color: #ffffff;
 }
 
-.screenshot-link {
-	display: block;
-	border-radius: 8px;
-	overflow: hidden;
-
-	&:hover .screenshot-img {
-		transform: scale(1.02);
-	}
-}
-
-.screenshot-img {
-	transition: transform 0.2s ease;
-	will-change: transform;
-	backface-visibility: hidden;
-	-webkit-backface-visibility: hidden;
-	transform: translateZ(0);
-
-	&:hover {
-		transform: scale(1.02);
-	}
-}
-
 .modal-trigger {
 	text-decoration: underline dotted;
 	text-decoration-color: currentColor;
@@ -498,21 +476,6 @@ onBeforeRouteLeave(() => {
 	padding: 0;
 	border: none;
 	margin-top: -4px;
-}
-
-:deep(.support-item-name) {
-	background-color: hsl(from #4cb6eb h s l / 10%);
-	border: 1px solid hsl(from #4cb6eb h s l / 30%);
-	border-radius: 4px;
-	padding: 0px 4px;
-	cursor: pointer;
-	transition: background-color 0.2s ease;
-	user-select: none;
-	white-space: nowrap;
-
-	&:hover {
-		background-color: hsl(from #4cb6eb h s l / 18%);
-	}
 }
 
 // The screenshots block below joins the text block only on desktop; on mobile it's hidden.

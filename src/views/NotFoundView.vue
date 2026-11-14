@@ -12,7 +12,7 @@ if (import.meta.env.SSR) {
 useHead({
 	title: `Страница не найдена | RuESO`,
 	meta: [
-		{ name: 'description', content: 'Всё о сериях The Elder Scrolls и Fallout.' },
+		{ name: 'description', content: 'Все о сериях The Elder Scrolls и Fallout.' },
     	{ name: 'robots', content: 'noindex, nofollow' },
 	],
 	link: [

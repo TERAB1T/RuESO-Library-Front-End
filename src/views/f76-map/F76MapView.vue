@@ -453,7 +453,7 @@ useHead(headInput);
 							</button>
 						</li>
 						<li v-if="itemResults.length > visibleItemResults.length">
-							<button type="button" class="map-list-more" @click="showAllItemResults = true">Показать ещё {{ itemResults.length - visibleItemResults.length }}</button>
+							<button type="button" class="map-list-more" @click="showAllItemResults = true">Показать еще {{ itemResults.length - visibleItemResults.length }}</button>
 						</li>
 						<li v-if="catalog && !itemResults.length && !componentResults.length" class="map-list-empty">Предметов не найдено</li>
 					</ul>
@@ -529,7 +529,7 @@ useHead(headInput);
 							<div class="map-chip-list">
 								<button v-for="c in components" :key="c.formId" type="button" class="map-chip-button" :class="{ active: findColor(`c-${c.formId}`) }" :style="{ '--find-color': findColor(`c-${c.formId}`) ?? undefined }" @click="toggleFind(`c-${c.formId}`)">{{ c.nameRu }}</button>
 							</div>
-							<p class="map-hint">Любой предмет из мира — через поиск: «чайник», «мешок цемента», «секач».</p>
+							<p class="map-hint">Любой предмет из мира — через поиск: «чайник», «мешок цемента», «секач».</p>
 						</template>
 					</section>
 

@@ -40,12 +40,12 @@ const GROUPS: Record<string, GroupText> = {
 	Fermenter: { layout: 'text', title: ['Брожение', 'Fermentation'], pool: ['всех бродильных чанов', 'all fermenters'] },
 	Dispenser_Alcohol: {
 		layout: 'lists', title: ['Раздача напитков', 'Drink Dispenser'], pool: ['всех бочек и чаш для пунша', 'all kegs and punch bowls'],
-		intro: ['Этот объект — раздатчик напитков. В него можно поместить:', 'This object is a drink dispenser. It can hold:'],
+		intro: ['Этот объект — раздатчик напитков. В него можно поместить:', 'This object is a drink dispenser. It can hold:'],
 		shared: ['Другие игроки могут брать из него напитки.', 'Other players can take drinks from it.'],
 	},
 	Dispenser_NukaColaVending: {
 		layout: 'lists', title: ['Раздача напитков', 'Drink Dispenser'], pool: ['всех автоматов "Ядер-колы"', 'all Nuka-Cola machines'],
-		intro: ['Этот объект — раздатчик напитков. В него можно поместить:', 'This object is a drink dispenser. It can hold:'],
+		intro: ['Этот объект — раздатчик напитков. В него можно поместить:', 'This object is a drink dispenser. It can hold:'],
 		shared: ['Другие игроки могут брать из него напитки.', 'Other players can take drinks from it.'],
 	},
 	Dispenser_Candy: {
@@ -96,10 +96,10 @@ const capacity = computed((): string | null => {
 			: `Up to ${limit} ${items} can be listed for sale at once (shared by ${pool[1]} in the C.A.M.P.).`;
 
 	if (!pool)
-		return ru.value ? `Максимальная вместимость — ${limit} ${items}.` : `Maximum capacity: ${limit} ${items}.`;
+		return ru.value ? `Максимальная вместимость — ${limit} ${items}.` : `Maximum capacity: ${limit} ${items}.`;
 
 	return ru.value
-		? `Максимальная вместимость — ${limit} ${items} (общая для ${pool[0]} в C.A.M.P.).`
+		? `Максимальная вместимость — ${limit} ${items} (общая для ${pool[0]} в C.A.M.P.).`
 		: `Maximum capacity: ${limit} ${items} (shared by ${pool[1]} in the C.A.M.P.).`;
 });
 

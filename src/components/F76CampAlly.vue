@@ -117,7 +117,7 @@ const t = computed(() => props.lang === 'ru'
 		showStock: 'Показать ассортимент',
 		hideStock: 'Скрыть ассортимент',
 		colItem: 'Предмет', colType: 'Тип', colPrice: 'Цена', colChance: 'Шанс',
-		chanceNote: 'Шанс — вероятность, что предмет появится в продаже для персонажа 50+ уровня.',
+		chanceNote: 'Шанс — вероятность, что предмет появится в продаже для персонажа 50+ уровня.',
 		eventOnly: 'только во время события',
 		caps: 'крышек',
 		category: (count: number) => `${count} ${pluralizeRu(count, ['предмет', 'предмета', 'предметов'])}`

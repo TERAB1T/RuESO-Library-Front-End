@@ -7,10 +7,16 @@ import 'photoswipe/style.css';
 
 import type { ItemGallerySlide } from '@/types';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	slides: ItemGallerySlide[];
 	note?: string;
-}>();
+	/** Intrinsic size of the slide images; also sets the slide's aspect ratio. */
+	imageWidth?: number;
+	imageHeight?: number;
+}>(), {
+	imageWidth: 512,
+	imageHeight: 512,
+});
 
 // Matches the slide width in the styles below.
 const SLIDE_SIZES = 'min(100vw, 26rem)';
@@ -75,14 +81,24 @@ onMounted(() => {
 			return itemData;
 		}
 
-		// Item images are square; the real size replaces this guess once the file loads.
+		// Same proportions as the slides; the real size replaces this guess once the file loads.
 		itemData.width = 1440;
-		itemData.height = 1440;
+		itemData.height = Math.round(1440 * props.imageHeight / props.imageWidth);
 
 		const img = new Image();
 		img.onload = () => {
 			sizeCache.set(imgSrc, { width: img.naturalWidth, height: img.naturalHeight });
-			if (lightbox?.pswp?.currSlide?.index === index) lightbox.pswp.updateSize(true);
+			// updateSize() would keep the guessed size; rebuilding the slide reruns this filter with the cached size.
+			// The clicked slide can load before PhotoSwipe exists: then refresh once it initialises.
+			if (lightbox?.pswp) {
+				lightbox.pswp.refreshSlideContent(index);
+				return;
+			}
+			const refreshOnce = () => {
+				lightbox?.pswp?.refreshSlideContent(index);
+				lightbox?.off('afterInit', refreshOnce);
+			};
+			lightbox?.on('afterInit', refreshOnce);
 		};
 		img.src = imgSrc;
 
@@ -109,8 +125,8 @@ onBeforeUnmount(() => {
 		<div ref="viewport" class="item-gallery-viewport">
 			<div class="item-gallery-container">
 				<div v-for="(slide, index) in slides" :key="`${index}-${slide.href}`" class="item-gallery-slide">
-					<a :href="slide.href" class="item-gallery-link" draggable="false">
-						<img :src="slide.src" :srcset="slide.srcset" :sizes="slide.srcset ? SLIDE_SIZES : undefined" :alt="slide.alt" width="512" height="512" loading="lazy" draggable="false" @error="onImageError">
+					<a :href="slide.href" class="item-gallery-link" :style="{ aspectRatio: `${imageWidth} / ${imageHeight}` }" draggable="false">
+						<img :src="slide.src" :srcset="slide.srcset" :sizes="slide.srcset ? SLIDE_SIZES : undefined" :alt="slide.alt" :width="imageWidth" :height="imageHeight" loading="lazy" draggable="false" @error="onImageError">
 					</a>
 				</div>
 			</div>
@@ -147,10 +163,9 @@ $gap: 0.75rem;
 	padding-left: $gap;
 }
 
-/* Item images and shop screenshots are all square. */
+/* The aspect ratio comes from imageWidth/imageHeight (square by default: item images, shop screenshots). */
 .item-gallery-link {
 	display: block;
-	aspect-ratio: 1;
 	border-radius: 8px;
 	overflow: hidden;
 	background: rgba(255, 255, 255, 0.03);

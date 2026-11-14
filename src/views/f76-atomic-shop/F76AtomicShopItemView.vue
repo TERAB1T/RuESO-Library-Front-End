@@ -468,43 +468,6 @@ useCopyOnClick(copyContainerRef);
 	color: #ffffff;
 }
 
-.screenshot-link {
-	display: block;
-	border-radius: 8px;
-	overflow: hidden;
-
-	&:hover .screenshot-img {
-		transform: scale(1.02);
-	}
-}
-
-.screenshot-img {
-	transition: transform 0.2s ease;
-	will-change: transform;
-	backface-visibility: hidden;
-	-webkit-backface-visibility: hidden;
-	transform: translateZ(0);
-
-	&:hover {
-		transform: scale(1.02);
-	}
-}
-
-:deep(.support-item-name) {
-	background-color: hsl(from #4cb6eb h s l / 10%);
-	border: 1px solid hsl(from #4cb6eb h s l / 30%);
-	border-radius: 4px;
-	padding: 0px 4px;
-	cursor: pointer;
-	transition: background-color 0.2s ease;
-	user-select: none;
-	white-space: nowrap;
-
-	&:hover {
-		background-color: hsl(from #4cb6eb h s l / 18%);
-	}
-}
-
 // The screenshots block joins the text block from below: on desktop when it has a gallery or a video,
 // on mobile only for the video (the gallery is the slider there).
 @media (min-width: 992px) {
