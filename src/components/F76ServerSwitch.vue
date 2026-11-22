@@ -5,10 +5,10 @@ import { getServerFilter, serverFilterParam } from '@/utils';
 
 import type { ServerFilter } from '@/types';
 
-const OPTIONS: { value: ServerFilter, label: string }[] = [
-	{ value: 'all', label: 'Live+PTS' },
-	{ value: 'live', label: 'Live' },
-	{ value: 'pts', label: 'PTS' }
+const OPTIONS: { value: ServerFilter, label: string, hint: string }[] = [
+	{ value: 'all', label: 'Live+PTS', hint: 'Всё, что есть в игре, вместе с новинками с PTS.' },
+	{ value: 'live', label: 'Live', hint: 'Только то, что уже есть на основных серверах.' },
+	{ value: 'pts', label: 'PTS', hint: 'Только новинки публичного тестового сервера.' }
 ];
 
 const emit = defineEmits<{
@@ -18,6 +18,7 @@ const emit = defineEmits<{
 const route = useRoute();
 
 const current = computed(() => getServerFilter(route.query.isPTS));
+const currentHint = computed(() => OPTIONS.find(option => option.value === current.value)!.hint);
 
 const linkTo = (server: ServerFilter) => {
 	const query = { ...route.query, isPTS: serverFilterParam(server), page: undefined } as Record<string, any>;
@@ -27,10 +28,13 @@ const linkTo = (server: ServerFilter) => {
 </script>
 
 <template>
-	<div class="server-switch" role="group" aria-label="Сервер">
-		<RouterLink v-for="option in OPTIONS" :key="option.value" :to="linkTo(option.value)" class="server-switch-option" :class="{ active: current === option.value }" :aria-current="current === option.value ? 'true' : undefined" @click="emit('select', option.value)">
-			{{ option.label }}
-		</RouterLink>
+	<div>
+		<div class="server-switch" role="group" aria-label="Сервер">
+			<RouterLink v-for="option in OPTIONS" :key="option.value" :to="linkTo(option.value)" class="server-switch-option" :class="{ active: current === option.value }" :aria-current="current === option.value ? 'true' : undefined" @click="emit('select', option.value)">
+				{{ option.label }}
+			</RouterLink>
+		</div>
+		<p class="server-switch-hint text-muted small">{{ currentHint }}</p>
 	</div>
 </template>
 
@@ -65,5 +69,10 @@ const linkTo = (server: ServerFilter) => {
 		background: var(--bs-primary);
 		color: #000;
 	}
+}
+
+.server-switch-hint {
+	margin: 0.5rem 0 0;
+	line-height: 1.35;
 }
 </style>
