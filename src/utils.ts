@@ -1,6 +1,3 @@
-import onestCyrillicUrl from '../public/fonts/onest-cyrillic.woff2?url';
-import onestLatinUrl from '../public/fonts/onest-latin.woff2?url';
-
 import type { ServerFilter } from '@/types';
 
 /**
@@ -425,11 +422,12 @@ const IMAGE_FALLBACK = '/public/img/f76/atx/notfound.webp';
 /**
  * For the head of a page with Onest headings (.fo-h3, the home and RuESO pages). Onest is display: swap;
  * fetched only after the CSS, it arrived after the first paint and re-wrapped the large headings (layout shift).
- * Imported for the URL: the build hashes the font files, and a preload of another URL than the CSS's is wasted.
+ * Plain paths, as in custom-fonts.css: public/fonts is not in git, so the server build can't import or hash
+ * the files (an import broke the deploy), and a preload of another URL than the CSS's is wasted.
  */
 export const ONEST_PRELOAD = [
-	{ rel: 'preload', href: onestCyrillicUrl, as: 'font', type: 'font/woff2', crossorigin: '' },
-	{ rel: 'preload', href: onestLatinUrl, as: 'font', type: 'font/woff2', crossorigin: '' },
+	{ rel: 'preload', href: '/public/fonts/onest-cyrillic.woff2', as: 'font', type: 'font/woff2', crossorigin: '' },
+	{ rel: 'preload', href: '/public/fonts/onest-latin.woff2', as: 'font', type: 'font/woff2', crossorigin: '' },
 ] as const;
 
 export const atomicShopHandleImageError = (event: Event) => {

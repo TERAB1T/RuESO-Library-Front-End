@@ -3,6 +3,10 @@ import { useHead } from '@unhead/vue';
 import { RouterLink } from 'vue-router';
 import { ONEST_PRELOAD } from '@/utils';
 
+// Bound, not literal: a literal src in the template becomes a build-time import, and /public is not in git
+const HERO_TES = '/public/img/home-hero-tes.webp';
+const HERO_FALLOUT = '/public/img/home-hero-fallout.webp';
+
 interface SectionCard {
 	/** A page of this site, or a full URL of another one (opens in a new tab). */
 	link: string;
@@ -121,8 +125,8 @@ const sections: HomeSection[] = [
 	<main class="home">
 		<header class="home-hero">
 			<div class="home-hero-art" aria-hidden="true">
-				<img class="home-hero-art-tes" src="/public/img/home-hero-tes.webp" width="1600" height="648" alt="">
-				<img class="home-hero-art-fallout" src="/public/img/home-hero-fallout.webp" width="1600" height="900" alt="">
+				<img class="home-hero-art-tes" :src="HERO_TES" width="1600" height="648" alt="">
+				<img class="home-hero-art-fallout" :src="HERO_FALLOUT" width="1600" height="900" alt="">
 			</div>
 			<div class="container-xl home-hero-text">
 				<h1 class="home-title">Справочник по <span class="home-title-game">The Elder Scrolls</span> <span>и <span class="home-title-game">Fallout</span></span></h1>
