@@ -1,6 +1,8 @@
 import onestCyrillicUrl from '../public/fonts/onest-cyrillic.woff2?url';
 import onestLatinUrl from '../public/fonts/onest-latin.woff2?url';
 
+import type { ServerFilter } from '@/types';
+
 /**
  * Escapes HTML-sensitive characters so a string is safe to interpolate into
  * an HTML attribute value or as element text content.
@@ -412,6 +414,11 @@ export const setAtomicShopSortOrder = (order: string) => saveSortOrder(atomicSho
 
 export const getCampSortOrder = (): string => getSavedSortOrder(campLocalStorageKey);
 export const setCampSortOrder = (order: string) => saveSortOrder(campLocalStorageKey, order);
+
+// `isPTS=1` links predate the Live option, so the URL keeps that param: 1 = PTS only, 0 = Live only, none = both.
+export const getServerFilter = (isPTS: unknown): ServerFilter => isPTS === '1' ? 'pts' : isPTS === '0' ? 'live' : 'all';
+export const serverFilterParam = (server: ServerFilter): string | undefined =>
+	server === 'pts' ? '1' : server === 'live' ? '0' : undefined;
 
 const IMAGE_FALLBACK = '/public/img/f76/atx/notfound.webp';
 

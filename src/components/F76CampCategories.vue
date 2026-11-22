@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 import { reactive, watchEffect, computed } from 'vue';
 import { usePrefetchCampCategory, usePrefetchCampSubcategory } from '@/composables/useApi';
 import { useQueryClient } from '@tanstack/vue-query';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import { formatDateTime } from '@/utils';
+import { formatDateTime, getServerFilter, serverFilterParam } from '@/utils';
 import { trackFilterEnabled } from '@/analytics';
+import F76CatalogFilters from '@/components/F76CatalogFilters.vue';
 
-import type { CampCategoryWithSubcategories, CampMobileTab } from '@/types';
+import type { CampCategoryWithSubcategories, CampMobileTab, ServerFilter } from '@/types';
 
 // Loading skeleton: widths of the placeholder menu items, in %.
 const SKELETON_MENU_WIDTHS = [62, 48, 70, 55, 66, 44, 58, 50, 64, 46];
 
 const route = useRoute();
-const router = useRouter();
 
 const props = defineProps<{
 	categories: CampCategoryWithSubcategories[],
@@ -32,7 +32,7 @@ const state = reactive({
     expandedCategories: new Set<string>()
 });
 
-const isPTS = computed(() => route.query.isPTS === '1');
+const server = computed(() => getServerFilter(route.query.isPTS));
 const currentCatId = computed(() => (route.params.categoryFormId as string) || '-1');
 const currentSubCatId = computed(() => (route.params.subcategoryFormId as string) || '-1');
 
@@ -49,8 +49,8 @@ watchEffect(() => {
 });
 
 const queryClient = useQueryClient();
-const prefetchCategory = (categoryFormId: string) => usePrefetchCampCategory(queryClient, categoryFormId, isPTS);
-const prefetchSubcategory = (subcategoryFormId: string) => usePrefetchCampSubcategory(queryClient, subcategoryFormId, isPTS);
+const prefetchCategory = (categoryFormId: string) => usePrefetchCampCategory(queryClient, categoryFormId, server);
+const prefetchSubcategory = (subcategoryFormId: string) => usePrefetchCampSubcategory(queryClient, subcategoryFormId, server);
 
 const toggleCategory = (categoryFormId: string, event: Event) => {
 	event.preventDefault();
@@ -84,24 +84,16 @@ const buildUrl = (type: 'category' | 'subcategory', item: any) => {
         path,
         query: {
 			...(route.query.filter && { filter: route.query.filter }),
-            ...(isPTS.value && { isPTS: '1' })
+            ...(server.value !== 'all' && { isPTS: serverFilterParam(server.value) })
         }
     };
-};
-
-const updateFilters = (updates: Record<string, string | undefined>) => {
-	const query = { ...route.query, ...updates, page: undefined } as Record<string, any>;
-
-	Object.keys(query).forEach(key => !query[key] && delete query[key]);
-	router.push({ path: route.path, query });
 };
 
 // On desktop the sidebar ignores mobileTab (d-lg-block wins), so switching back unconditionally is safe.
 const onSelectMobileLink = () => emit('update:mobileTab', 'items');
 
-const togglePTS = () => {
-	if (!isPTS.value) trackFilterEnabled('pts', 'camp');
-	updateFilters({ isPTS: !isPTS.value ? '1' : undefined, hasSupport: undefined });
+const onSelectServer = (value: ServerFilter) => {
+	if (value !== 'all' && value !== server.value) trackFilterEnabled(value, 'camp');
 	onSelectMobileLink();
 };
 </script>
@@ -154,15 +146,9 @@ const togglePTS = () => {
 						</div>
 					</Transition>
 				</div>
-				<hr>
-				<div class="category-wrapper category-additional">
-					<div class="d-flex align-items-stretch category-item">
-						<a href="#" class="list-group-item list-group-item-action flex-grow-1" :class="{ active: isPTS }" @click.prevent="togglePTS">
-							Тестовый сервер (PTS)
-						</a>
-					</div>
-				</div>
 			</div>
+
+			<F76CatalogFilters @select-server="onSelectServer" />
 		</div>
 	</div>
 </template>

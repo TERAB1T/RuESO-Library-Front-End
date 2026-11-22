@@ -94,7 +94,7 @@ export const trackPartnerClick = (partner: string) => {
 };
 
 /** Turning on one of the catalogue filters. Only enabling is reported, not clearing. */
-export const trackFilterEnabled = (filter: 'pts' | 'support', section: 'atomic_shop' | 'camp') => {
+export const trackFilterEnabled = (filter: 'pts' | 'live' | 'support', section: 'atomic_shop' | 'camp') => {
 	reachGoal('filter_enabled', { filter, section });
 };
 

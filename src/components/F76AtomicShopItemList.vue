@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch, ref } from 'vue';
-import { prepareAtomicShopImage, getAtomicShopSortOrder, setAtomicShopSortOrder, atomicShopHandleImageError } from '@/utils';
+import { prepareAtomicShopImage, getAtomicShopSortOrder, setAtomicShopSortOrder, atomicShopHandleImageError, getServerFilter } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchAtomicShopItems, useFetchAtomicShopAcquisitionTypeItems, useFetchAtomicShopAcquisitionSourceItems, usePrefetchAtomicShopItem } from '@/composables/useApi';
 import { useCatalogList } from '@/composables/useCatalogList';
@@ -29,7 +29,7 @@ const state = reactive({
 	pageSize: 18,
 	totalPages: 1,
 	sortOrder: getAtomicShopSortOrder(),
-	isPTS: route.query.isPTS === '1',
+	server: getServerFilter(route.query.isPTS),
 	hasSupport: route.query.hasSupport === '1'
 });
 
@@ -53,7 +53,7 @@ const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched, isP
 	state.pageSize,
 	computed(() => filter.value),
 	computed(() => state.sortOrder),
-	computed(() => state.isPTS),
+	computed(() => state.server),
 	computed(() => state.hasSupport),
 	isCategoryMode
 );
@@ -64,7 +64,7 @@ const { data: acquisitionTypeData, suspense: acquisitionTypeSuspense, isSuccess:
 	state.pageSize,
 	computed(() => filter.value),
 	computed(() => state.sortOrder),
-	computed(() => state.isPTS),
+	computed(() => state.server),
 	computed(() => state.hasSupport),
 	isAcquisitionTypeMode
 );
@@ -76,7 +76,7 @@ const { data: acquisitionSourceData, suspense: acquisitionSourceSuspense, isSucc
 	state.pageSize,
 	computed(() => filter.value),
 	computed(() => state.sortOrder),
-	computed(() => state.isPTS),
+	computed(() => state.server),
 	computed(() => state.hasSupport),
 	isAcquisitionSourceMode
 );
@@ -122,7 +122,7 @@ onServerPrefetch(async () => {
 watch(
 	() => [route.params.categoryFormId, route.params.subcategoryFormId, route.params.acquisitionType, route.params.acquisitionNumber, route.query.page, route.query.isPTS, route.query.hasSupport],
 	([, , , , newPage, newIsPTS, newHasSupport]) => {
-		state.isPTS = (newIsPTS === '1') ? true : false;
+		state.server = getServerFilter(newIsPTS);
 		state.hasSupport = (newHasSupport === '1') ? true : false;
 
 		if (!import.meta.env.SSR)

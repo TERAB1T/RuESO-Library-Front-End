@@ -27,11 +27,12 @@ import type {
 	F76MapData,
 	F76MapItemCatalog,
 	F76MapItemPoints,
-	F76MapLayerContents
+	F76MapLayerContents,
+	ServerFilter
 } from '@/types';
 import type { UseQueryReturnType } from '@tanstack/vue-query'
-import type { ComputedRef, Ref } from 'vue';
-import { computed } from 'vue';
+import type { ComputedRef, MaybeRef, Ref } from 'vue';
+import { computed, toValue } from 'vue';
 
 const DEBOUNCE_DELAY = 200;
 const DEFAULT_STALE_TIME = 5 * 60 * 1000;
@@ -82,17 +83,17 @@ interface ListUrlParams {
 	pageSize: number;
 	filter?: string;
 	sortOrder: string;
-	isPTS: boolean;
+	server: ServerFilter;
 	hasSupport?: boolean;
 }
 
 // The query string every Atomic Shop / C.A.M.P. list endpoint takes. `filter` is left out
 // (not sent empty) when undefined, which is what the first-page prefetches rely on.
-const listUrl = (path: string, { page, pageSize, filter, sortOrder, isPTS, hasSupport }: ListUrlParams): string => {
+const listUrl = (path: string, { page, pageSize, filter, sortOrder, server, hasSupport }: ListUrlParams): string => {
 	let url = `${path}?page=${page}&page_size=${pageSize}`;
 	if (filter !== undefined) url += `&filter=${encodeURIComponent(filter)}`;
 	url += `&sort_order=${sortOrder}`;
-	if (isPTS) url += `&is_pts=1`;
+	if (server !== 'all') url += `&is_pts=${server === 'pts' ? 1 : 0}`;
 	if (hasSupport) url += `&has_support=1`;
 	return url;
 }
@@ -111,10 +112,10 @@ const campListPath = (categoryFormId: string, subcategoryFormId: string): string
 
 // Each prefetch hook builds its own query key: it must match the key of the corresponding
 // useFetch* hook exactly, or the prefetched page is never reused.
-const prefetchFirstPage = (queryClient: any, queryKey: unknown[], path: string, sortOrder: string, isPTS: boolean, hasSupport?: boolean) => {
+const prefetchFirstPage = (queryClient: any, queryKey: unknown[], path: string, sortOrder: string, server: ServerFilter, hasSupport?: boolean) => {
 	queryClient.prefetchQuery({
 		queryKey,
-		queryFn: () => fetchApi(prepareURL(listUrl(path, { page: 1, pageSize: ATX_PAGE_SIZE, sortOrder, isPTS, hasSupport }))),
+		queryFn: () => fetchApi(prepareURL(listUrl(path, { page: 1, pageSize: ATX_PAGE_SIZE, sortOrder, server, hasSupport }))),
 		staleTime: DEFAULT_STALE_TIME
 	});
 }
@@ -176,11 +177,11 @@ export const useFetchAtomicShopItem = (itemFormId: ComputedRef<string>): UseQuer
 	});
 }
 
-export const useFetchAtomicShopItems = (categoryFormId: ComputedRef<string>, subcategoryFormId: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>, isPTS: ComputedRef<boolean>, hasSupport: ComputedRef<boolean>, enabled?: ComputedRef<boolean>): UseQueryReturnType<AtomicShopItemsResponse, Error> => {
+export const useFetchAtomicShopItems = (categoryFormId: ComputedRef<string>, subcategoryFormId: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>, server: ComputedRef<ServerFilter>, hasSupport: ComputedRef<boolean>, enabled?: ComputedRef<boolean>): UseQueryReturnType<AtomicShopItemsResponse, Error> => {
 	return useQuery({
-		queryKey: ['f76_atx_items', categoryFormId, subcategoryFormId, { currentPage, pageSize, filter, sortOrder, isPTS, hasSupport }],
+		queryKey: ['f76_atx_items', categoryFormId, subcategoryFormId, { currentPage, pageSize, filter, sortOrder, server, hasSupport }],
 		queryFn: () => fetchApi(prepareURL(listUrl(atomicShopListPath(categoryFormId.value, subcategoryFormId.value), {
-			page: currentPage.value, pageSize, filter: filter.value, sortOrder: sortOrder.value, isPTS: isPTS.value, hasSupport: hasSupport.value
+			page: currentPage.value, pageSize, filter: filter.value, sortOrder: sortOrder.value, server: server.value, hasSupport: hasSupport.value
 		}))),
 		staleTime: DEFAULT_STALE_TIME,
 		placeholderData: keepPreviousData,
@@ -204,11 +205,11 @@ export const useFetchAtomicShopAcquisition = (): UseQueryReturnType<AcquisitionS
 	});
 }
 
-export const useFetchAtomicShopAcquisitionTypeItems = (type: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>, isPTS: ComputedRef<boolean>, hasSupport: ComputedRef<boolean>, enabled?: ComputedRef<boolean>): UseQueryReturnType<AcquisitionTypeItemsResponse, Error> => {
+export const useFetchAtomicShopAcquisitionTypeItems = (type: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>, server: ComputedRef<ServerFilter>, hasSupport: ComputedRef<boolean>, enabled?: ComputedRef<boolean>): UseQueryReturnType<AcquisitionTypeItemsResponse, Error> => {
 	return useQuery({
-		queryKey: ['f76_atx_acquisition_items', type, { currentPage, pageSize, filter, sortOrder, isPTS, hasSupport }],
+		queryKey: ['f76_atx_acquisition_items', type, { currentPage, pageSize, filter, sortOrder, server, hasSupport }],
 		queryFn: () => fetchApi(prepareURL(listUrl(`/api/f76/atomicshop/acquisition/${type.value}`, {
-			page: currentPage.value, pageSize, filter: filter.value, sortOrder: sortOrder.value, isPTS: isPTS.value, hasSupport: hasSupport.value
+			page: currentPage.value, pageSize, filter: filter.value, sortOrder: sortOrder.value, server: server.value, hasSupport: hasSupport.value
 		}))),
 		staleTime: DEFAULT_STALE_TIME,
 		placeholderData: keepPreviousData,
@@ -216,11 +217,11 @@ export const useFetchAtomicShopAcquisitionTypeItems = (type: ComputedRef<string>
 	});
 }
 
-export const useFetchAtomicShopAcquisitionSourceItems = (type: ComputedRef<string>, number: ComputedRef<number>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>, isPTS: ComputedRef<boolean>, hasSupport: ComputedRef<boolean>, enabled?: ComputedRef<boolean>): UseQueryReturnType<AcquisitionSourceItemsResponse, Error> => {
+export const useFetchAtomicShopAcquisitionSourceItems = (type: ComputedRef<string>, number: ComputedRef<number>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>, server: ComputedRef<ServerFilter>, hasSupport: ComputedRef<boolean>, enabled?: ComputedRef<boolean>): UseQueryReturnType<AcquisitionSourceItemsResponse, Error> => {
 	return useQuery({
-		queryKey: ['f76_atx_acquisition_items', type, number, { currentPage, pageSize, filter, sortOrder, isPTS, hasSupport }],
+		queryKey: ['f76_atx_acquisition_items', type, number, { currentPage, pageSize, filter, sortOrder, server, hasSupport }],
 		queryFn: () => fetchApi(prepareURL(listUrl(`/api/f76/atomicshop/acquisition/${type.value}/${number.value}`, {
-			page: currentPage.value, pageSize, filter: filter.value, sortOrder: sortOrder.value, isPTS: isPTS.value, hasSupport: hasSupport.value
+			page: currentPage.value, pageSize, filter: filter.value, sortOrder: sortOrder.value, server: server.value, hasSupport: hasSupport.value
 		}))),
 		staleTime: DEFAULT_STALE_TIME,
 		placeholderData: keepPreviousData,
@@ -236,11 +237,11 @@ export const useFetchCampItem = (itemFormId: ComputedRef<string>): UseQueryRetur
 	});
 }
 
-export const useFetchCampItems = (categoryFormId: ComputedRef<string>, subcategoryFormId: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>, isPTS: ComputedRef<boolean>): UseQueryReturnType<CampItemsResponse, Error> => {
+export const useFetchCampItems = (categoryFormId: ComputedRef<string>, subcategoryFormId: ComputedRef<string>, currentPage: ComputedRef<number>, pageSize: number, filter: ComputedRef<string>, sortOrder: ComputedRef<string>, server: ComputedRef<ServerFilter>): UseQueryReturnType<CampItemsResponse, Error> => {
 	return useQuery({
-		queryKey: ['f76_camp_items', categoryFormId, subcategoryFormId, { currentPage, pageSize, filter, sortOrder, isPTS }],
+		queryKey: ['f76_camp_items', categoryFormId, subcategoryFormId, { currentPage, pageSize, filter, sortOrder, server }],
 		queryFn: () => fetchApi(prepareURL(listUrl(campListPath(categoryFormId.value, subcategoryFormId.value), {
-			page: currentPage.value, pageSize, filter: filter.value, sortOrder: sortOrder.value, isPTS: isPTS.value
+			page: currentPage.value, pageSize, filter: filter.value, sortOrder: sortOrder.value, server: server.value
 		}))),
 		staleTime: DEFAULT_STALE_TIME,
 		placeholderData: keepPreviousData
@@ -385,40 +386,40 @@ export const usePrefetchAtomicShopItem = useDebounceFn((queryClient: any, itemFo
 	});
 }, DEBOUNCE_DELAY);
 
-export const usePrefetchAtomicShopCategory = useDebounceFn((queryClient: any, categoryFormId: string | undefined, isPTS: MaybeRefBoolean = false, hasSupport: MaybeRefBoolean = false) => {
+export const usePrefetchAtomicShopCategory = useDebounceFn((queryClient: any, categoryFormId: string | undefined, server: MaybeRef<ServerFilter> = 'all', hasSupport: MaybeRefBoolean = false) => {
 	if (categoryFormId === undefined || categoryFormId === '-1') return;
 	const sortOrder = getAtomicShopSortOrder();
 
 	prefetchFirstPage(queryClient,
-		['f76_atx_items', categoryFormId, '-1', { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS, hasSupport }],
-		atomicShopListPath(categoryFormId, '-1'), sortOrder, toBool(isPTS), toBool(hasSupport));
+		['f76_atx_items', categoryFormId, '-1', { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, server, hasSupport }],
+		atomicShopListPath(categoryFormId, '-1'), sortOrder, toValue(server), toBool(hasSupport));
 }, DEBOUNCE_DELAY);
 
-export const usePrefetchAtomicShopSubcategory = useDebounceFn((queryClient: any, subcategoryFormId: string | undefined, isPTS: MaybeRefBoolean = false, hasSupport: MaybeRefBoolean = false) => {
+export const usePrefetchAtomicShopSubcategory = useDebounceFn((queryClient: any, subcategoryFormId: string | undefined, server: MaybeRef<ServerFilter> = 'all', hasSupport: MaybeRefBoolean = false) => {
 	if (subcategoryFormId === undefined || subcategoryFormId === '-1') return;
 	const sortOrder = getAtomicShopSortOrder();
 
 	prefetchFirstPage(queryClient,
-		['f76_atx_items', '-1', subcategoryFormId, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS, hasSupport }],
-		atomicShopListPath('-1', subcategoryFormId), sortOrder, toBool(isPTS), toBool(hasSupport));
+		['f76_atx_items', '-1', subcategoryFormId, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, server, hasSupport }],
+		atomicShopListPath('-1', subcategoryFormId), sortOrder, toValue(server), toBool(hasSupport));
 }, DEBOUNCE_DELAY);
 
-export const usePrefetchAtomicShopAcquisitionType = useDebounceFn((queryClient: any, type: string | undefined, isPTS: MaybeRefBoolean = false, hasSupport: MaybeRefBoolean = false) => {
+export const usePrefetchAtomicShopAcquisitionType = useDebounceFn((queryClient: any, type: string | undefined, server: MaybeRef<ServerFilter> = 'all', hasSupport: MaybeRefBoolean = false) => {
 	if (type === undefined) return;
 	const sortOrder = getAtomicShopSortOrder();
 
 	prefetchFirstPage(queryClient,
-		['f76_atx_acquisition_items', type, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS, hasSupport }],
-		`/api/f76/atomicshop/acquisition/${type}`, sortOrder, toBool(isPTS), toBool(hasSupport));
+		['f76_atx_acquisition_items', type, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, server, hasSupport }],
+		`/api/f76/atomicshop/acquisition/${type}`, sortOrder, toValue(server), toBool(hasSupport));
 }, DEBOUNCE_DELAY);
 
-export const usePrefetchAtomicShopAcquisitionSource = useDebounceFn((queryClient: any, type: string | undefined, number: number | undefined, isPTS: MaybeRefBoolean = false, hasSupport: MaybeRefBoolean = false) => {
+export const usePrefetchAtomicShopAcquisitionSource = useDebounceFn((queryClient: any, type: string | undefined, number: number | undefined, server: MaybeRef<ServerFilter> = 'all', hasSupport: MaybeRefBoolean = false) => {
 	if (type === undefined || number === undefined) return;
 	const sortOrder = getAtomicShopSortOrder();
 
 	prefetchFirstPage(queryClient,
-		['f76_atx_acquisition_items', type, number, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS, hasSupport }],
-		`/api/f76/atomicshop/acquisition/${type}/${number}`, sortOrder, toBool(isPTS), toBool(hasSupport));
+		['f76_atx_acquisition_items', type, number, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, server, hasSupport }],
+		`/api/f76/atomicshop/acquisition/${type}/${number}`, sortOrder, toValue(server), toBool(hasSupport));
 }, DEBOUNCE_DELAY);
 
 export const usePrefetchCampItem = useDebounceFn((queryClient: any, itemFormId: string) => {
@@ -429,22 +430,22 @@ export const usePrefetchCampItem = useDebounceFn((queryClient: any, itemFormId: 
 	});
 }, DEBOUNCE_DELAY);
 
-export const usePrefetchCampCategory = useDebounceFn((queryClient: any, categoryFormId: string | undefined, isPTS: MaybeRefBoolean = false) => {
+export const usePrefetchCampCategory = useDebounceFn((queryClient: any, categoryFormId: string | undefined, server: MaybeRef<ServerFilter> = 'all') => {
 	if (categoryFormId === undefined || categoryFormId === '-1') return;
 	const sortOrder = getCampSortOrder();
 
 	prefetchFirstPage(queryClient,
-		['f76_camp_items', categoryFormId, '-1', { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS }],
-		campListPath(categoryFormId, '-1'), sortOrder, toBool(isPTS));
+		['f76_camp_items', categoryFormId, '-1', { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, server }],
+		campListPath(categoryFormId, '-1'), sortOrder, toValue(server));
 }, DEBOUNCE_DELAY);
 
-export const usePrefetchCampSubcategory = useDebounceFn((queryClient: any, subcategoryFormId: string | undefined, isPTS: MaybeRefBoolean = false) => {
+export const usePrefetchCampSubcategory = useDebounceFn((queryClient: any, subcategoryFormId: string | undefined, server: MaybeRef<ServerFilter> = 'all') => {
 	if (subcategoryFormId === undefined || subcategoryFormId === '-1') return;
 	const sortOrder = getCampSortOrder();
 
 	prefetchFirstPage(queryClient,
-		['f76_camp_items', '-1', subcategoryFormId, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, isPTS }],
-		campListPath('-1', subcategoryFormId), sortOrder, toBool(isPTS));
+		['f76_camp_items', '-1', subcategoryFormId, { currentPage: 1, pageSize: ATX_PAGE_SIZE, filter: '', sortOrder, server }],
+		campListPath('-1', subcategoryFormId), sortOrder, toValue(server));
 }, DEBOUNCE_DELAY);
 
 export const useFetchCampSubItem = (formId: Ref<string | null>): UseQueryReturnType<CampSubItem, Error> => {

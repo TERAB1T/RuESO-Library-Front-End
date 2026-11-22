@@ -22,7 +22,7 @@ export async function buildPageList(api: string): Promise<string[]> {
 		"/", "/partners", "/rueso", "/glossary-tes", "/glossary-fallout",
 		"/library/eso", `/library/eso/category/${libraryCategory.id}-${libraryCategory.slug}`,
 		`/library/eso/patch/${patch.version}-${patch.slug}`, `/library/eso/${book.id}-${book.slug}`,
-		"/f76-camp", "/f76-camp?isPTS=1&filter=chair", `/f76-camp/${campItem.formId}-${campItem.slug}`,
+		"/f76-camp", "/f76-camp?isPTS=1&filter=chair", "/f76-camp?isPTS=0", `/f76-camp/${campItem.formId}-${campItem.slug}`,
 		`/f76-camp/category/${campCategory.formId}-${campCategory.slug}`,
 		`/f76-camp/subcategory/${campCategory.subcategories[0].formId}-${campCategory.subcategories[0].slug}?page=2`,
 		"/f76-atomic-shop", "/f76-atomic-shop?hasSupport=1&isPTS=1", `/f76-atomic-shop/${atxItem.formId}-${atxItem.slug}`,

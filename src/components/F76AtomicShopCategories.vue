@@ -6,10 +6,11 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { useWindowSize } from '@vueuse/core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import { formatDateTime, ACQUISITION_TYPE_LABELS } from '@/utils';
+import { formatDateTime, ACQUISITION_TYPE_LABELS, getServerFilter, serverFilterParam } from '@/utils';
 import { trackFilterEnabled } from '@/analytics';
+import F76CatalogFilters from '@/components/F76CatalogFilters.vue';
 
-import type { AtomicShopCategoryWithSubcategories, AcquisitionSource, AcquisitionSourcesByType, AtomicShopMobileTab } from '@/types';
+import type { AtomicShopCategoryWithSubcategories, AcquisitionSource, AcquisitionSourcesByType, AtomicShopMobileTab, ServerFilter } from '@/types';
 
 const ACQUISITION_TYPE_ORDER = ['atx', 'season', 'miniseason'];
 const NON_FILTERABLE_ACQUISITION_TYPES = ['season', 'miniseason'];
@@ -38,7 +39,7 @@ const state = reactive({
 	expandedAcquisitionTypes: new Set<string>()
 });
 
-const isPTS = computed(() => route.query.isPTS === '1');
+const server = computed(() => getServerFilter(route.query.isPTS));
 const hasSupport = computed(() => route.query.hasSupport === '1');
 const currentCatId = computed(() => (route.params.categoryFormId as string) || '-1');
 const currentSubCatId = computed(() => (route.params.subcategoryFormId as string) || '-1');
@@ -103,10 +104,10 @@ watch(
 );
 
 const queryClient = useQueryClient();
-const prefetchCategory = (categoryFormId: string) => usePrefetchAtomicShopCategory(queryClient, categoryFormId, isPTS, hasSupport);
-const prefetchSubcategory = (subcategoryFormId: string) => usePrefetchAtomicShopSubcategory(queryClient, subcategoryFormId, isPTS, hasSupport);
-const prefetchAcquisitionType = (type: string) => usePrefetchAtomicShopAcquisitionType(queryClient, type, isPTS, hasSupport);
-const prefetchAcquisitionSource = (type: string, number: number) => usePrefetchAtomicShopAcquisitionSource(queryClient, type, number, isPTS, hasSupport);
+const prefetchCategory = (categoryFormId: string) => usePrefetchAtomicShopCategory(queryClient, categoryFormId, server, hasSupport);
+const prefetchSubcategory = (subcategoryFormId: string) => usePrefetchAtomicShopSubcategory(queryClient, subcategoryFormId, server, hasSupport);
+const prefetchAcquisitionType = (type: string) => usePrefetchAtomicShopAcquisitionType(queryClient, type, server, hasSupport);
+const prefetchAcquisitionSource = (type: string, number: number) => usePrefetchAtomicShopAcquisitionSource(queryClient, type, number, server, hasSupport);
 
 const toggleCategory = (categoryFormId: string, event: Event) => {
 	event.preventDefault();
@@ -140,7 +141,7 @@ const buildUrl = (type: 'category' | 'subcategory', item: any) => {
 		path,
 		query: {
 			...(route.query.filter && { filter: route.query.filter }),
-			...(isPTS.value && { isPTS: '1' }),
+			...(server.value !== 'all' && { isPTS: serverFilterParam(server.value) }),
 			...(hasSupport.value && { hasSupport: '1' })
 		}
 	};
@@ -188,7 +189,7 @@ const buildAcquisitionTypeUrl = (type: string) => {
 		path,
 		query: {
 			...(route.query.filter && { filter: route.query.filter }),
-			...(isPTS.value && { isPTS: '1' }),
+			...(server.value !== 'all' && { isPTS: serverFilterParam(server.value) }),
 			...(hasSupport.value && { hasSupport: '1' })
 		}
 	};
@@ -202,26 +203,20 @@ const buildAcquisitionSourceUrl = (type: string, source: AcquisitionSource) => {
 		path,
 		query: {
 			...(route.query.filter && { filter: route.query.filter }),
-			...(isPTS.value && { isPTS: '1' }),
+			...(server.value !== 'all' && { isPTS: serverFilterParam(server.value) }),
 			...(hasSupport.value && { hasSupport: '1' })
 		}
 	};
 };
 
-const togglePTS = () => {
-	const query = { ...route.query, isPTS: !isPTS.value ? '1' : undefined, hasSupport: undefined, page: undefined } as Record<string, any>;
-	Object.keys(query).forEach(key => !query[key] && delete query[key]);
-	return query;
-};
-const toggleSupport = () => {
-	const query = { ...route.query, hasSupport: !hasSupport.value ? '1' : undefined, isPTS: undefined, page: undefined } as Record<string, any>;
-	Object.keys(query).forEach(key => !query[key] && delete query[key]);
-	return query;
+// Only switching a filter on is worth counting; clearing it says nothing about interest.
+const onToggleSupport = (enabled: boolean) => {
+	if (enabled) trackFilterEnabled('support', 'atomic_shop');
+	onSelectMobileLink();
 };
 
-// Only switching a filter on is worth counting; clearing it says nothing about interest.
-const onFilterClick = (filter: 'pts' | 'support', enabled: boolean) => {
-	if (!enabled) trackFilterEnabled(filter, 'atomic_shop');
+const onSelectServer = (value: ServerFilter) => {
+	if (value !== 'all' && value !== server.value) trackFilterEnabled(value, 'atomic_shop');
 	onSelectMobileLink();
 };
 </script>
@@ -287,19 +282,6 @@ const onFilterClick = (filter: 'pts' | 'support', enabled: boolean) => {
 								</div>
 							</Transition>
 						</div>
-						<hr>
-						<div class="category-wrapper category-additional">
-							<div class="d-flex align-items-stretch category-item">
-								<RouterLink :to="{ path: route.path, query: togglePTS() }" class="list-group-item list-group-item-action flex-grow-1" :class="{ active: isPTS }" @click="onFilterClick('pts', isPTS)">
-									Тестовый сервер (PTS)
-								</RouterLink>
-							</div>
-							<div class="d-flex align-items-stretch category-item">
-								<RouterLink :to="{ path: route.path, query: toggleSupport() }" class="list-group-item list-group-item-action flex-grow-1" :class="{ active: hasSupport }" @click="onFilterClick('support', hasSupport)">
-									Продается в поддержке
-								</RouterLink>
-							</div>
-						</div>
 					</div>
 				</div>
 
@@ -338,6 +320,8 @@ const onFilterClick = (filter: 'pts' | 'support', enabled: boolean) => {
 					</div>
 				</div>
 			</div>
+
+			<F76CatalogFilters support @select-server="onSelectServer" @toggle-support="onToggleSupport" />
 		</div>
 	</div>
 </template>

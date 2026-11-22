@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router';
 import { reactive, watch, computed, watchEffect, onServerPrefetch, ref } from 'vue';
-import { prepareCampImage, getCampSortOrder, setCampSortOrder, atomicShopHandleImageError } from '@/utils';
+import { prepareCampImage, getCampSortOrder, setCampSortOrder, atomicShopHandleImageError, getServerFilter } from '@/utils';
 import Pagination from '@/components/Pagination.vue';
 import { useFetchCampItems, usePrefetchCampItem } from '@/composables/useApi';
 import { useCatalogList } from '@/composables/useCatalogList';
@@ -21,7 +21,7 @@ const state = reactive({
 	pageSize: 18,
 	totalPages: 1,
 	sortOrder: getCampSortOrder(),
-	isPTS: route.query.isPTS === '1'
+	server: getServerFilter(route.query.isPTS)
 });
 
 const { currentPage, filter, changePage, onChangeFilter, getBreadcrumb } = useCatalogList({
@@ -44,7 +44,7 @@ const { data: itemsData, suspense: itemsSuspense, isSuccess: isItemsFetched, isP
 	state.pageSize,
 	computed(() => filter.value),
 	computed(() => state.sortOrder),
-	computed(() => state.isPTS)
+	computed(() => state.server)
 );
 
 watchEffect(async () => {
@@ -65,7 +65,7 @@ onServerPrefetch(async () => {
 watch(
 	() => [route.params.categoryFormId, route.params.subcategoryFormId, route.query.page, route.query.isPTS],
 	([, , , newIsPTS]) => {
-		state.isPTS = (newIsPTS === '1') ? true : false;
+		state.server = getServerFilter(newIsPTS);
 
 		if (!import.meta.env.SSR)
 			window.scrollTo({ top: 0, behavior: 'smooth' });
