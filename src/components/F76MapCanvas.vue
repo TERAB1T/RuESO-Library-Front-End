@@ -109,6 +109,14 @@ const prefetchStyle = (style: F76MapStyle) => {
 	}
 };
 
+const loadImage = (src: string) => {
+	const img = new Image();
+	// As OpenLayers loads it: a different CORS mode would miss the cache and fetch it again
+	img.crossOrigin = 'anonymous';
+	img.src = src;
+	return img.decode().then(() => img);
+};
+
 const buildFeatures = (markers: F76MapMarker[], withAtlas: boolean) => markers.map(m => {
 	const feature = new FeatureClass!({ geometry: new PointClass!(toMapCoordinate(m)) });
 	feature.setId(m.formId);
@@ -201,14 +209,19 @@ const updateSelected = () => {
 onMounted(async () => {
 	const [ol, atlasData] = await Promise.all([
 		import('@/olMap'),
-		// Without the atlas the map still works, just without marker icons
-		fetch(`${ASSETS}/icons.json`).then(r => r.ok ? r.json() as Promise<IconAtlas> : null).catch(() => null),
+		// Without the atlas the map still works, just without marker icons.
+		// The image is loaded first: OpenLayers draws icons whose texture is not loaded yet as black squares
+		// and does not redraw when it arrives.
+		Promise.all([
+			fetch(`${ASSETS}/icons.json`).then(r => r.ok ? r.json() as Promise<IconAtlas> : null),
+			loadImage(`${ASSETS}/icons.webp`),
+		]).then(([data]) => data).catch(() => null),
 	]);
 	if (disposed || !container.value) return;
 	const {
 		Map, View, TileLayer, XYZ, TileGrid, Projection, VectorLayer: VectorLayerClass, WebGLVectorLayer: WebGLVectorLayerClass,
 		VectorSource, Feature: FeatureImport, Point, Polygon, Style, Icon, Text, Fill, Stroke, CircleStyle, Overlay,
-		DragPan, MouseWheelZoom, Kinetic, ViewHint,
+		MouseWheelZoom, ViewHint,
 	} = ol;
 	OverlayClass = Overlay;
 
@@ -331,11 +344,7 @@ onMounted(async () => {
 	});
 	map = olMap;
 
-	// A longer, softer glide after a drag than the default (decay -0.005, stop at 0.05 px/ms)
 	const interactions = olMap.getInteractions();
-	interactions.forEach((interaction, i) => {
-		if (interaction instanceof DragPan) interactions.setAt(i, new DragPan({ kinetic: new Kinetic(-0.003, 0.03, 100) }));
-	});
 	// The stock wheel zoom restarts its easing on every notch, which reads as jerks; this one eases toward a
 	// target that the notches move, so a spin of the wheel is one continuous motion.
 	interactions.remove(interactions.getArray().find(interaction => interaction instanceof MouseWheelZoom)!);
