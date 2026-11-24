@@ -2,7 +2,7 @@
 import { computed, h, nextTick, onBeforeUnmount, onMounted, onServerPrefetch, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useHead } from '@unhead/vue';
-import { faChevronDown, faChevronLeft, faChevronRight, faExpand, faFont, faLink, faMagnifyingGlass, faMinus, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronLeft, faChevronRight, faExpand, faFont, faLayerGroup, faLink, faMagnifyingGlass, faMinus, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useFetchMapData, useFetchMapItemCatalog, useFetchMapItemPoints, useFetchMapLayers, useFetchMapUpdated } from '@/composables/useApi';
 import { formatDateTime } from '@/utils';
 import F76MapCanvas from '@/components/F76MapCanvas.vue';
@@ -17,8 +17,7 @@ import type { F76MapPoint, F76MapStyle, F76MapZone } from '@/f76Map';
 const TITLE = 'Интерактивная карта Fallout 76';
 const DESCRIPTION = 'Интерактивная карта Аппалачии из Fallout 76: локации с игровыми значками, пупсы, журналы, торговцы, зоны запрета C.A.M.P., поиск хлама и ресурсов. Данные берутся прямо из файлов игры.';
 const SKELETON_ROWS = 14;
-// Short names fit the switch tile; the full ones go to its tooltip
-const MAP_STYLE_NAMES: Record<F76MapStyle, string> = { paper: 'Обычная', military: 'Топокарта' };
+const MAP_STYLES: F76MapStyle[] = ['paper', 'military'];
 const MAP_STYLE_TITLES: Record<F76MapStyle, string> = { paper: 'Обычная карта', military: 'Топографическая карта' };
 // Search results shown before "show all"
 const ITEM_RESULTS_SHORT = 8;
@@ -74,6 +73,13 @@ const onMobileChange = () => { isMobile.value = mobileQuery!.matches; };
 const coveredLeft = computed(() => isMobile.value || isPanelCollapsed.value ? 0 : PANEL_WIDTH);
 
 const canvas = ref<InstanceType<typeof F76MapCanvas>>();
+
+// The style list opens on hover; a tap (no hover on touch) opens it until a choice or a tap elsewhere
+const styleMenu = ref<HTMLElement>();
+const isStyleMenuOpen = ref(false);
+const onDocumentPointerDown = (e: PointerEvent) => {
+	if (isStyleMenuOpen.value && !styleMenu.value?.contains(e.target as Node)) isStyleMenuOpen.value = false;
+};
 
 const normalize = (s: string) => s.toLocaleLowerCase('ru').replace(/ё/g, 'е').replace(/["«»“”'’]/g, '');
 const query = computed(() => normalize(search.value.trim()));
@@ -279,8 +285,9 @@ const findColor = (key: string) => {
 	return i < 0 ? null : POINT_COLORS[itemColorIndex(i)];
 };
 
-const toggleStyle = () => {
-	mapStyle.value = otherStyle.value;
+const setStyle = (style: F76MapStyle) => {
+	mapStyle.value = style;
+	isStyleMenuOpen.value = false;
 	updateQuery();
 };
 
@@ -321,11 +328,15 @@ const applyPendingQuery = () => {
 	}
 };
 
-onBeforeUnmount(() => mobileQuery?.removeEventListener('change', onMobileChange));
+onBeforeUnmount(() => {
+	mobileQuery?.removeEventListener('change', onMobileChange);
+	document.removeEventListener('pointerdown', onDocumentPointerDown);
+});
 
 onMounted(() => {
 	onMobileChange();
 	mobileQuery!.addEventListener('change', onMobileChange);
+	document.addEventListener('pointerdown', onDocumentPointerDown);
 	const { m, region, style, layers: layerParam, find, icons, labels } = route.query;
 	if (style === 'military') mapStyle.value = style;
 	if (icons === '0') showIcons.value = false;
@@ -605,10 +616,17 @@ useHead(headInput);
 				@ready="onCanvasReady"
 			/>
 
-			<button type="button" class="map-style-switch" :title="MAP_STYLE_TITLES[otherStyle]" @pointerenter="canvas?.prefetchStyle(otherStyle)" @focus="canvas?.prefetchStyle(otherStyle)" @click="toggleStyle">
-				<span class="map-style-preview" :style="{ backgroundImage: `url('/public/img/f76/map/tiles/${otherStyle}/0/0/0.webp')` }"></span>
-				<span class="map-style-label">{{ MAP_STYLE_NAMES[otherStyle] }}</span>
-			</button>
+			<div ref="styleMenu" class="map-style-menu" :class="{ open: isStyleMenuOpen }" @pointerenter="canvas?.prefetchStyle(otherStyle)">
+				<button type="button" class="map-style-button" aria-label="Подложка карты" aria-haspopup="true" :aria-expanded="isStyleMenuOpen" @click="isStyleMenuOpen = !isStyleMenuOpen" @focus="canvas?.prefetchStyle(otherStyle)">
+					<Icon :icon="faLayerGroup" />
+				</button>
+				<div class="map-style-list" role="radiogroup" aria-label="Подложка карты">
+					<label v-for="style in MAP_STYLES" :key="style" class="map-style-option">
+						<input type="radio" name="map-style" :value="style" :checked="mapStyle === style" @change="setStyle(style)">
+						{{ MAP_STYLE_TITLES[style] }}
+					</label>
+				</div>
+			</div>
 
 			<div class="map-controls" role="group" aria-label="Масштаб">
 				<button type="button" aria-label="Приблизить" @click="canvas?.zoomBy(1)"><Icon :icon="faPlus" /></button>
@@ -1079,49 +1097,82 @@ $map-muted: rgba(241, 234, 210, 0.62);
 	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
 }
 
-.map-style-switch {
+.map-style-menu {
+	position: absolute;
+	right: 0.75rem;
+	// Above the zoom buttons: the top right belongs to the point card
+	bottom: calc(0.75rem + 3 * 2.4rem + 0.5rem);
+	z-index: 11;
+}
+
+.map-style-button {
+	@include map-floating;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.4rem;
+	height: 2.4rem;
+	border-radius: 0.6rem;
+	font-size: 1.1rem;
+
+	// The list opens over the button, which would show through it
+	.open > & {
+		visibility: hidden;
+	}
+
+	@media (hover: hover) {
+		.map-style-menu:hover > & {
+			visibility: hidden;
+		}
+	}
+}
+
+.map-style-list {
 	@include map-floating;
 	position: absolute;
-	left: 0.75rem;
-	bottom: 0.75rem;
-	display: flex;
+	right: 0;
+	bottom: 0;
+	display: none;
 	flex-direction: column;
-	padding: 3px;
+	gap: 0.15rem;
+	padding: 0.4rem;
+	border: 1px solid var(--bs-primary);
 	border-radius: 0.6rem;
-	// Follows the panel's edge
-	transform: translateX($panel-width);
-	transition: transform 0.25s cubic-bezier(0, 0, 0.2, 1);
-	z-index: 10;
+	white-space: nowrap;
 
-	.panel-collapsed & {
-		transform: none;
+	.open > & {
+		display: flex;
 	}
 
-	&:hover .map-style-preview {
-		filter: brightness(1.12);
+	@media (hover: hover) {
+		.map-style-menu:hover > & {
+			display: flex;
+		}
 	}
 }
 
-.map-style-preview {
-	display: block;
-	width: 76px;
-	height: 76px;
-	border-radius: 0.45rem;
-	background: #1b1a17 center / 135% no-repeat;
-	transition: filter 0.15s;
-}
-
-.map-style-label {
-	position: absolute;
-	left: 3px;
-	right: 3px;
-	bottom: 3px;
-	padding: 0.15rem 0;
-	border-radius: 0 0 0.45rem 0.45rem;
-	background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-	font-size: 0.75rem;
+.map-style-option {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.35rem 0.6rem;
+	border-radius: 0.4rem;
 	font-weight: 600;
-	text-align: center;
+	cursor: pointer;
+
+	&:hover {
+		background: rgba(255, 255, 255, 0.08);
+	}
+
+	&:has(:checked) {
+		color: var(--bs-primary);
+	}
+
+	input {
+		margin: 0;
+		accent-color: var(--bs-primary);
+		cursor: pointer;
+	}
 }
 
 .map-controls {
@@ -1311,17 +1362,15 @@ $map-muted: rgba(241, 234, 210, 0.62);
 		z-index: 30;
 	}
 
-	// Pinch zooms on a phone, and the bottom belongs to the card and the panel button
-	.map-style-switch {
-		top: 0.75rem;
+	// Under the one zoom button left at the top; the bottom belongs to the card and the panel button
+	.map-style-menu {
 		bottom: auto;
-		transform: none !important;
-		transition: none;
+		top: calc(0.75rem + 2.4rem + 0.5rem);
 	}
 
-	.map-style-preview {
-		width: 56px;
-		height: 56px;
+	.map-style-list {
+		top: 0;
+		bottom: auto;
 	}
 
 	.map-controls {
